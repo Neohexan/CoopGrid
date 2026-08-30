@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+httpx
+PyJWT[crypto]
+flask
+python-multipart
+sqlalchemy
+pytz

@@ -1,0 +1,10 @@
+# Ignore local runner scripts and machine-specific server setup files
+server_runner/
+
+# Optional common Python project ignores
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.venv
+.env
