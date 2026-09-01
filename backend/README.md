@@ -20,7 +20,7 @@ The system includes:
                  ▼                           ▼
       ┌─────────────────────┐     ┌─────────────────────┐
       │     App Gateway     │     │    Admin Gateway    │
-      │     (Port 8000)     │     │     (Port 8001)     │
+      │     (Port 8001)     │     │     (Port 8002)     │
       └──────────┬──────────┘     └──────────┬──────────┘
                  │                           │
                  │  (Dynamic Proxy Routing)  │
