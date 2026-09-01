@@ -3,7 +3,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 
 # Yaha SQLite ka local DB connection define ho raha hai.
-DATABASE_URL = "sqlite:///./coopgrid_service.db"
+DATABASE_URL = "sqlite:///./central_server.db"
 
 engine = create_engine(
 	DATABASE_URL,

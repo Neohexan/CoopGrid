@@ -12,8 +12,8 @@ logging.basicConfig(
 logger = logging.getLogger("CentralHeartbeat")
 
 GATEWAY_TARGETS = {
-    "APP_GATEWAY": {"url": "http://127.0.0.1:8000/health", "status": "UNKNOWN"},
-    "ADMIN_GATEWAY": {"url": "http://127.0.0.1:8001/health", "status": "UNKNOWN"}
+    "APP_GATEWAY": {"url": "http://127.0.0.1:8001/health", "status": "UNKNOWN"},
+    "ADMIN_GATEWAY": {"url": "http://127.0.0.1:8000/health", "status": "UNKNOWN"}
 }
 
 async def pulse_check_loop():

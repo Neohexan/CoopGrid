@@ -49,10 +49,10 @@ def index() -> dict:
     return {
         "service": "App Gateway",
         "status": "running",
-        "port": 8000
+        "port": 8001
     }
 
 
 if __name__ == "__main__":
-    # Host 0.0.0.0 par bind hai (Port 8000)
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    # Host 0.0.0.0 par bind hai (Port 8001)
+    uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=True)

@@ -14,8 +14,8 @@ RESET = "\033[0m"
 def setup_app_gateway_heartbeat(app: FastAPI):
     @app.get("/health")
     async def health_check():
-        print(f"{CYAN}{BOLD}[APP GATEWAY 8000]{RESET} 📡 Central Server Ping -> {GREEN}{BOLD}🟢 200 OK (HEALTHY){RESET}")
-        return {"service": "App Gateway", "port": 8000, "status": "ONLINE"}
+        print(f"{CYAN}{BOLD}[APP GATEWAY 8001]{RESET} 📡 Central Server Ping -> {GREEN}{BOLD}🟢 200 OK (HEALTHY){RESET}")
+        return {"service": "App Gateway", "port": 8001, "status": "ONLINE"}
 
 async def monitor_services():
     """Background loop with Vibrant Cyan/Blue Logging"""
