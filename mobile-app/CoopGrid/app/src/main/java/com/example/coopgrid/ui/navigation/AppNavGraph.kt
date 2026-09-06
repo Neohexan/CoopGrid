@@ -59,40 +59,6 @@ fun AppNavGraph(
     val currentLanguage by splashViewModel.currentLanguage.collectAsState()
     val authState by splashViewModel.authState.collectAsState()
 
-    // 1. Centralized Dummy Data List
-    val dummyServerBanners = listOf(
-        HomeBannerItem(
-            id = "101",
-            title = "Urgent Electrician Needed",
-            description = "Commercial building wiring & main switch fitting needed in Connaught Place.",
-            location = "Delhi NCR",
-            postedTime = "2h ago",
-            viewsCount = "142",
-            category = "Electrician",
-            salary = "₹800 / Day"
-        ),
-        HomeBannerItem(
-            id = "102",
-            title = "Personal Driver Requirement",
-            description = "Full-time driver needed for SUV. Valid commercial license required.",
-            location = "Sector 62, Noida",
-            postedTime = "5h ago",
-            viewsCount = "389",
-            category = "Driver",
-            salary = "₹18,000 / Month"
-        ),
-        HomeBannerItem(
-            id = "103",
-            title = "Plumber for Society Maintenance",
-            description = "Pipe fitting and leakage repair work in residential complex.",
-            location = "Indirapuram, Ghaziabad",
-            postedTime = "1d ago",
-            viewsCount = "215",
-            category = "Plumber",
-            salary = "₹750 / Day"
-        )
-    )
-
     // Server se aane wala sample dummy list
     val sampleEmployerServices = listOf(
         EmployerServiceCategoryItem(
