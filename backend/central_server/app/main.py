@@ -14,7 +14,7 @@ from app.otp.otp import OtpRecord
 from app.models.worker import Worker  # Ensures Worker model is registered with Base
 from app.models.employer import Employer  # Ensures Employer model is registered with Base
   # Ensures Admin model is registered with Base
-from app.routers import worker_router, employer_router, admin_router # Imports Worker Auth Router
+from app.routers import worker_router, employer_router, admin_router,jobs_router # Imports Worker Auth Router
 
 # Heartbeat module import (folder structure: app/heartbeat/heartbeat.py)
 from app.heartbeat.heartbeat import setup_central_server_heartbeat
@@ -81,6 +81,7 @@ app.add_middleware(
 app.include_router(worker_router.router)
 app.include_router(employer_router.router)
 app.include_router(admin_router.router)
+app.include_router(jobs_router.router)
 # Attach Heartbeat endpoints & monitor task
 setup_central_server_heartbeat(app)
 
