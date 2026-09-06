@@ -23,7 +23,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.coopgrid.data.datastore.UserPreferences
 import com.example.coopgrid.ui.components.PrimaryButton
+import com.example.coopgrid.ui.screens.employer.dashboard.JobPostUiState
+import com.example.coopgrid.ui.screens.employer.dashboard.JobPostViewModel
 import com.example.coopgrid.ui.screens.employer.dashboard.string.getCreateJobStrings
 import com.example.coopgrid.ui.theme.AppLanguage
 
@@ -37,12 +41,14 @@ enum class PayType(val labelHinglish: String, val labelEnglish: String) {
 @Composable
 fun CreateJobScreen(
     language: AppLanguage = AppLanguage.HINGLISH,
+    viewModel: JobPostViewModel = hiltViewModel(),
     initialCategory: String = "Electrician",
     onSubmitSuccess: () -> Unit = {},
     onBackClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val strings = getCreateJobStrings(language)
+    val currentUserId by viewModel.userId.collectAsState()
 
     // Form Field States
     val categories = listOf("Electrician", "Plumber", "Painter", "Carpenter", "Driver", "Cleaner")
@@ -53,6 +59,28 @@ fun CreateJobScreen(
     var payAmount by remember { mutableStateOf("") }
     var selectedPayType by remember { mutableStateOf(PayType.PER_DAY) }
 
+    // 2. ViewModel State Observe karna
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(uiState) {
+        when (uiState) {
+            is JobPostUiState.Success -> {
+                Toast.makeText(context, "Job Live Post Ho Gayi!", Toast.LENGTH_SHORT).show()
+                onSubmitSuccess()
+            }
+            is JobPostUiState.Error -> {
+                val errorMsg = (uiState as JobPostUiState.Error).error
+                Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
+            }
+            else -> {}
+        }
+    }
+
+    // 1. Check karein ki saare required fields non-blank hain
+    val isFormValid = jobTitle.isNotBlank() &&
+            description.isNotBlank() &&
+            location.isNotBlank() &&
+            payAmount.isNotBlank()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -78,13 +106,24 @@ fun CreateJobScreen(
                 ) {
                     PrimaryButton(
                         text = strings.submitButtonText,
+                        enabled = isFormValid,
                         onClick = {
                             if (jobTitle.isBlank() || description.isBlank() || location.isBlank() || payAmount.isBlank()) {
                                 Toast.makeText(context, strings.fillAllFieldsError, Toast.LENGTH_SHORT).show()
+                            } else if (currentUserId.isBlank()) {
+                                Toast.makeText(context, "User session not found. Please log in again.", Toast.LENGTH_SHORT).show()
                             } else {
-                                // Dynamic API Job Post Logic call
-                                Toast.makeText(context, "Job Live Post Ho Gayi!", Toast.LENGTH_SHORT).show()
-                                onSubmitSuccess()
+                                val formattedAmount = "$payAmount / ${selectedPayType.name}"
+
+                                // Preference se mili userId pass ho rahi hai
+                                viewModel.submitJobPost(
+                                    userId = currentUserId,
+                                    jobTitle = jobTitle,
+                                    skillsRequired = selectedCategory,
+                                    workLocation = location,
+                                    amount = formattedAmount,
+                                    jobDescription = description
+                                )
                             }
                         }
                     )

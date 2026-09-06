@@ -11,8 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.coopgrid.data.EmployerServiceCategoryItem
 import com.example.coopgrid.ui.components.AppSearchBar
+import com.example.coopgrid.ui.screens.employer.auth.EmployerAuthViewModel
 import com.example.coopgrid.ui.screens.employer.dashboard.screen.EmployerHomeTopBar
 import com.example.coopgrid.ui.screens.employer.dashboard.screen.PostNewJobBannerCard
 import com.example.coopgrid.ui.screens.employer.dashboard.screen.ServiceCategoryCardItem
@@ -22,8 +24,7 @@ import com.example.coopgrid.ui.theme.AppLanguage
 @Composable
 fun EmployerHomeScreen(
     language: AppLanguage = AppLanguage.HINGLISH,
-    companyName: String = "Vikram Enterprises",
-    location: String = "Patna, Bihar",
+    viewModel: EmployerAuthViewModel = hiltViewModel(),
     servicesList: List<EmployerServiceCategoryItem> = emptyList(), // Server Data Pass Hoga
     onPostNewJobClick: () -> Unit = {},
     onServiceSelect: (EmployerServiceCategoryItem) -> Unit = {},
@@ -32,6 +33,14 @@ fun EmployerHomeScreen(
 ) {
     val strings = getEmployerHomeStrings(language)
     var searchQuery by remember { mutableStateOf("") }
+
+    // 2. ViewModel se Real Employer Entity Observe Karein
+    val employerProfile by viewModel.employerProfile.collectAsState()
+
+    // 3. Entity Data se Safe Display Values (Fallback ke saath)
+    val displayCompanyName = employerProfile?.name?.ifBlank { "Employer" } ?: "Employer"
+    val displayLocation = employerProfile?.fullAddress?.ifBlank { "Location not set" } ?: "Location not set"
+
 
     LazyColumn(
         modifier = Modifier
@@ -43,8 +52,8 @@ fun EmployerHomeScreen(
         item {
             Spacer(modifier = Modifier.height(8.dp))
             EmployerHomeTopBar(
-                companyName = companyName,
-                location = location,
+                companyName = displayCompanyName,
+                location = displayLocation,
                 greetingPrefix = strings.greetingPrefix,
                 onProfileClick = onProfileClick,
                 onSettingsClick = onSettingsClick

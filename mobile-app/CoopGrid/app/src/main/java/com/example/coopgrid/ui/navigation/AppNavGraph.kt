@@ -1,5 +1,6 @@
 package com.example.coopgrid.ui.navigation
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,11 +37,14 @@ import com.example.coopgrid.ui.screens.employer.dashboard.screen.CreateJobScreen
 import com.example.coopgrid.ui.screens.employer.dashboard.screen.EmployerProfileScreen
 import com.example.coopgrid.ui.screens.worker.auth.WorkerAuthViewModel
 import com.example.coopgrid.ui.screens.worker.dashboard.HomeBannerItem
+import com.example.coopgrid.ui.screens.worker.dashboard.JobDetailsViewModel
 import com.example.coopgrid.ui.screens.worker.dashboard.WorkerHomeScreen
+import com.example.coopgrid.ui.screens.worker.dashboard.WorkerJobViewModel
 import com.example.coopgrid.ui.screens.worker.dashboard.profile.VerificationStatus
 import com.example.coopgrid.ui.screens.worker.dashboard.profile.WorkerProfileScreen
 import com.example.coopgrid.ui.screens.worker.dashboard.profile.WorkerProfileViewModel
 import com.example.coopgrid.ui.screens.worker.dashboard.screen.JobDetailsScreen
+import com.example.coopgrid.ui.screens.worker.dashboard.strings.dummyServerBannersData
 import com.example.coopgrid.ui.theme.AppLanguage
 
 @Composable
@@ -48,6 +52,7 @@ fun AppNavGraph(
     workerAuthViewModel: WorkerAuthViewModel = hiltViewModel(),
     splashViewModel: SplashViewModel = hiltViewModel(),
     employerAuthViewModel: EmployerAuthViewModel = hiltViewModel(),
+    workerJobViewModel: WorkerJobViewModel = hiltViewModel(),
 ) {
     val navController = rememberNavController()
     // Global App Language State
@@ -220,42 +225,49 @@ fun AppNavGraph(
         // 3. Worker Home Screen Composable Destination
         composable(route = Screen.WorkerHome.route) {
             WorkerHomeScreen(
+                viewModel = workerJobViewModel,
                 language = currentLanguage,
-                banners = dummyServerBanners,
-                onBannerClick = { selectedBanner ->
-                    // Banner Click -> Navigate to Details with ID
+                promoBanners = dummyServerBannersData,
+
+                // 1. Promo Banner Click Event
+                onPromoClick = { selectedBanner ->
+                    // Banner click hone par action (e.g., detail screen ya link handle karna)
                     navController.navigate(Screen.JobDetails.createRoute(selectedBanner.id))
                 },
 
+                // 2. Server Live Job Item Click Event
+                onJobClick = { selectedJobId ->
+                    Log.d("WorkerHomeScreen", "Navigating to details with jobId: $selectedJobId")
+                    navController.navigate(Screen.JobDetails.createRoute(selectedJobId))
+                },
+
+                // 3. Profile Icon Click
                 onAccountClick = {
-                    // Profile Icon click hone par Navigate karein
                     navController.navigate(Screen.WorkerProfile.route)
                 },
+
+                // 4. Settings Icon Click
                 onSettingsClick = {
-                    // Settings Screen Navigation
-                }
+//                    navController.navigate(Screen.WorkerSettings.route)
+                },
+                authViewModel = workerAuthViewModel
             )
         }
-
         // JOB DETAILS SCREEN DESTINATION
         composable(
-            route = Screen.JobDetails.route,
+            route = Screen.JobDetails.route, // "job_details/{jobId}"
             arguments = listOf(
-                navArgument("bannerId") { type = NavType.StringType }
+                navArgument("jobId") { type = NavType.StringType }
             )
-        ) { backStackEntry ->
-            val bannerId = backStackEntry.arguments?.getString("bannerId") ?: ""
-
-            // Find matching item from dynamic list using bannerId
-            val bannerItem = dummyServerBanners.find { it.id == bannerId }
-                ?: dummyServerBanners.first()
+        ) {
+            // Note: Hilt se naya instance lene ke liye hiltViewModel() best hai
+            val detailsViewModel: JobDetailsViewModel = hiltViewModel()
 
             JobDetailsScreen(
-                bannerItem = bannerItem,
                 language = currentLanguage,
-                payRate = bannerItem.salary ?: "₹800 / Day",
+                viewModel = detailsViewModel,
                 onAcceptClick = {
-                    // Handle Accept Logic
+                    // Handle Accept Logic / API Call
                 },
                 onBackClick = {
                     navController.popBackStack()
@@ -272,28 +284,6 @@ fun AppNavGraph(
                     navController.popBackStack() // Wapas Home Screen aane ke liye
                 },
                 viewModel = workerAuthViewModel
-            )
-        }
-
-
-        composable(
-            route = Screen.JobDetails.route,
-            arguments = listOf(navArgument("bannerId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val bannerId = backStackEntry.arguments?.getString("bannerId") ?: ""
-
-            // Server se bannerId ke basis par dynamic item fetch kar sakte hain
-            val selectedBanner = dummyServerBanners.find { it.id == bannerId } ?: dummyServerBanners.first()
-
-            JobDetailsScreen(
-                bannerItem = selectedBanner,
-                language = currentLanguage,
-                onAcceptClick = {
-                    // Accept Job API Call & Confirmation Dialog / Toast
-                },
-                onBackClick = {
-                    navController.popBackStack()
-                }
             )
         }
 
@@ -367,8 +357,7 @@ fun AppNavGraph(
         composable(route = Screen.EmployerHome.route) {
             EmployerHomeScreen(
                 language = currentLanguage,
-                companyName = "Vikram Enterprises",
-                location = "Sector 62, Noida",
+                viewModel = employerAuthViewModel,
                 servicesList = sampleEmployerServices, // Dynamically rendered
                 onPostNewJobClick = {
                     // Seedhe generic Job Post Form Screen par le jayein

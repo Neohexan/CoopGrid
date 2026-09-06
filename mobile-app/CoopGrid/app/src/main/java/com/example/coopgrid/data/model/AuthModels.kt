@@ -23,30 +23,3 @@ data class CheckUserResponse(
     val user: UserDto? = null
 )
 
-// --- 2. Worker Registration (API 2) ---
-@Serializable
-data class RegisterWorkerRequest(
-    val name: String,
-    val phoneNumber: String,
-    val primarySkill: String,
-    val experienceYears: Int,
-    val location: String
-)
-
-// --- 3. Employer Registration (API 3) ---
-@Serializable
-data class RegisterEmployerRequest(
-    val companyName: String,
-    val ownerName: String,
-    val phoneNumber: String,
-    val location: String,
-    val gstin: String? = null
-)
-
-// Shared Common Response for Registrations
-@Serializable
-data class AuthResponse(
-    val status: String,
-    val message: String? = null,
-    val user: UserDto? = null
-)

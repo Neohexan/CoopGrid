@@ -25,6 +25,10 @@ interface WorkerDao {
     @Query("SELECT * FROM worker_profile LIMIT 1")
     fun getWorkerProfile(): Flow<WorkerEntity?>
 
+    // Worker ki skill verification status local Room DB me update karne ke liye
+    @Query("UPDATE worker_profile SET isSkillVerified = :isVerified WHERE id = :workerId")
+    suspend fun updateSkillVerificationStatus(workerId: String, isVerified: Boolean)
+
     @Query("SELECT * FROM worker_profile WHERE phoneNumber = :phone LIMIT 1")
     suspend fun getWorkerByPhone(phone: String): WorkerEntity?
 

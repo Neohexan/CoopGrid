@@ -1,12 +1,10 @@
 package com.example.coopgrid.data.remote
 
 
-import com.example.coopgrid.data.model.AuthResponse
 import com.example.coopgrid.data.model.CheckUserRequest
 import com.example.coopgrid.data.model.CheckUserResponse
 import com.example.coopgrid.data.model.EmployerLoginResponse
 import com.example.coopgrid.data.model.EmployerRegistrationRequest
-import com.example.coopgrid.data.model.RegisterEmployerRequest
 import com.example.coopgrid.data.model.WorkerLoginRequest
 import com.example.coopgrid.data.model.WorkerLoginResponse
 import retrofit2.Response

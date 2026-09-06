@@ -5,7 +5,10 @@ import android.content.Context
 import androidx.room.Room
 import com.example.coopgrid.data.local.AppDatabase
 import com.example.coopgrid.data.local.dao.EmployerDao
+import com.example.coopgrid.data.local.dao.JobPostDao
 import com.example.coopgrid.data.local.dao.WorkerDao
+import com.example.coopgrid.data.local.dao.WorkerJobDao
+import com.example.coopgrid.data.local.entity.JobPostEntity
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,4 +39,14 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideEmployerDao(database: AppDatabase): EmployerDao = database.employerDao()
+
+    @Provides
+    @Singleton
+    fun provideJobPostEntity(database: AppDatabase): JobPostDao = database.jobPostDao()
+
+    @Provides
+    @Singleton
+    fun provideWorkerJobDao(database: AppDatabase): WorkerJobDao = database.workerJobDao()
+
+
 }

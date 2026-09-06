@@ -2,6 +2,8 @@ package com.example.coopgrid.data.di
 
 
 import com.example.coopgrid.data.remote.AuthApiService
+import com.example.coopgrid.data.remote.EmployerServiceApi
+import com.example.coopgrid.data.remote.WorkerServiceApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -63,4 +65,17 @@ object NetworkModule {
     fun provideAuthApiService(retrofit: Retrofit): AuthApiService {
         return retrofit.create(AuthApiService::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun provideWorkerServiceApi(retrofit: Retrofit): WorkerServiceApi {
+        return retrofit.create(WorkerServiceApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideEmployerServiceApi(retrofit: Retrofit): EmployerServiceApi {
+        return retrofit.create(EmployerServiceApi::class.java)
+    }
+
 }

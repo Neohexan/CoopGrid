@@ -26,8 +26,8 @@ sealed class Screen(val route: String) {
 
     object WorkerProfile : Screen("worker_profile")
 
-    object JobDetails : Screen("job_details/{bannerId}") {
-        fun createRoute(bannerId: String) = "job_details/$bannerId"
+    object JobDetails : Screen("job_details/{jobId}") {
+        fun createRoute(jobId: String) = "job_details/$jobId"
     }
 
     // Employer 2-Step Registration
