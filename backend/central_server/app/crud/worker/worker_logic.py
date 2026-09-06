@@ -3,7 +3,7 @@ import json
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from app.models.worker import worker_models
-from app.schemas.worker_schemas import WorkerLoginRequest, WorkerLoginResponse
+from app.schemas.worker_schemas import WorkerLoginRequest, WorkerLoginResponse, WorkerVerificationResponse
 from app.db.utils import get_current_ist_epoch_ms, get_current_ist_datetime
 from app.logger import logger
 
@@ -95,3 +95,49 @@ def register_or_login_worker(db: Session, request_data: WorkerLoginRequest) -> W
     except Exception as err:
         logger.error(f"[UNEXPECTED_ERROR] Error in register_or_login_worker: {str(err)}", exc_info=True)
         raise err
+    
+def get_worker_verification_status_db(db: Session, worker_id: str) -> WorkerVerificationResponse:
+    """
+    Worker ID ke aadhar par database se verification status check karke return karta hai.
+    """
+    try:
+        # Worker search by ID
+        worker = db.query(worker_models.Worker).filter(worker_models.Worker.worker_id == worker_id).first()
+        if not worker:
+            return WorkerVerificationResponse(
+                success=False,
+                message=f"Worker with ID '{worker_id}' not found.",
+                workerId=worker_id,
+                verificationStatus="NOT_FOUND",
+                rejectionReason=None
+            )
+
+        # Status resolve karna (Default: PENDING)
+        status = worker.verification_status if worker.verification_status else "PENDING"
+        # Agar Worker model me rejection_reason column hai, otherwise None
+        reason = getattr(worker, "rejection_reason", None) if status == "REJECTED" else None
+
+        return WorkerVerificationResponse(
+            success=True,
+            message="Verification status retrieved successfully.",
+            workerId=worker.worker_id,
+            verificationStatus=status,
+            rejectionReason=reason
+        )
+
+    except SQLAlchemyError as e:
+        return WorkerVerificationResponse(
+            success=False,
+            message=f"Database query error: {str(e)}",
+            workerId=worker_id,
+            verificationStatus="ERROR",
+            rejectionReason=None
+        )
+    except Exception as e:
+        return WorkerVerificationResponse(
+            success=False,
+            message=f"Failed to check status: {str(e)}",
+            workerId=worker_id,
+            verificationStatus="ERROR",
+            rejectionReason=None
+        )

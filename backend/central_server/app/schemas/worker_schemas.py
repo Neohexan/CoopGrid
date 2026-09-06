@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 
 class WorkerLoginRequest(BaseModel):
     name: str = ""
@@ -26,3 +26,10 @@ class WorkerLoginResponse(BaseModel):
 class ErrorResponse(BaseModel):
     status: str = "FAILED"
     message: str
+
+class WorkerVerificationResponse(BaseModel):
+    success: bool
+    message: str
+    workerId: str
+    verificationStatus: str  # "VERIFIED", "PENDING", "REJECTED", "NOT_FOUND"
+    rejectionReason: Optional[str] = None

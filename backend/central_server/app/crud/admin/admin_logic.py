@@ -26,28 +26,30 @@ ADMIN_TO_DB_STATUS = {
 }
 
 def fetch_all_pending_workers(db: Session) -> PendingWorkersResponse:
-    logger.info("[ADMIN_LOGIC] Fetching pending workers for Admin Panel...")
+    logger.info("[ADMIN_LOGIC] Fetching ALL workers (Approved, Unapproved, Rejected) for Admin Panel...")
     
     try:
-        # DB me 'PENDING' walo ko query karo
-        pending_records = db.query(Worker).filter(
-            Worker.verification_status == "PENDING"
-        ).all()
+        # Filter hata diya hai: Ab ye DB se saare workers fetch karega
+        all_records = db.query(Worker).all()
 
         worker_list: List[PendingWorkerItem] = []
 
-        for item in pending_records:
+        for item in all_records:
             # 1. Parse Skills JSON and extract ONLY the FIRST skill
             primary_skill = []
             if item.skills:
                 try:
-                    all_skills = json.loads(item.skills) if isinstance(item.skills, str) and item.skills.startswith("[") else [s.strip() for s in item.skills.split(",") if s.strip()]
+                    all_skills = (
+                        json.loads(item.skills) 
+                        if isinstance(item.skills, str) and item.skills.startswith("[") 
+                        else [s.strip() for s in item.skills.split(",") if s.strip()]
+                    )
                     if all_skills:
                         primary_skill = [all_skills[0]]  # Pick only 1st skill
                 except Exception:
                     primary_skill = []
 
-            # 2. Map DB status 'PENDING' -> 'Unapproved'
+            # 2. Map DB status ('PENDING'->'Unapproved', 'VERIFIED'->'Approved', 'REJECTED'->'Rejected')
             admin_status = DB_TO_ADMIN_STATUS.get(item.verification_status, "Unapproved")
 
             worker_list.append(
@@ -63,6 +65,8 @@ def fetch_all_pending_workers(db: Session) -> PendingWorkersResponse:
                 )
             )
 
+        logger.info(f"[ADMIN_LOGIC] Successfully fetched total {len(worker_list)} workers.")
+
         return PendingWorkersResponse(
             status="SUCCESS",
             total_count=len(worker_list),
@@ -70,7 +74,7 @@ def fetch_all_pending_workers(db: Session) -> PendingWorkersResponse:
         )
 
     except SQLAlchemyError as db_err:
-        logger.error(f"[DB_ERROR] Error fetching pending workers: {str(db_err)}", exc_info=True)
+        logger.error(f"[DB_ERROR] Error fetching all workers: {str(db_err)}", exc_info=True)
         raise db_err
 
 
