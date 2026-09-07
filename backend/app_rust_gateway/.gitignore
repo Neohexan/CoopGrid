@@ -1,0 +1,18 @@
+# Rust Build Artifacts (Bohot badi compilation files hoti hain)
+/target
+Cargo.lock
+
+# Environment Variables & Secrets (Kabhi Git par push nahi honi chahiye)
+.env
+.env.local
+*.pem
+*.key
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# IDE Files
+.idea/
+.vscode/
+*.rs.bk
