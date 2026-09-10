@@ -55,7 +55,7 @@ fun PostNewJobBannerCard(
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = subtitle,
-                    fontSize = 12.sp,
+//                    fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                 )
             }
@@ -121,14 +121,14 @@ fun ServiceCategoryCardItem(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = service.title,
-                    fontSize = 15.sp,
+//                    fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = service.description,
-                    fontSize = 12.sp,
+//                    fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

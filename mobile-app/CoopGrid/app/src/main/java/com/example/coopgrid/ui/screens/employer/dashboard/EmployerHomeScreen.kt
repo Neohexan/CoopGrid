@@ -85,7 +85,7 @@ fun EmployerHomeScreen(
         item {
             Text(
                 text = strings.selectServiceHeader,
-                fontSize = 16.sp,
+//                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )

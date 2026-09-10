@@ -18,6 +18,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -93,16 +94,17 @@ fun CreateJobScreen(
             )
         },
         bottomBar = {
-            Surface(
-                tonalElevation = 8.dp,
-                shadowElevation = 8.dp,
-                color = MaterialTheme.colorScheme.surface
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Transparent) // Border aur solid background gayab
+                    .padding(horizontal = 16.dp, vertical = 8.dp) // Vertical padding kam ki taaki space kam ghere
+                    .navigationBarsPadding()
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
-                        .navigationBarsPadding()
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     PrimaryButton(
                         text = strings.submitButtonText,
@@ -248,14 +250,14 @@ fun CreateJobScreen(
 
             // 5. JOB DESCRIPTION FIELD
             Text(text = strings.descriptionLabel, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
                 placeholder = { Text(strings.descriptionPlaceholder, fontSize = 13.sp) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(130.dp),
+                    .height(120.dp),
                 shape = RoundedCornerShape(12.dp),
                 maxLines = 5
             )
