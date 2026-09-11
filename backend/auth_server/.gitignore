@@ -1,0 +1,21 @@
+# Rust Build Artifacts
+/target
+Cargo.lock
+
+# Local Storage Data & Databases (Isme aapka user record saved hota hai)
+/storage_data/
+*.bin
+*.db
+*.json.tmp
+
+# Environment Variables & Secrets
+.env
+.env.local
+jwt_private.pem
+jwt_public.pem
+
+# Operating System & IDE Files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
