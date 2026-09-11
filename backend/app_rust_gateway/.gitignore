@@ -1,18 +1,40 @@
 # Rust Build Artifacts (Bohot badi compilation files hoti hain)
+
+# ==========================================
+# Rust Build Artifacts
+# ==========================================
+
 /target
 Cargo.lock
 
-# Environment Variables & Secrets (Kabhi Git par push nahi honi chahiye)
+# ==========================================
+# Environment & Security Secrets
+# ==========================================
+
 .env
+*.env
 .env.local
 *.pem
 *.key
+
+# ==========================================
+# Benchmarking & Load Testing Artifacts futures
+# ==========================================
+# k6 summary export files and test output logs
+benchmarks/*.json
+benchmarks/*.csv
+benchmarks/*.log
+benchmarks/*.html
 
 # Operating System Files
 .DS_Store
 Thumbs.db
 
-# IDE Files
-.idea/
+# ==========================================
+# IDE & System Files
+# ==========================================
 .vscode/
+.idea/
+*.swp
+*.swo
 *.rs.bk
