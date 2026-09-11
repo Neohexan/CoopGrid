@@ -54,7 +54,7 @@ fun SplashScreen(
             Image(
                 painter = painterResource(id = R.drawable.ic_launcher_foreground),
                 contentDescription = strings.appName,
-                modifier = Modifier.size(110.dp)
+                modifier = Modifier.size(300.dp)
             )
 
             Spacer(modifier = Modifier.height(20.dp))
