@@ -50,7 +50,7 @@ impl AppConfig {
             target: "gateway_config",
             port = config.gateway_port,
             auth_url = %config.auth_service_url,
-            other_url = %config.other_service_url,
+            // other_url = %config.other_service_url,
             "Configuration successfully loaded"
         );
 

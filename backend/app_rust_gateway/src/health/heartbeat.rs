@@ -84,25 +84,17 @@ async fn check_downstream_health(client: &Client, name: &str, url: &str) -> Serv
 }
 
 /// HTTP GET `/health` endpoint handler for Gateway
-pub async fn health_check_handler(
-    State(config): State<AppConfig>,
-) -> impl IntoResponse {
+pub async fn health_check_handler(State(config): State<AppConfig>) -> impl IntoResponse {
     let client = Client::new();
 
     // 1. Auth Service ki health check
-    let auth_health = check_downstream_health(
-        &client,
-        "Auth-Service",
-        &config.auth_service_url,
-    ).await;
+    let auth_health =
+        check_downstream_health(&client, "Auth-Service", &config.auth_service_url).await;
 
     // 2. Future/Other Service ka placeholder health check
     // Future me jab naya server setup hoga tab yahan sirf Service Name replace karna hoga
-    let other_health = check_downstream_health(
-        &client,
-        "Other-Service",
-        &config.other_service_url,
-    ).await;
+    let other_health =
+        check_downstream_health(&client, "Other-Service", &config.other_service_url).await;
 
     // Direct status evaluation
     let is_auth_up = auth_health.status == "UP";
