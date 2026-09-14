@@ -314,7 +314,7 @@ private fun DetailRow(
 
 // Helper 3: Quick Action List Item Row
 @Composable
-private fun ActionItemRow(
+ fun ActionItemRow(
     icon: ImageVector,
     title: String,
     textColor: Color = MaterialTheme.colorScheme.onSurface,

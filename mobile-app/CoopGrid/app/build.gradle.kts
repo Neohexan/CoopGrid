@@ -57,6 +57,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
     implementation("com.google.code.gson:gson:2.10.1")
+    implementation("androidx.core:core-splashscreen:1.2.0")
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose)

@@ -15,13 +15,18 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.coopgrid.ui.navigation.AppNavGraph
 import com.example.coopgrid.ui.theme.CoopGridTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    // 1. Compose Render Flag
+    private var isAppReady = false
 
     override fun attachBaseContext(newBase: Context) {
         val overrideConfig = Configuration(newBase.resources.configuration).apply {
@@ -32,14 +37,26 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Step A: Install System Splash
+        installSplashScreen()
+
+        // Step B: Enable Edge-To-Edge Window layout
+        enableEdgeToEdge()
+
         super.onCreate(savedInstanceState)
 
-        // 1. Edge-To-Edge Display globally enable karein
-        enableEdgeToEdge()
+        // Step C: System Splash ko tab tak hold par rakho jab tak Compose ready na ho
+        // (Isse bilkul bhi blank/white screen nahi aayegi)
+//        splashScreen.setKeepOnScreenCondition { !isAppReady }
 
         setContent {
 
             CoopGridTheme {
+                // Step D: Jaise hi Compose UI layout screen par draw hona shuru ho, System Splash release kar do
+                SideEffect {
+                    isAppReady = true
+                }
+
                 // Global Scaffold poore app ke status bar, navigation bar aur keyboard ko handle karega
                 Scaffold(
                     modifier = Modifier

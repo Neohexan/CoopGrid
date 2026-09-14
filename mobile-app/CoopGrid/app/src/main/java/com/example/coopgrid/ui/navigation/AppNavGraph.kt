@@ -24,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.coopgrid.data.EmployerServiceCategoryItem
+import com.example.coopgrid.data.sampleEmployerServices
 import com.example.coopgrid.ui.screens.common.auth.screen.LoginScreen
 import com.example.coopgrid.ui.screens.common.auth.screen.OtpScreen
 import com.example.coopgrid.ui.screens.common.splash.AuthState
@@ -59,34 +60,6 @@ fun AppNavGraph(
     val currentLanguage by splashViewModel.currentLanguage.collectAsState()
     val authState by splashViewModel.authState.collectAsState()
 
-    // Server se aane wala sample dummy list
-    val sampleEmployerServices = listOf(
-        EmployerServiceCategoryItem(
-            id = "srv_1",
-            title = "Bijli ka kaam (Electrical Work)",
-            description = "Wiring, Short circuit, Fan & Light fitting etc.",
-            iconName = "ElectricBolt"
-        ),
-        EmployerServiceCategoryItem(
-            id = "srv_2",
-            title = "Nal & Plumbing Service",
-            description = "Pipe fitting, Leakage, Tap & Tank clean.",
-            iconName = "Plumbing"
-        ),
-        EmployerServiceCategoryItem(
-            id = "srv_3",
-            title = "Painting & Wall Repair",
-            description = "Home painting, Putty work & Waterproofing.",
-            iconName = "FormatPaint"
-        ),
-        EmployerServiceCategoryItem(
-            id = "srv_4",
-            title = "Cleaning & Housekeeping",
-            description = "Deep cleaning, Office cleaning & Sanitization.",
-            iconName = "CleaningServices"
-        )
-    )
-
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route
@@ -110,8 +83,14 @@ fun AppNavGraph(
                                 popUpTo(Screen.Splash.route) { inclusive = true }
                             }
                         }
+                        is AuthState.Unauthenticated -> {
+                            navController.navigate(Screen.AuthSelection.route) {
+                                popUpTo(Screen.Splash.route) { inclusive = true }
+                            }
+                        }
+
                         else -> {
-                            // Logged in nahi hai toh normal AuthSelection par le jayein
+                            // Agar Auth state abhi bhi Loading mein hai, toh default Fallback Route
                             navController.navigate(Screen.AuthSelection.route) {
                                 popUpTo(Screen.Splash.route) { inclusive = true }
                             }
@@ -237,7 +216,11 @@ fun AppNavGraph(
                 },
                 onBackClick = {
                     navController.popBackStack()
+                },
+                onNavigateToHome = {
+                    navController.navigate(Screen.WorkerHome.route)
                 }
+
             )
         }
 
@@ -249,6 +232,7 @@ fun AppNavGraph(
                 onBackClick = {
                     navController.popBackStack() // Wapas Home Screen aane ke liye
                 },
+                onLogoutClick = {},
                 viewModel = workerAuthViewModel
             )
         }

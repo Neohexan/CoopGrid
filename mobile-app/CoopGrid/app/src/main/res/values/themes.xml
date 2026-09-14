@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+<!-- Yeh Splash Screen Theme hai -->
+<style name="Theme.CoopGridSplashScreen" parent="Theme.SplashScreen">
+    <!-- Background color (white ke liye #FFFFFF ya jo aap chahein) -->
+    <item name="windowSplashScreenBackground">#FFFFFF</item>
 
-    <style name="Theme.CoopGrid" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- app ka logo jo screen ke bich me dikhega -->
+    <item name="windowSplashScreenAnimatedIcon">@drawable/coop_grid_don</item>
+
+    <!-- Kyunki yaha Compose use kar rahe hain, isliye default parent theme dalna hoga -->
+    <item name="postSplashScreenTheme">@android:style/Theme.Material.NoActionBar</item>
+</style>
 </resources>

@@ -1,9 +1,8 @@
 package com.example.coopgrid.ui.screens.worker.dashboard.screen
 
-
+// Kotlin Coroutines Delay
 import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -17,27 +16,31 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CurrencyRupee
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.coopgrid.ui.components.PrimaryButton
-import com.example.coopgrid.ui.screens.worker.dashboard.HomeBannerItem
 import com.example.coopgrid.ui.screens.worker.dashboard.JobDetailsViewModel
 import com.example.coopgrid.ui.screens.worker.dashboard.strings.getJobDetailsStrings
 import com.example.coopgrid.ui.theme.AppLanguage
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JobDetailsScreen(
-    language: AppLanguage = AppLanguage.HINGLISH,
+    language: AppLanguage = AppLanguage.ENGLISH,
     viewModel: JobDetailsViewModel = hiltViewModel(),
     requirementsList: List<String> = listOf(
         "Min 2 years experience required",
@@ -45,7 +48,8 @@ fun JobDetailsScreen(
         "Immediate joining preferred"
     ),
     onAcceptClick: () -> Unit = {},
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    onNavigateToHome:()-> Unit = {}
 ) {
     val strings = getJobDetailsStrings(language)
     var isSaved by remember { mutableStateOf(false) }
@@ -54,7 +58,6 @@ fun JobDetailsScreen(
     val jobState by viewModel.selectedJob.collectAsState()
 
     val workerId by viewModel.workerId.collectAsState()
-
 
     // Skill Verification State Collect karein
     val isSkillVerified by viewModel.isSkillVerified.collectAsState()
@@ -109,7 +112,8 @@ fun JobDetailsScreen(
                 savedText = strings.savedButtonText,
                 acceptText = strings.acceptButtonText,
                 onSaveToggle = { isSaved = !isSaved },
-                onAcceptClick = onAcceptClick
+                onAcceptClick = onAcceptClick,
+                onNavigateToHome = onNavigateToHome,
             )
         }
     ) { innerPadding ->
@@ -193,14 +197,21 @@ private fun JobDetailsTopBar(
 
 @Composable
 private fun JobDetailsBottomBar(
+    language: AppLanguage = AppLanguage.ENGLISH,
     isSaved: Boolean,
     isSkillVerified: Boolean,
     saveText: String,
     savedText: String,
     acceptText: String,
     onSaveToggle: () -> Unit,
-    onAcceptClick: () -> Unit
+    onAcceptClick: () -> Unit,
+    onNavigateToHome: () -> Unit
 ) {
+
+    var showSuccessDialog by remember { mutableStateOf(false) }
+
+    val strings = getJobDetailsStrings(language)
+
     // Surface ki jagah Box/Row with transparent color
     Box(
         modifier = Modifier
@@ -234,14 +245,78 @@ private fun JobDetailsBottomBar(
 
             // 2. Primary Accept Button
             // Accept Button (Disabled if skills not verified)
+            // 1. Aapka PrimaryButton
             PrimaryButton(
                 text = if (isSkillVerified) acceptText else "Verify Skill to Accept",
-                onClick = onAcceptClick,
-                enabled = isSkillVerified, // 👈 Verification check par enable/disable
+                onClick = {
+                    // Trigger action & open popup
+                    onAcceptClick()
+                    showSuccessDialog = true
+                },
+                enabled = isSkillVerified,
                 modifier = Modifier
                     .weight(0.6f)
                     .height(48.dp)
             )
+
+            // 2. Success Popup Dialog
+            if (showSuccessDialog) {
+                // 2 Second ke delay ke baad automatically Home Screen par navigate karega
+                LaunchedEffect(Unit) {
+                    delay(2000.milliseconds) // 2 Seconds
+                    showSuccessDialog = false
+                    onNavigateToHome() // Home Screen navigation callback
+                }
+
+                Dialog(onDismissRequest = { /* Auto close par depend hai, manual dismiss disable */ }) {
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFF4CAF50) // Solid Green Background
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .padding(24.dp)
+                                .fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = "Success",
+                                tint = Color.White,
+                                modifier = Modifier.size(56.dp)
+                            )
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Text(
+                                text = strings.acceptJobPopUpTital,
+                                style = TextStyle(
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            )
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            Text(
+                                text = strings.acceptJobPopUpDesc,
+                                style = TextStyle(
+                                    fontSize = 14.sp,
+                                    color = Color.White.copy(alpha = 0.9f)
+                                ),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }

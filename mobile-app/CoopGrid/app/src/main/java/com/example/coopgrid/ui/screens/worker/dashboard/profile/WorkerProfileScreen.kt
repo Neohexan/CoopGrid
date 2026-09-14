@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -29,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.coopgrid.data.local.entity.WorkerEntity
+import com.example.coopgrid.ui.screens.employer.dashboard.screen.ActionItemRow
 import com.example.coopgrid.ui.screens.worker.auth.WorkerAuthViewModel
 import com.example.coopgrid.ui.screens.worker.dashboard.strings.WorkerProfileStrings
 import com.example.coopgrid.ui.screens.worker.dashboard.strings.getWorkerProfileStrings
@@ -48,7 +50,8 @@ enum class VerificationStatus {
 fun WorkerProfileScreen(
     language: AppLanguage = AppLanguage.HINGLISH,
     viewModel: WorkerAuthViewModel = hiltViewModel(),
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    onLogoutClick:() -> Unit
 ) {
     val strings = getWorkerProfileStrings(language)
     val profileState by viewModel.workerProfile.collectAsState()
@@ -121,6 +124,13 @@ fun WorkerProfileScreen(
                 PersonalDetailsCard(
                     worker = worker,
                     strings = strings
+                )
+
+                ActionItemRow(
+                    icon = Icons.Default.Logout,
+                    title = "Log Out",
+                    textColor = MaterialTheme.colorScheme.error,
+                    onClick = onLogoutClick
                 )
 
                 Spacer(modifier = Modifier.height(30.dp))
@@ -323,6 +333,24 @@ private fun PersonalDetailsCard(
                 ProfileDetailRow(
                     label = strings.experienceLabel,
                     value = "${worker.experienceYears} Years"
+                )
+                ProfileDivider()
+
+                ProfileDetailRow(
+                    label = "Transaction",
+                    value = "RS"
+                )
+                ProfileDivider()
+
+                ProfileDetailRow(
+                    label = "Support",
+                    value = "Help"
+                )
+                ProfileDivider()
+
+                ProfileDetailRow(
+                    label = "Refer",
+                    value = ""
                 )
                 ProfileDivider()
 
