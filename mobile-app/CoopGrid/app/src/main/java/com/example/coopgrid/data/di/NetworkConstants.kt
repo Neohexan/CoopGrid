@@ -3,7 +3,7 @@ package com.example.coopgrid.data.di
 
 object NetworkConstants {
     // 1. Agar local test kar rahe hain toh false, Cloudflare domain ke liye TRUE
-    private const val IS_TUNNEL = false
+    private const val IS_TUNNEL = true
 
     // 2. IP aur Tunnel Domains
     private const val LOCAL_HOST = "192.168.43.58"

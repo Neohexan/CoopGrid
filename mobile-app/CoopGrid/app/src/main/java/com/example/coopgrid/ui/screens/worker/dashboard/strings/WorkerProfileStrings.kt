@@ -27,7 +27,7 @@ val EnglishWorkerProfileStrings = WorkerProfileStrings(
     addressLabel = "Address",
     experienceLabel = "Experience",
     ratingLabel = "Work Rating",
-    memberSinceLabel = "Member Since"
+    memberSinceLabel = "User Since"
 )
 
 val HinglishWorkerProfileStrings = WorkerProfileStrings(

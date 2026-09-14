@@ -14,13 +14,14 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.coopgrid.data.EmployerServiceCategoryItem
 import com.example.coopgrid.ui.components.AppSearchBar
+import com.example.coopgrid.ui.components.SkillCategoryChips
 import com.example.coopgrid.ui.screens.employer.auth.EmployerAuthViewModel
 import com.example.coopgrid.ui.screens.employer.dashboard.screen.EmployerHomeTopBar
 import com.example.coopgrid.ui.screens.employer.dashboard.screen.PostNewJobBannerCard
 import com.example.coopgrid.ui.screens.employer.dashboard.screen.ServiceCategoryCardItem
 import com.example.coopgrid.ui.screens.employer.dashboard.string.getEmployerHomeStrings
 import com.example.coopgrid.ui.theme.AppLanguage
-
+import com.example.coopgrid.ui.components.SkillCategoryChips
 @Composable
 fun EmployerHomeScreen(
     language: AppLanguage = AppLanguage.HINGLISH,
@@ -79,6 +80,12 @@ fun EmployerHomeScreen(
                 onPostJobClick = onPostNewJobClick
             )
             Spacer(modifier = Modifier.height(22.dp))
+        }
+
+        // Direct Static Component Call
+        item {
+            SkillCategoryChips()
+            Spacer(modifier = Modifier.height(12.dp))
         }
 
         // 4. SECTION HEADER (Kaam ya Problem Chunein)

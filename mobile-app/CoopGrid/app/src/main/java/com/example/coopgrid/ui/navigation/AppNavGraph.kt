@@ -83,8 +83,14 @@ fun AppNavGraph(
                                 popUpTo(Screen.Splash.route) { inclusive = true }
                             }
                         }
+                        is AuthState.Unauthenticated -> {
+                            navController.navigate(Screen.AuthSelection.route) {
+                                popUpTo(Screen.Splash.route) { inclusive = true }
+                            }
+                        }
+
                         else -> {
-                            // Logged in nahi hai toh normal AuthSelection par le jayein
+                            // Agar Auth state abhi bhi Loading mein hai, toh default Fallback Route
                             navController.navigate(Screen.AuthSelection.route) {
                                 popUpTo(Screen.Splash.route) { inclusive = true }
                             }
@@ -210,7 +216,11 @@ fun AppNavGraph(
                 },
                 onBackClick = {
                     navController.popBackStack()
+                },
+                onNavigateToHome = {
+                    navController.navigate(Screen.WorkerHome.route)
                 }
+
             )
         }
 
@@ -222,6 +232,7 @@ fun AppNavGraph(
                 onBackClick = {
                     navController.popBackStack() // Wapas Home Screen aane ke liye
                 },
+                onLogoutClick = {},
                 viewModel = workerAuthViewModel
             )
         }

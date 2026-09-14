@@ -11,7 +11,9 @@ data class JobDetailsStrings(
     val payRateLabel: String,
     val acceptButtonText: String,
     val saveButtonText: String,
-    val savedButtonText: String
+    val savedButtonText: String,
+    val acceptJobPopUpTital: String,
+    val acceptJobPopUpDesc: String
 )
 
 val EnglishJobDetailsStrings = JobDetailsStrings(
@@ -23,7 +25,9 @@ val EnglishJobDetailsStrings = JobDetailsStrings(
     payRateLabel = "Offered Pay",
     acceptButtonText = "Accept Job",
     saveButtonText = "Save for Later",
-    savedButtonText = "Saved"
+    savedButtonText = "Saved",
+    acceptJobPopUpTital = "Your work is done!",
+    acceptJobPopUpDesc = "Job request successfully accepted"
 )
 
 val HinglishJobDetailsStrings = JobDetailsStrings(
@@ -35,7 +39,9 @@ val HinglishJobDetailsStrings = JobDetailsStrings(
     payRateLabel = "Tay Utpad/Kamai (Pay Rate)",
     acceptButtonText = "Kaam Sweekar Karein (Accept)",
     saveButtonText = "Baad ke liye Save Karein",
-    savedButtonText = "Saved Hai"
+    savedButtonText = "Saved Hai",
+    acceptJobPopUpTital = "Aapka Kaam Ho Gaya!",
+    acceptJobPopUpDesc = "Job request successfully accept ho gayi hai."
 )
 
 fun getJobDetailsStrings(language: AppLanguage): JobDetailsStrings {
