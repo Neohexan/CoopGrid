@@ -25,6 +25,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.coopgrid.data.EmployerServiceCategoryItem
 import com.example.coopgrid.data.sampleEmployerServices
+import com.example.coopgrid.ui.screens.common.LanguageViewModel
 import com.example.coopgrid.ui.screens.common.auth.screen.LoginScreen
 import com.example.coopgrid.ui.screens.common.auth.screen.OtpScreen
 import com.example.coopgrid.ui.screens.common.splash.AuthState
@@ -53,6 +54,7 @@ fun AppNavGraph(
     workerAuthViewModel: WorkerAuthViewModel = hiltViewModel(),
     splashViewModel: SplashViewModel = hiltViewModel(),
     employerAuthViewModel: EmployerAuthViewModel = hiltViewModel(),
+    languageViewModel: LanguageViewModel= hiltViewModel(),
     workerJobViewModel: WorkerJobViewModel = hiltViewModel(),
 ) {
     val navController = rememberNavController()
@@ -103,9 +105,7 @@ fun AppNavGraph(
         // 2. Auth Selection Screen
         composable(route = Screen.AuthSelection.route) {
             AuthSelectionScreen(
-                currentLanguage = currentLanguage,
-                onLanguageChange = { newLang ->
-                    splashViewModel.updateLanguage(newLang) },
+                viewModel = languageViewModel,
                 onLoginClick = {
                     navController.navigate(Screen.Login.route)
                 },

@@ -1,5 +1,4 @@
-package com.example.coopgrid.ui.screens.common.auth
-
+package com.example.coopgrid.ui.screens.common.auth.string
 
 import com.example.coopgrid.ui.theme.AppLanguage
 

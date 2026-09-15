@@ -21,30 +21,51 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.coopgrid.ui.components.PrimaryButton
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.coopgrid.ui.screens.common.LanguageViewModel
 import com.example.coopgrid.ui.theme.AppLanguage
-import com.example.coopgrid.ui.theme.CoopGridTheme
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import com.example.coopgrid.ui.theme.nonScaleSp
 
 @Composable
 fun AuthSelectionScreen(
-    currentLanguage: AppLanguage = AppLanguage.HINGLISH,
-    onLanguageChange: (AppLanguage) -> Unit = {},
+    viewModel: LanguageViewModel = hiltViewModel(),
     onLoginClick: () -> Unit = {},
     onRegisterWorkerClick: () -> Unit = {},
     onRegisterEmployerClick: () -> Unit = {}
 ) {
-    val strings = getAuthSelectionStrings(currentLanguage)
+    // 1. Language State Observation
+    val selectedLanguage by viewModel.currentLanguage.collectAsState()
+    val strings = getAuthSelectionStrings(selectedLanguage)
+
+    // 2. Two-Tone App Name Custom Styling
+    val coopColor = Color(0xFF2196F3)
+    val gridColor = Color(0xFF2E7D32)
+
+    val styledAppName = buildAnnotatedString {
+        withStyle(style = SpanStyle(color = coopColor, fontWeight = FontWeight.Black)) {
+            append("Coop")
+        }
+        withStyle(style = SpanStyle(color = gridColor, fontWeight = FontWeight.Black)) {
+            append("Grid")
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -53,7 +74,7 @@ fun AuthSelectionScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
+                .background(MaterialTheme.colorScheme.background) // Auto Light/Dark
                 .padding(innerPadding)
                 .padding(
                     top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 16.dp,
@@ -64,7 +85,7 @@ fun AuthSelectionScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Top Section: Language Switcher & App Title
+            // ================= TOP SECTION =================
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
@@ -75,45 +96,44 @@ fun AuthSelectionScreen(
                     horizontalArrangement = Arrangement.End
                 ) {
                     LanguageChip(
-                        languageText = strings.langToggleText,
-                        onClick = {
-                            val nextLang = if (currentLanguage == AppLanguage.ENGLISH)
-                                AppLanguage.HINGLISH else AppLanguage.ENGLISH
-                            onLanguageChange(nextLang)
+                        selectedLanguage = selectedLanguage,
+                        availableLanguages = viewModel.availableLanguages,
+                        onLanguageSelected = { newLang: AppLanguage ->
+                            viewModel.selectLanguage(newLang)
                         }
                     )
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
+                // Styled App Name ("CoopGrid")
                 Text(
-                    text = strings.appName,
-                    fontSize = 36.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp,
-                    color = MaterialTheme.colorScheme.onBackground
+                    text = styledAppName,
+                    style = MaterialTheme.typography.displayLarge,
+                    fontSize = 36.nonScaleSp(),
+                    letterSpacing = 2.nonScaleSp()
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
                     text = strings.subtitle,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Normal,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 14.nonScaleSp(),
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                     textAlign = TextAlign.Center
                 )
             }
 
-            // Middle Section: Registration Options
+            // ================= MIDDLE SECTION =================
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = strings.createAccountHeader,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontSize = 18.nonScaleSp(),
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -136,40 +156,44 @@ fun AuthSelectionScreen(
                 )
             }
 
-            // Bottom Section: Login Button
-
-            val isLoggingIn = false
-            PrimaryButton(
-                text = strings.alreadyAccount, // Dynamic String Pass Kiya
-                onClick = { onLoginClick() },
-                isLoading = isLoggingIn
+            // ================= BOTTOM SECTION =================
+            LoginButton(
+                text = strings.alreadyAccount,
+                onClick = onLoginClick
             )
-
         }
     }
 }
 
+/**
+ * Custom Dedicated Login Button for AuthSelectionScreen
+ * Theme-aware (Light/Dark mode sync)
+ */
 @Composable
-fun LanguageChip(
-    languageText: String,
-    onClick: () -> Unit
+private fun LoginButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f))
+        modifier = modifier
+            .fillMaxWidth()
+            .height(52.dp),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surface, // Light: OffWhite | Dark: DarkGrey
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
         ) {
-            Text(text = "🌐 ", fontSize = 12.sp)
             Text(
-                text = languageText,
-                fontSize = 12.sp,
+                text = text,
+                style = MaterialTheme.typography.labelLarge,
+                fontSize = 15.nonScaleSp(),
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -213,18 +237,18 @@ fun RoleSelectionCard(
 
 // --- Previews ---
 
-@Preview(showBackground = true, name = "Light Mode")
-@Composable
-fun AuthSelectionLightPreview() {
-    CoopGridTheme(darkTheme = false) {
-        AuthSelectionScreen()
-    }
-}
-
-@Preview(showBackground = true, name = "Dark Mode")
-@Composable
-fun AuthSelectionDarkPreview() {
-    CoopGridTheme(darkTheme = true) {
-        AuthSelectionScreen()
-    }
-}
+//@Preview(showBackground = true, name = "Light Mode")
+//@Composable
+//fun AuthSelectionLightPreview() {
+//    CoopGridTheme(darkTheme = false) {
+//        AuthSelectionScreen()
+//    }
+//}
+//
+//@Preview(showBackground = true, name = "Dark Mode")
+//@Composable
+//fun AuthSelectionDarkPreview() {
+//    CoopGridTheme(darkTheme = true) {
+//        AuthSelectionScreen()
+//    }
+//}

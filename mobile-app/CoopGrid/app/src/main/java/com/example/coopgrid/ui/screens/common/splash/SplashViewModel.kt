@@ -57,9 +57,9 @@ class SplashViewModel @Inject constructor(
         initialValue = AuthState.Loading
     )
     // Language Switch Function
-    fun updateLanguage(language: AppLanguage) {
-        viewModelScope.launch {
-            userPreferences.saveLanguage(language.name)
-        }
-    }
+//    fun updateLanguage(language: AppLanguage) {
+//        viewModelScope.launch {
+//            userPreferences.saveLanguage(language.name)
+//        }
+//    }
 }

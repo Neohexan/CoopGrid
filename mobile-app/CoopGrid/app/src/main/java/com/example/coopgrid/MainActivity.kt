@@ -25,16 +25,13 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    // 1. Compose Render Flag
-    private var isAppReady = false
-
-    override fun attachBaseContext(newBase: Context) {
-        val overrideConfig = Configuration(newBase.resources.configuration).apply {
-            fontScale = 0.85f // 0.85f se text size XS (Extra Small) par lock ho jayega
-        }
-        val context = newBase.createConfigurationContext(overrideConfig)
-        super.attachBaseContext(context)
-    }
+//    override fun attachBaseContext(newBase: Context) {
+//        val overrideConfig = Configuration(newBase.resources.configuration).apply {
+//            fontScale = 0.85f // 0.85f se text size XS (Extra Small) par lock ho jayega
+//        }
+//        val context = newBase.createConfigurationContext(overrideConfig)
+//        super.attachBaseContext(context)
+//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Step A: Install System Splash
@@ -45,18 +42,9 @@ class MainActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
 
-        // Step C: System Splash ko tab tak hold par rakho jab tak Compose ready na ho
-        // (Isse bilkul bhi blank/white screen nahi aayegi)
-//        splashScreen.setKeepOnScreenCondition { !isAppReady }
-
         setContent {
 
             CoopGridTheme {
-                // Step D: Jaise hi Compose UI layout screen par draw hona shuru ho, System Splash release kar do
-                SideEffect {
-                    isAppReady = true
-                }
-
                 // Global Scaffold poore app ke status bar, navigation bar aur keyboard ko handle karega
                 Scaffold(
                     modifier = Modifier

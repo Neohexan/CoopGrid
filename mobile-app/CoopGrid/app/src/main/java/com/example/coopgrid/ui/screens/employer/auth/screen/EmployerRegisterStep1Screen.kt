@@ -2,20 +2,24 @@ package com.example.coopgrid.ui.screens.employer.auth.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -26,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -35,7 +40,7 @@ import com.example.coopgrid.ui.components.PrimaryButton
 import com.example.coopgrid.ui.screens.employer.auth.EmployerAuthViewModel
 import com.example.coopgrid.ui.screens.employer.auth.string.getEmployerRegisterStrings
 import com.example.coopgrid.ui.theme.AppLanguage
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EmployerRegisterStep1Screen(
     language: AppLanguage = AppLanguage.HINGLISH,
@@ -51,15 +56,48 @@ fun EmployerRegisterStep1Screen(
     // State source ViewModel ka phoneNumber hai
     val phoneNumber = uiState.phoneNumber
     val isPhoneValid = phoneNumber.length == 10 && phoneNumber.all { it.isDigit() }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(24.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
+
+    Scaffold(
+//        modifier = Modifier.fillMaxSize(),
+//        containerColor = MaterialTheme.colorScheme.background,
+        bottomBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Transparent) // Border aur solid background gayab
+                    .padding(horizontal = 16.dp, vertical = 8.dp) // Vertical padding kam ki taaki space kam ghere
+                    .navigationBarsPadding()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    PrimaryButton(
+                        text = strings.btnSendOtp,
+                        enabled = isPhoneValid,
+                        onClick = {
+                            if (isPhoneValid) {
+                                onNextClick()
+                            } else {
+                                showError = true
+                            }
+                        }
+                    )
+                }
+            }
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 24.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Step Header & Progress Percentage
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -122,7 +160,6 @@ fun EmployerRegisterStep1Screen(
                 value = phoneNumber,
                 onValueChange = { input ->
                     if (input.length <= 10 && input.all { it.isDigit() }) {
-                        // Directly update ViewModel state
                         viewModel.updatePhoneNumber(input)
                         showError = false
                     }
@@ -142,20 +179,9 @@ fun EmployerRegisterStep1Screen(
                     modifier = Modifier.padding(top = 6.dp)
                 )
             }
+
+            // Bottom scroll safety spacing
+            Spacer(modifier = Modifier.height(24.dp))
         }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        PrimaryButton(
-            text = strings.btnSendOtp,
-            enabled = isPhoneValid,
-            onClick = {
-                if (isPhoneValid) {
-                    onNextClick()
-                } else {
-                    showError = true
-                }
-            }
-        )
     }
 }

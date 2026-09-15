@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.coopgrid.ui.components.AppTextField
 import com.example.coopgrid.ui.components.PrimaryButton
-import com.example.coopgrid.ui.screens.common.auth.getLoginStrings
+import com.example.coopgrid.ui.screens.common.auth.string.getLoginStrings
 import com.example.coopgrid.ui.theme.AppLanguage
 import com.example.coopgrid.ui.theme.CoopGridTheme
 
