@@ -110,8 +110,12 @@ fun AuthSelectionScreen(
                 Text(
                     text = styledAppName,
                     style = MaterialTheme.typography.displayLarge,
-                    fontSize = 36.nonScaleSp(),
-                    letterSpacing = 2.nonScaleSp()
+                    fontSize = 32.nonScaleSp(),
+                    letterSpacing = 1.nonScaleSp(), // Letter spacing thoda kam rakhein
+                    maxLines = 1,
+                    softWrap = false,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
