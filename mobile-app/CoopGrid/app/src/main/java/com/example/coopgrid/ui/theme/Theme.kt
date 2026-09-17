@@ -34,6 +34,36 @@ private val LightColorScheme = lightColorScheme(
     error = ErrorRedLight
 )
 
+// ------------------------------------------
+// FUTURE BACKUP SCHEME (Brand Accent Theme)
+// Future me switch karne ke liye niche wale code ko activate kar sakte hain
+// ------------------------------------------
+/*
+private val BackupDarkColorScheme = darkColorScheme(
+    primary = BackupPrimaryDark,
+    onPrimary = BackupOnPrimaryDark,
+    background = PureBlack,
+    onBackground = PureWhite,
+    surface = SurfaceDark,
+    onSurface = PureWhite,
+    outline = BorderDark,
+    error = ErrorRedDark
+)
+
+private val BackupLightColorScheme = lightColorScheme(
+    primary = BackupPrimaryLight,
+    onPrimary = BackupOnPrimaryLight,
+    background = PureWhite,
+    onBackground = PureBlack,
+    surface = OffWhite,
+    onSurface = PureBlack,
+    outline = BorderLight,
+    error = ErrorRedLight
+)
+*/
+
+
+
 @Composable
 fun CoopGridTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -50,7 +80,10 @@ fun CoopGridTheme(
                 val style = if (darkTheme) {
                     SystemBarStyle.dark(colorScheme.background.toArgb())
                 } else {
-                    SystemBarStyle.light(colorScheme.background.toArgb(), colorScheme.background.toArgb())
+                    SystemBarStyle.light(
+                        scrim = colorScheme.background.toArgb(),
+                        darkScrim = colorScheme.background.toArgb()
+                    )
                 }
 
                 it.enableEdgeToEdge(
