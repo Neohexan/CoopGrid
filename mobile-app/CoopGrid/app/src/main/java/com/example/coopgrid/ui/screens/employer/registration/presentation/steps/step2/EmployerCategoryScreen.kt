@@ -13,6 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.coopgrid.ui.screens.employer.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.ui.screens.employer.registration.presentation.steps.step2.components.AppDropdown
 import com.example.coopgrid.ui.screens.employer.registration.presentation.steps.step2.components.CompanyFormSection
@@ -20,28 +21,24 @@ import com.example.coopgrid.ui.screens.employer.registration.presentation.steps.
 import com.example.coopgrid.ui.screens.employer.registration.presentation.steps.step2.components.HouseholdFormSection
 import com.example.coopgrid.ui.screens.employer.registration.presentation.steps.step2.components.WholesalerFormSection
 import com.example.coopgrid.ui.screens.employer.registration.presentation.steps.step2.model.EmployerCategory
+import com.example.coopgrid.ui.screens.employer.registration.presentation.steps.step2.model.FarmDistance
+import com.example.coopgrid.ui.screens.employer.registration.presentation.steps.step2.model.company.OrganizationType
+import com.example.coopgrid.ui.screens.employer.registration.presentation.steps.step2.model.wholesaler.TradeType
+import com.example.coopgrid.ui.screens.employer.registration.presentation.steps.step2.model.wholesaler.WholesaleCategory
+import com.example.coopgrid.ui.screens.employer.registration.presentation.steps.step2.model.company.WorkSector
 import com.example.coopgrid.ui.screens.employer.registration.presentation.steps.step2.strings.getCategoryStrings
+import com.example.coopgrid.ui.screens.employer.registration.viewmodel.EmployerFormViewModel
 import com.example.coopgrid.ui.theme.AppLanguage
 import com.example.coopgrid.ui.theme.CoopGridTheme
 
 @Composable
 fun EmployerCategoryScreen(
     currentLanguage: AppLanguage,
-    onContinueClick: () -> Unit = {}
+    onContinueClick: () -> Unit = {},
+    viewModel: EmployerFormViewModel = viewModel()
 ) {
     val strings = getCategoryStrings(currentLanguage)
-
-    // Category Selector State
-    var selectedCategory by remember { mutableStateOf(EmployerCategory.WHOLESALER) }
-
-    // Dummy State Fields for Testing
-    var houseNo by remember { mutableStateOf("") }
-    var street by remember { mutableStateOf("") }
-    var companyName by remember { mutableStateOf("") }
-    var gstin by remember { mutableStateOf("") }
-    var farmName by remember { mutableStateOf("") }
-    var farmSize by remember { mutableStateOf("") }
-    var shopName by remember { mutableStateOf("") }
+    val state by viewModel.uiState.collectAsState()
 
     Column(
         modifier = Modifier
@@ -88,47 +85,103 @@ fun EmployerCategoryScreen(
             AppDropdown(
                 label = strings.categoryLabel,
                 items = EmployerCategory.entries,
-                selectedItem = selectedCategory,
-                onItemSelected = { selectedCategory = it },
+                selectedItem = state.selectedCategory,
+                onItemSelected = viewModel::onCategoryChange,
                 itemLabelMapper = { it.getDisplayName(currentLanguage) }
             )
 
             Spacer(modifier = Modifier.height(28.dp))
 
             // 2. DYNAMIC FORM SECTION SWITCHING
-            when (selectedCategory) {
+            when (state.selectedCategory) {
                 EmployerCategory.HOUSEHOLD -> {
                     HouseholdFormSection(
                         strings = strings,
-                        houseNo = houseNo,
-                        onHouseNoChange = { houseNo = it },
-                        street = street,
-                        onStreetChange = { street = it }
+                        houseNo = state.houseNo,
+                        onHouseNoChange = viewModel::onHouseNoChange,
+                        street = state.street,
+                        onStreetChange = viewModel::onStreetChange,
+                        landmark = state.landmark,
+                        onLandmarkChange = viewModel::onLandmarkChange,
+                        city = state.city,
+                        onCityChange = viewModel::onCityChange,
+                        state = state.state,
+                        onStateChange = viewModel::onStateChange,
+                        pincode = state.pincode,
+                        onPincodeChange = viewModel::onPincodeChange
                     )
                 }
+
                 EmployerCategory.COMPANY -> {
                     CompanyFormSection(
                         strings = strings,
-                        companyName = companyName,
-                        onCompanyNameChange = { companyName = it },
-                        gstin = gstin,
-                        onGstinChange = { gstin = it }
+                        currentLanguage = currentLanguage,
+                        companyName = state.companyName,
+                        onCompanyNameChange = viewModel::onCompanyNameChange,
+                        orgType = state.orgType,
+                        onOrgTypeChange = viewModel::onOrgTypeChange,
+                        workSector = state.workSector,
+                        onWorkSectorChange = viewModel::onWorkSectorChange,
+                        buildingNo = state.buildingNo,
+                        onBuildingNoChange = viewModel::onBuildingNoChange,
+                        street = state.street,
+                        onStreetChange = viewModel::onStreetChange,
+                        landmark = state.landmark,
+                        onLandmarkChange = viewModel::onLandmarkChange,
+                        city = state.city,
+                        onCityChange = viewModel::onCityChange,
+                        state = state.state,
+                        onStateChange = viewModel::onStateChange,
+                        pincode = state.pincode,
+                        onPincodeChange = viewModel::onPincodeChange
                     )
                 }
+
                 EmployerCategory.FARMER -> {
                     FarmerFormSection(
                         strings = strings,
-                        farmName = farmName,
-                        onFarmNameChange = { farmName = it },
-                        farmSize = farmSize,
-                        onFarmSizeChange = { farmSize = it }
+                        currentLanguage = currentLanguage,
+                        village = state.village,
+                        onVillageChange = viewModel::onVillageChange,
+                        tehsil = state.tehsil,
+                        onTehsilChange = viewModel::onTehsilChange,
+                        district = state.district,
+                        onDistrictChange = viewModel::onDistrictChange,
+                        state = state.state,
+                        onStateChange = viewModel::onStateChange,
+                        pincode = state.pincode,
+                        onPincodeChange = viewModel::onPincodeChange,
+                        isSameAsHome = state.isSameAsHome,
+                        onSameAsHomeChange = viewModel::onSameAsHomeChange,
+                        farmLandmark = state.farmLandmark,
+                        onFarmLandmarkChange = viewModel::onFarmLandmarkChange,
+                        farmDistance = state.farmDistance,
+                        onFarmDistanceChange = viewModel::onFarmDistanceChange
                     )
                 }
+
                 EmployerCategory.WHOLESALER -> {
                     WholesalerFormSection(
                         strings = strings,
-                        shopName = shopName,
-                        onShopNameChange = { shopName = it }
+                        currentLanguage = currentLanguage,
+                        firmName = state.firmName,
+                        onFirmNameChange = viewModel::onFirmNameChange,
+                        tradeType = state.tradeType,
+                        onTradeTypeChange = viewModel::onTradeTypeChange,
+                        wholesaleCategory = state.wholesaleCategory,
+                        onWholesaleCategoryChange = viewModel::onWholesaleCategoryChange,
+                        mandiName = state.mandiName,
+                        onMandiNameChange = viewModel::onMandiNameChange,
+                        city = state.city,
+                        onCityChange = viewModel::onCityChange,
+                        state = state.state,
+                        onStateChange = viewModel::onStateChange,
+                        pincode = state.pincode,
+                        onPincodeChange = viewModel::onPincodeChange,
+                        isGodownSameAsShop = state.isGodownSameAsShop,
+                        onGodownSameAsShopChange = viewModel::onGodownSameAsShopChange,
+                        godownLandmark = state.godownLandmark,
+                        onGodownLandmarkChange = viewModel::onGodownLandmarkChange
                     )
                 }
             }
@@ -139,7 +192,11 @@ fun EmployerCategoryScreen(
         // BOTTOM ACTION BUTTON
         AppPrimaryButton(
             text = strings.continueButton,
-            onClick = onContinueClick
+            onClick = {
+                viewModel.submitBasicRegistration {
+                    onContinueClick() // Navigation to Home Screen
+                }
+            }
         )
     }
 }

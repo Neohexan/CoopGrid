@@ -16,19 +16,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.coopgrid.ui.screens.employer.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.ui.screens.employer.registration.presentation.components.AppTextField
+import com.example.coopgrid.ui.screens.employer.registration.presentation.steps.step0.EmpAuthViewModel
 import com.example.coopgrid.ui.screens.employer.registration.presentation.steps.step0.string.getPhoneNumStrings
 import com.example.coopgrid.ui.theme.AppLanguage
 import com.example.coopgrid.ui.theme.CoopGridTheme
+import com.example.coopgrid.ui.theme.GridGreenAccent
 
 @Composable
 fun PhoneNumberScreen(
     currentLanguage: AppLanguage,
-    onContinueClick: (String) -> Unit = {}
+    viewModel : EmpAuthViewModel = viewModel(),
+    onNavigateToOtp: () -> Unit = {},
+    onNavigateToTerms: () -> Unit = {},
 ) {
     val strings = getPhoneNumStrings(currentLanguage)
-    var phoneNumber by remember { mutableStateOf("") }
+    val state by viewModel.uiState.collectAsState()
 
     Column(
         modifier = Modifier
@@ -93,8 +98,8 @@ fun PhoneNumberScreen(
 
                 // Phone Input Field
                 AppTextField(
-                    value = phoneNumber,
-                    onValueChange = { phoneNumber = it },
+                    value = state.phoneNumber,
+                    onValueChange = viewModel::onPhoneNumberChange,
                     placeholderText = "Phone Number",
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.weight(1f) // Phone number row mein fit hoga
@@ -109,17 +114,20 @@ fun PhoneNumberScreen(
         ) {
             AppPrimaryButton(
                 text = strings.continueButton,
-                onClick = { onContinueClick(phoneNumber) },
-                enabled = phoneNumber.length == 10
+                onClick = { viewModel.sendOtp(onNavigateToOtp) },
+                enabled = state.isPhoneValid && !state.isLoading
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = strings.termsAgreement,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                textAlign = TextAlign.Center,
+            // Clickable Terms & Privacy Policy Text
+            TermsAndPrivacyText(
+                fullText = strings.termsAgreementFull,
+                highlightText = strings.termsHighlightText,
+                highlightColor = GridGreenAccent, // Aapka Custom Accent Color
+                onTermsClick = {
+                    onNavigateToTerms() // Navigation Callback
+                },
                 modifier = Modifier.padding(horizontal = 12.dp)
             )
 

@@ -9,7 +9,8 @@ data class PhoneNumStrings(
     val phoneHint: String,
     val invalidPhoneError: String,
     val continueButton: String,
-    val termsAgreement: String
+    val termsAgreementFull: String,      // "By continuing, you agree to our Terms & Privacy Policy."
+    val termsHighlightText: String       // "Terms & Privacy Policy"
 )
 
 private val EnglishPhoneStrings = PhoneNumStrings(
@@ -18,7 +19,8 @@ private val EnglishPhoneStrings = PhoneNumStrings(
     phoneHint = "Phone Number",
     invalidPhoneError = "Please enter a valid 10-digit phone number",
     continueButton = "Get OTP",
-    termsAgreement = "By continuing, you agree to our Terms & Privacy Policy."
+    termsAgreementFull = "By continuing, you agree to our Terms & Privacy Policy.",
+    termsHighlightText = "Terms & Privacy Policy"
 )
 
 private val HinglishPhoneStrings = PhoneNumStrings(
@@ -27,7 +29,8 @@ private val HinglishPhoneStrings = PhoneNumStrings(
     phoneHint = "Phone Number",
     invalidPhoneError = "Kripya sahi 10-digit phone number dalein",
     continueButton = "OTP Praapt Karein",
-    termsAgreement = "Aage badhne par aap hamari Terms & Privacy Policy se sehamat hain."
+    termsAgreementFull = "Aage badhne par, aap humari Terms & Privacy Policy se sehmat hote hain.",
+    termsHighlightText = "Terms & Privacy Policy"
 )
 
 // Main provider function

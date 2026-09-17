@@ -16,7 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -37,6 +37,8 @@ import com.example.coopgrid.ui.screens.employer.auth.screen.EmployerRegisterStep
 import com.example.coopgrid.ui.screens.employer.dashboard.EmployerHomeScreen
 import com.example.coopgrid.ui.screens.employer.dashboard.screen.CreateJobScreen
 import com.example.coopgrid.ui.screens.employer.dashboard.screen.EmployerProfileScreen
+import com.example.coopgrid.ui.screens.employer.registration.navigation.EmployerRoutes
+import com.example.coopgrid.ui.screens.employer.registration.navigation.employerNavGraph
 import com.example.coopgrid.ui.screens.worker.auth.WorkerAuthViewModel
 import com.example.coopgrid.ui.screens.worker.dashboard.HomeBannerItem
 import com.example.coopgrid.ui.screens.worker.dashboard.JobDetailsViewModel
@@ -113,10 +115,22 @@ fun AppNavGraph(
                     navController.navigate(Screen.WorkerStep1.route)
                 },
                 onRegisterEmployerClick = {
-                    navController.navigate(Screen.EmployerStep1.route)
+                    navController.navigate(EmployerRoutes.GRAPH_ROUTE)
                 }
             )
         }
+
+        // 2. Naya Employer Flow (Graph Registration)
+        employerNavGraph(
+            navController = navController,
+            currentLanguage = currentLanguage, // Jo aapka current app language hai
+            onOnboardingComplete = {
+                // Employer Registration complete hone par Home / Dashboard Screen par bhejein
+                navController.navigate(Screen.EmployerHome.route) {
+                    popUpTo(EmployerRoutes.GRAPH_ROUTE) { inclusive = true }
+                }
+            }
+        )
 
         // 3. Common Login Screen
         composable(route = Screen.Login.route) {

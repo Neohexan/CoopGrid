@@ -37,7 +37,46 @@ data class CategoryStrings(
     val pincodeHint: String,
 
     val optionalTag: String,
-    val continueButton: String
+    val continueButton: String,
+
+    // CategoryStrings data class me ye variables add kar lein:
+    val orgTypeLabel: String,
+    val orgTypeHint: String,
+    val workSectorLabel: String,
+    val workSectorHint: String,
+    val buildingNoLabel: String,
+    val buildingNoHint: String,
+    val locationPlaceholderLabel: String,
+    val locationPlaceholderHint: String,
+
+    // Add in CategoryStrings data class:
+    val homeAddressHeader: String,
+    val farmLocationHeader: String,
+    val villageLabel: String,
+    val villageHint: String,
+    val tehsilLabel: String,
+    val tehsilHint: String,
+    val districtLabel: String,
+    val districtHint: String,
+    val sameAsHomeCheckbox: String,
+    val farmLandmarkLabel: String,
+    val farmLandmarkHint: String,
+    val farmDistanceLabel: String,
+    val farmDistanceHint: String,
+
+    val firmNameLabel: String,
+    val firmNameHint: String,
+    val tradeTypeLabel: String,
+    val tradeTypeHint: String,
+    val wholesaleCategoryLabel: String,
+    val wholesaleCategoryHint: String,
+    val mandiAddressHeader: String,
+    val mandiNameLabel: String,
+    val mandiNameHint: String,
+    val godownHeader: String,
+    val sameAsShopCheckbox: String,
+    val godownLandmarkLabel: String,
+    val godownLandmarkHint: String
 )
 
 private val EnglishCategoryStrings = CategoryStrings(
@@ -72,7 +111,45 @@ private val EnglishCategoryStrings = CategoryStrings(
     pincodeHint = "e.g. 110001",
 
     optionalTag = "(Optional)",
-    continueButton = "Save & Continue"
+    continueButton = "Save & Continue",
+
+    // English Map me values:
+    orgTypeLabel = "Organization Type",
+    orgTypeHint = "Select Organization Type",
+    workSectorLabel = "Work Sector / Industry",
+    workSectorHint = "e.g. Construction, IT, Retail",
+    buildingNoLabel = "Office / Building / Suite No.",
+    buildingNoHint = "e.g. Office 402, Tech Park",
+    locationPlaceholderLabel = "GPS Location Coordinates",
+    locationPlaceholderHint = "Pin location on map (Coming Soon)",
+
+    homeAddressHeader = "Home Address",
+    farmLocationHeader = "Farm Location Details",
+    villageLabel = "Village / Town",
+    villageHint = "e.g. Rampur",
+    tehsilLabel = "Tehsil / Block",
+    tehsilHint = "e.g. Sadar",
+    districtLabel = "District",
+    districtHint = "e.g. Patna",
+    sameAsHomeCheckbox = "Farm is located in the same village",
+    farmLandmarkLabel = "Farm Area Landmark",
+    farmLandmarkHint = "e.g. Near Canal, Canal Road",
+    farmDistanceLabel = "Distance from Home",
+    farmDistanceHint = "Select distance",
+
+    firmNameLabel = "Firm / Shop Name",
+    firmNameHint = "e.g. Gupta Traders & Commission Agent",
+    tradeTypeLabel = "Type of Trade / Business",
+    tradeTypeHint = "Select Business Type",
+    wholesaleCategoryLabel = "Deals In (Commodity)",
+    wholesaleCategoryHint = "Select Commodity Category",
+    mandiAddressHeader = "Mandi / Shop Address",
+    mandiNameLabel = "Mandi Name / Market Area & Shop No.",
+    mandiNameHint = "e.g. New Anaj Mandi, Shop No. 12",
+    godownHeader = "Godown / Warehouse Location",
+    sameAsShopCheckbox = "Godown is located at the same Mandi address",
+    godownLandmarkLabel = "Godown Area / Landmark",
+    godownLandmarkHint = "e.g. Highway Bypass Godown Area"
 )
 
 private val HinglishCategoryStrings = CategoryStrings(
@@ -107,7 +184,45 @@ private val HinglishCategoryStrings = CategoryStrings(
     pincodeHint = "Jaise: 110001",
 
     optionalTag = "(Aichhik / Optional)",
-    continueButton = "Aage Badhein"
+    continueButton = "Aage Badhein",
+
+    // Hinglish Map me values:
+    orgTypeLabel = "Organization ka Prakar",
+    orgTypeHint = "Organization ka prakar chunein",
+    workSectorLabel = "Kaam ka Kshetra / Sector",
+    workSectorHint = "Jaise: Construction, IT, Retail",
+    buildingNoLabel = "Office / Building / Suite No.",
+    buildingNoHint = "Jaise: Office 402, Tech Park",
+    locationPlaceholderLabel = "GPS Location Coordinates",
+    locationPlaceholderHint = "Map par location pin karein (Jald aayega)",
+
+    homeAddressHeader = "Ghar ka Pata",
+    farmLocationHeader = "Khet ki Jankari aur Location",
+    villageLabel = "Gaon / Kasba (Village)",
+    villageHint = "Jaise: Rampur",
+    tehsilLabel = "Tehsil / Block",
+    tehsilHint = "Jaise: Sadar",
+    districtLabel = "Zila (District)",
+    districtHint = "Jaise: Patna",
+    sameAsHomeCheckbox = "Khet ghar ke paas / same gaon me hai",
+    farmLandmarkLabel = "Khet ke paas ki Jagah (Landmark)",
+    farmLandmarkHint = "Jaise: Nehar ke paas, Main road par",
+    farmDistanceLabel = "Ghar se Khet ki Doori",
+    farmDistanceHint = "Doori chunein",
+
+    firmNameLabel = "Dukaan / Firm ka Naam",
+    firmNameHint = "Jaise: Gupta Traders & Commission Agent",
+    tradeTypeLabel = "Vyapar ka Prakar",
+    tradeTypeHint = "Vyapar ka prakar chunein",
+    wholesaleCategoryLabel = "Kiski Wholesaling / Trading karte hain",
+    wholesaleCategoryHint = "Category chunein",
+    mandiAddressHeader = "Mandi / Dukaan ka Pata",
+    mandiNameLabel = "Mandi ka Naam aur Dukaan No.",
+    mandiNameHint = "Jaise: Nayi Anaj Mandi, Shop No. 12",
+    godownHeader = "Godown ki Jankari",
+    sameAsShopCheckbox = "Godown same Mandi / Dukaan ke pate par hai",
+    godownLandmarkLabel = "Godown ki Jagah / Landmark",
+    godownLandmarkHint = "Jaise: Highway Bypass Godown Area"
 )
 
 fun getCategoryStrings(language: AppLanguage): CategoryStrings {

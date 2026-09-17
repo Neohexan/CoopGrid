@@ -20,32 +20,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.coopgrid.ui.screens.employer.registration.presentation.steps.step0.EmpAuthViewModel
 import com.example.coopgrid.ui.screens.employer.registration.presentation.steps.step0.string.getOtpStrings
 import kotlinx.coroutines.delay
+import java.util.Locale
+import kotlin.time.Duration.Companion.milliseconds
+import androidx.compose.ui.platform.LocalLocale
 
 @Composable
 fun OtpScreen(
     currentLanguage: AppLanguage,
     phoneNumber: String = "+91 9876543210",
-    onVerifyClick: (String) -> Unit = {},
+    onVerifyClick: () -> Unit = {},
+    viewModel : EmpAuthViewModel = viewModel(),
     onResendClick: () -> Unit = {}
 ) {
     val strings = getOtpStrings(currentLanguage)
-    var otpValue by remember { mutableStateOf("") }
-
-    // 60 Seconds Timer State
-    var timerSeconds by remember { mutableIntStateOf(60) }
-    var isTimerRunning by remember { mutableStateOf(true) }
-
-    // Countdown Timer Coroutine
-    LaunchedEffect(key1 = isTimerRunning, key2 = timerSeconds) {
-        if (isTimerRunning && timerSeconds > 0) {
-            delay(1000L)
-            timerSeconds--
-        } else if (timerSeconds == 0) {
-            isTimerRunning = false
-        }
-    }
+    val state by viewModel.uiState.collectAsState()
 
     Column(
         modifier = Modifier
@@ -82,12 +74,8 @@ fun OtpScreen(
 
             // 6-DIGIT OTP BOXES
             BasicTextField(
-                value = otpValue,
-                onValueChange = { input ->
-                    if (input.length <= 6 && input.all { it.isDigit() }) {
-                        otpValue = input
-                    }
-                },
+                value = state.otpCode,
+                onValueChange = viewModel::onOtpCodeChange,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                 decorationBox = {
                     Row(
@@ -96,10 +84,10 @@ fun OtpScreen(
                     ) {
                         repeat(6) { index ->
                             val char = when {
-                                index < otpValue.length -> otpValue[index].toString()
+                                index < state.otpCode.length -> state.otpCode[index].toString()
                                 else -> ""
                             }
-                            val isFocused = otpValue.length == index
+                            val isFocused = state.otpCode.length == index
 
                             Box(
                                 modifier = Modifier
@@ -136,34 +124,38 @@ fun OtpScreen(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (isTimerRunning) {
-                    val formattedTime = String.format("%02d:%02d", timerSeconds / 60, timerSeconds % 60)
+                Text(
+                    text = "${strings.resendPrompt} ",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                )
+
+                if (state.canResendOtp) {
+                    // Jab Timer khatam ho jaye (Clickable Resend Button)
                     Text(
-                        text = "${strings.resendPrompt} ($formattedTime)",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                        text = strings.resendButton,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable {
+                            viewModel.resendOtp()
+                            onResendClick()
+                        }
                     )
                 } else {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "${strings.resendPrompt} ",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                        )
-                        Text(
-                            text = strings.resendButton,
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                fontWeight = FontWeight.Bold
-                            ),
-                            color = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.clickable {
-                                // Reset Timer
-                                timerSeconds = 60
-                                isTimerRunning = true
-                                onResendClick()
-                            }
-                        )
-                    }
+                    // Jab Timer chal raha ho (Formatted MM:SS Countdown)
+                    val minutes = state.resendTimerSeconds / 60
+                    val seconds = state.resendTimerSeconds % 60
+                    val formattedTime = String.format(LocalLocale.current.platformLocale, "%02d:%02d", minutes, seconds)
+
+                    Text(
+                        text = "($formattedTime)",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                    )
                 }
             }
         }
@@ -175,8 +167,8 @@ fun OtpScreen(
         ) {
             AppPrimaryButton(
                 text = strings.verifyButton,
-                onClick = { onVerifyClick(otpValue) },
-                enabled = otpValue.length == 6
+                onClick = { viewModel.verifyOtp(onVerifyClick) },
+                enabled = state.isOtpValid && !state.isLoading
             )
 
             Spacer(modifier = Modifier.height(24.dp))
