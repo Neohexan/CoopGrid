@@ -1,4 +1,4 @@
-package com.example.coopgrid.ui.screens.worker.registration.presentation.steps.step2.deta.skills
+package com.example.coopgrid.ui.screens.worker.registration.presentation.steps.step21.deta.skills
 
 
 val DomesticCategory = SkillCategoryModel(

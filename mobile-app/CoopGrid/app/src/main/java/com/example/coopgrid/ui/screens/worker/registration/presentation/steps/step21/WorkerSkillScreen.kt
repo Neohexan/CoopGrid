@@ -1,4 +1,4 @@
-package com.example.coopgrid.ui.screens.worker.registration.presentation.steps.step2
+package com.example.coopgrid.ui.screens.worker.registration.presentation.steps.step21
 
 
 import androidx.compose.foundation.background

@@ -1,4 +1,4 @@
-package com.example.coopgrid.ui.screens.worker.registration.presentation.steps.step2
+package com.example.coopgrid.ui.screens.worker.registration.presentation.steps.step21
 
 
 import androidx.compose.foundation.border
@@ -17,11 +17,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.coopgrid.ui.screens.worker.registration.presentation.components.AppDropdown
 import com.example.coopgrid.ui.screens.worker.registration.presentation.components.AppTextField
-import com.example.coopgrid.ui.screens.worker.registration.presentation.steps.step2.deta.SkillDataRepository
-import com.example.coopgrid.ui.screens.worker.registration.presentation.steps.step2.deta.strings.getSkillStrings
+import com.example.coopgrid.ui.screens.worker.registration.presentation.steps.step21.deta.SkillDataRepository
+import com.example.coopgrid.ui.screens.worker.registration.presentation.steps.step21.deta.strings.getSkillStrings
+import com.example.coopgrid.ui.screens.worker.registration.viewmodel.AvailabilityType
 import com.example.coopgrid.ui.screens.worker.registration.viewmodel.WageType
 import com.example.coopgrid.ui.screens.worker.registration.viewmodel.WorkerSkillItem
 import com.example.coopgrid.ui.theme.AppLanguage
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -192,7 +194,56 @@ fun WorkerSkillCard(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // 5. WAGE RATE INPUT & TYPE
+            // 5. AVAILABILITY TYPE (Full Time / Part Time)
+            Text(
+                text = strings.availabilityLabel,
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                AvailabilityType.values().forEach { avail ->
+                    val label = if (currentLanguage == AppLanguage.HINGLISH) avail.labelHinglish else avail.labelEnglish
+                    FilterChip(
+                        selected = skillItem.availabilityType == avail,
+                        onClick = { onUpdate(skillItem.copy(availabilityType = avail)) },
+                        label = { Text(label) }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // 6. WORK RADIUS (SLIDER)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = strings.radiusLabel,
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
+                )
+                Text(
+                    text = "${skillItem.workRadiusKm.roundToInt()} KM",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            Slider(
+                value = skillItem.workRadiusKm,
+                onValueChange = { newRadius ->
+                    onUpdate(skillItem.copy(workRadiusKm = newRadius))
+                },
+                valueRange = 2f..50f,
+                steps = 23 // Increases in ~2 KM steps
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // 7. WAGE RATE INPUT & TYPE
             Text(
                 text = strings.wageLabel,
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)

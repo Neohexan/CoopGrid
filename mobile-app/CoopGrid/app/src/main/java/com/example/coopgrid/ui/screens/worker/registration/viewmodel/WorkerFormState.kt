@@ -8,6 +8,13 @@ enum class WageType(val labelHinglish: String, val labelEnglish: String) {
     CONTRACT("Contract (Theka)", "Contract Basis")
 }
 
+enum class AvailabilityType(val labelEnglish: String, val labelHinglish: String) {
+    FULL_TIME("Full Time", "Full Time (Pura Din)"),
+    PART_TIME("Part Time", "Part Time (Kuch Ghante)"),
+    CONTRACT("Contract Basis", "Contract / Theka Work"),
+    WEEKEND("Weekend Only", "Sirf Weekend")
+}
+
 data class WorkerSkillItem(
     val id: String = UUID.randomUUID().toString(),
     val primaryCategory: String = "",
@@ -16,7 +23,9 @@ data class WorkerSkillItem(
     val selectedSubSkills: List<String> = emptyList(),
     val experienceYears: String = "1-3 Years",
     val expectedWage: String = "",
-    val wageType: WageType = WageType.PER_DAY
+    val wageType: WageType = WageType.PER_DAY,
+    val workRadiusKm: Float = 10f, // Default 10 KM
+    val availabilityType: AvailabilityType = AvailabilityType.FULL_TIME
 )
 
 data class WorkerFormState(

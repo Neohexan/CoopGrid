@@ -1,4 +1,4 @@
-package com.example.coopgrid.ui.screens.worker.registration.presentation.steps.step2
+package com.example.coopgrid.ui.screens.worker.registration.presentation.steps.step21
 
 import com.example.coopgrid.ui.theme.AppLanguage
 
@@ -15,7 +15,9 @@ data class WorkerSkillStrings(
     val addSkillButton: String,
     val maxSkillsReached: String,
     val removeButton: String,
-    val nextButton: String
+    val nextButton: String,
+    val radiusLabel: String,       // NEW
+    val availabilityLabel: String  // NEW
 )
 
 fun getWorkerSkillStrings(language: AppLanguage): WorkerSkillStrings {
@@ -32,7 +34,9 @@ fun getWorkerSkillStrings(language: AppLanguage): WorkerSkillStrings {
             addSkillButton = "+ Ek Aur Skill Add Karein",
             maxSkillsReached = "Maximum 3 skills hi add ho sakti hain",
             removeButton = "Hatao",
-            nextButton = "Save & Continue"
+            nextButton = "Save & Continue",
+            radiusLabel = "Kitni Doori Tak Kaam Kar Sakte Hain?",
+            availabilityLabel = "Kaise Kaam Karna Chahte Hain?"
         )
         else -> WorkerSkillStrings(
             title = "Work Skills & Rates",
@@ -46,7 +50,9 @@ fun getWorkerSkillStrings(language: AppLanguage): WorkerSkillStrings {
             addSkillButton = "+ Add Another Skill",
             maxSkillsReached = "Maximum limit of 3 skills reached",
             removeButton = "Remove",
-            nextButton = "Save & Continue"
+            nextButton = "Save & Continue",
+            radiusLabel = "Work Travel Radius",
+            availabilityLabel = "Availability / Work Preference"
         )
     }
 }

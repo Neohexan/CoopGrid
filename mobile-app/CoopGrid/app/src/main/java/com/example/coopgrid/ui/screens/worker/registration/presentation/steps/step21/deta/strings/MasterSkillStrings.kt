@@ -1,4 +1,4 @@
-package com.example.coopgrid.ui.screens.worker.registration.presentation.steps.step2.deta.strings
+package com.example.coopgrid.ui.screens.worker.registration.presentation.steps.step21.deta.strings
 
 import com.example.coopgrid.ui.theme.AppLanguage
 
