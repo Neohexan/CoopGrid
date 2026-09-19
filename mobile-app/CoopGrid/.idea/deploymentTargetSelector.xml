@@ -13,17 +13,6 @@
         </DropdownSelection>
         <DialogSelection />
       </SelectionState>
-      <SelectionState runConfigName="Personal Details Light Mode - EmployerPersonalScreenLightPreview">
-        <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-09-14T18:16:32.259371100Z">
-          <Target type="DEFAULT_BOOT">
-            <handle>
-              <DeviceId pluginId="Wireless" identifier="serviceName=adb-7b87a531-G6vePP" />
-            </handle>
-          </Target>
-        </DropdownSelection>
-        <DialogSelection />
-      </SelectionState>
       <SelectionState runConfigName="OTP Screen Light Mode - OtpScreenLightPreview">
         <option name="selectionMode" value="DROPDOWN" />
         <DropdownSelection timestamp="2026-09-14T18:16:32.259371100Z">
@@ -58,6 +47,17 @@
         <DialogSelection />
       </SelectionState>
       <SelectionState runConfigName="Personal Details Dark Mode - EmployerPersonalScreenDarkPreview">
+        <option name="selectionMode" value="DROPDOWN" />
+        <DropdownSelection timestamp="2026-09-14T18:16:32.259371100Z">
+          <Target type="DEFAULT_BOOT">
+            <handle>
+              <DeviceId pluginId="Wireless" identifier="serviceName=adb-7b87a531-G6vePP" />
+            </handle>
+          </Target>
+        </DropdownSelection>
+        <DialogSelection />
+      </SelectionState>
+      <SelectionState runConfigName="Step 23 - Agri Supply Screen - AgriSupplyScreenPreview">
         <option name="selectionMode" value="DROPDOWN" />
         <DropdownSelection timestamp="2026-09-14T18:16:32.259371100Z">
           <Target type="DEFAULT_BOOT">
