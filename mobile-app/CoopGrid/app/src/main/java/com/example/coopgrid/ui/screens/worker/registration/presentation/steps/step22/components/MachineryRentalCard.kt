@@ -20,6 +20,7 @@ import com.example.coopgrid.ui.screens.worker.registration.presentation.steps.st
 import com.example.coopgrid.ui.screens.worker.registration.presentation.steps.step22.model.MachineryRentalItem
 import com.example.coopgrid.ui.screens.worker.registration.presentation.steps.step22.strings.MachineryRentalStrings
 import com.example.coopgrid.ui.theme.AppLanguage
+import kotlin.math.roundToInt
 
 @Composable
 fun MachineryRentalCard(
@@ -123,6 +124,33 @@ fun MachineryRentalCard(
                         onValueChange = { onItemChange(item.copy(customMachineName = it)) },
                         placeholderText = strings.customNameHint
                     )
+
+                    // 6. service RADIUS (SLIDER)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = strings.radiusLabel,
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
+                        )
+                        Text(
+                            text = "${item.serviceRadiusKm.roundToInt()} KM",
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Slider(
+                        value = item.serviceRadiusKm,
+                        onValueChange = { newRadius ->
+                            onItemChange(item.copy(serviceRadiusKm = newRadius))
+                        },
+                        valueRange = 2f..50f,
+                        steps = 23 // Increases in ~2 KM steps
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     // 4. Rate Input + Unit Selector
                     MachineryRateInputGroup(

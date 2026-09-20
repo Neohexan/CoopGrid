@@ -18,11 +18,14 @@ import com.example.coopgrid.ui.theme.AppLanguage
 import androidx.compose.ui.Alignment
 import com.example.coopgrid.ui.screens.worker.registration.presentation.components.AppDropdown
 import com.example.coopgrid.ui.screens.worker.registration.presentation.components.AppTextField
+import kotlin.math.roundToInt
 
 @Composable
 fun AgriSupplyProfileScreen(
     currentLanguage: AppLanguage,
+    item: AgriSupplyProfile,
     initialProfile: AgriSupplyProfile = AgriSupplyProfile(),
+    onItemChange: (AgriSupplyProfile) -> Unit,
     onSaveAndContinue: (AgriSupplyProfile) -> Unit
 ) {
     val strings = remember(currentLanguage) { getAgriProfileStrings(currentLanguage) }
@@ -101,6 +104,33 @@ fun AgriSupplyProfileScreen(
             }
 
             Spacer(modifier = Modifier.height(8.dp))
+
+            // 6. WORK RADIUS (SLIDER)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = strings.radiusLabel,
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
+                )
+                Text(
+                    text = "${item.serviceRadiusKm.roundToInt()} KM",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            Slider(
+                value = item.serviceRadiusKm,
+                onValueChange = { newRadius ->
+                    onItemChange(item.copy(serviceRadiusKm = newRadius))
+                },
+                valueRange = 2f..50f,
+                steps = 23 // Increases in ~2 KM steps
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
 
             // 4. Service Capability Switches
             Text(
@@ -183,7 +213,11 @@ fun AgriSupplyScreenPreview() {
         Surface {
             AgriSupplyProfileScreen(
                 currentLanguage = AppLanguage.HINGLISH,
-                onSaveAndContinue = {}
+                onSaveAndContinue = {},
+                item = AgriSupplyProfile(
+
+                ),
+                onItemChange = {}
             )
         }
     }

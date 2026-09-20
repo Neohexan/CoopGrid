@@ -6,5 +6,6 @@ data class AgriSupplyProfile(
     val selectedSubCategoryIds: List<String> = emptyList(),
     val offersDelivery: Boolean = false,
     val offersStorePickup: Boolean = true,
+    val serviceRadiusKm: Float = 10f,
     val offersWholesale: Boolean = false
 )

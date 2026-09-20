@@ -10,6 +10,7 @@ data class MachineryRentalItem(
     val customMachineName: String = "", // E.g., "Mahindra 575 DI" ya specific machine model
     val rate: String = "",
     val rateUnit: MachineryRateUnit = MachineryRateUnit.PER_HOUR,
+    val serviceRadiusKm: Float = 10f, // Default 10 KM
     val isDriverAndFuelIncluded: Boolean = true,
     val isExpanded: Boolean = true
 )
