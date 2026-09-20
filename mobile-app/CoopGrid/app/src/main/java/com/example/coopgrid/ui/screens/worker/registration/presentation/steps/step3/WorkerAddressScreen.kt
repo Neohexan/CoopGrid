@@ -239,34 +239,9 @@ fun WorkerAddressScreenPreview() {
         Surface {
             WorkerAddressScreen(
                 currentLanguage = AppLanguage.HINGLISH,
-                initialAddress = WorkerAddress(
-                    houseOrBuildingNo = "Shop 12",
-                    streetLocality = "Main Market"
-                ),
+                initialAddress = WorkerAddress(),
                 onSaveAndContinue = {}
             )
         }
     }
 }
-//@Preview(showBackground = true, showSystemUi = true, name = "English Mode - GPS Captured")
-//@Composable
-//fun WorkerAddressScreenEnglishPreview() {
-//    CoopGridTheme {
-//        WorkerAddressScreen(
-//            currentLanguage = AppLanguage.ENGLISH,
-//            initialAddress = WorkerAddress(
-//                addressType = AddressType.SHOP_STORE,
-//                houseOrBuildingNo = "Shop 12",
-//                streetLocality = "Main Market",
-//                pincode = "221001",
-//                cityOrTown = "Varanasi",
-//                district = "Varanasi",
-//                state = "Uttar Pradesh",
-//                latitude = 25.3176,
-//                longitude = 82.9739,
-//                isGpsCaptured = true
-//            ),
-//            onSaveAndContinue = {}
-//        )
-//    }
-//}
