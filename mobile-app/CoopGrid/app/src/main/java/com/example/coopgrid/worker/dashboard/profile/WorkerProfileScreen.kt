@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.coopgrid.data.local.entity.WorkerEntity
-import com.example.coopgrid.ui.screens.employer.dashboard.screen.ActionItemRow
+import com.example.coopgrid.employer.dashboard.screen.ActionItemRow
 import com.example.coopgrid.ui.screens.worker.auth.WorkerAuthViewModel
 import com.example.coopgrid.worker.dashboard.strings.WorkerProfileStrings
 import com.example.coopgrid.worker.dashboard.strings.getWorkerProfileStrings
