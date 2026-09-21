@@ -6,7 +6,7 @@ import com.example.coopgrid.data.local.dao.WorkerJobDao
 import com.example.coopgrid.data.local.entity.WorkerJobEntity
 import com.example.coopgrid.data.model.WorkerSyncRequest
 import com.example.coopgrid.data.remote.WorkerServiceApi
-import com.example.coopgrid.ui.screens.worker.dashboard.profile.VerificationStatus
+import com.example.coopgrid.worker.dashboard.profile.VerificationStatus
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton

@@ -17,7 +17,7 @@ import androidx.compose.runtime.setValue
 import com.example.coopgrid.data.repository.WorkerRepository
 import com.example.coopgrid.data.datastore.UserPreferences
 import com.example.coopgrid.data.local.entity.WorkerEntity
-import com.example.coopgrid.ui.screens.worker.dashboard.profile.VerificationStatus
+import com.example.coopgrid.worker.dashboard.profile.VerificationStatus
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn

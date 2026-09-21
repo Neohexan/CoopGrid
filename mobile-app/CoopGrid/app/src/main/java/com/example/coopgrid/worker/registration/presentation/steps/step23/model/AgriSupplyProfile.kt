@@ -1,0 +1,11 @@
+package com.example.coopgrid.worker.registration.presentation.steps.step23.model
+
+data class AgriSupplyProfile(
+    val businessName: String = "",
+    val selectedCategoryIds: List<String> = emptyList(),
+    val selectedSubCategoryIds: List<String> = emptyList(),
+    val offersDelivery: Boolean = false,
+    val offersStorePickup: Boolean = true,
+    val serviceRadiusKm: Float = 10f,
+    val offersWholesale: Boolean = false
+)
