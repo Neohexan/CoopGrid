@@ -4,6 +4,8 @@ package com.example.coopgrid.worker.registration.presentation.steps.step0.screen
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
@@ -11,15 +13,23 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.coopgrid.common.LanguageViewModel
+import com.example.coopgrid.ui.theme.AppLanguage
+import com.example.coopgrid.ui.theme.GridGreenAccent
+import com.example.coopgrid.worker.registration.presentation.steps.step0.string.getPhoneNumStrings
 
 @Composable
-fun TermsAndPrivacyText(
-    fullText: String, // e.g. "By continuing, you agree to our Terms & Privacy Policy."
-    highlightText: String, // e.g. "Terms & Privacy Policy"
-    highlightColor: Color,
+fun TermsAndPrivacyText( // e.g. "By continuing, you agree to our Terms & Privacy Policy."
     onTermsClick: () -> Unit,
+    languageViewModel: LanguageViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
+    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
+    val strings = getPhoneNumStrings(selectedLanguage)
+    val fullText = strings.termsAgreementFull
+    val highlightText = strings.termsHighlightText
+    val highlightColor = GridGreenAccent
     // 1. Find start and end index of clickable link text
     val startIndex = fullText.indexOf(highlightText)
     val endIndex = if (startIndex != -1) startIndex + highlightText.length else -1

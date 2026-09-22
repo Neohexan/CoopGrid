@@ -27,7 +27,6 @@ fun MachineryRentalCardPreview() {
                 ),
                 categories = SampleMachineryCategories,
                 strings = HinglishMachineryStrings,
-                currentLanguage = AppLanguage.ENGLISH,
                 showRemoveButton = true,
                 onItemChange = {},
                 onRemoveClick = {},

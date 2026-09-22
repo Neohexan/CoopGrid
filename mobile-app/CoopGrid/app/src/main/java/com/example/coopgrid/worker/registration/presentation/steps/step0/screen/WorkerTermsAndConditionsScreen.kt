@@ -20,19 +20,24 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.coopgrid.common.LanguageViewModel
 import com.example.coopgrid.ui.theme.AppLanguage
 import com.example.coopgrid.worker.registration.presentation.steps.step0.string.getTermsStrings
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TermsAndConditionsScreen(
-    currentLanguage: AppLanguage,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    languageViewModel: LanguageViewModel = hiltViewModel(),
 ) {
-    val strings = getTermsStrings(currentLanguage)
+    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
+    val strings = getTermsStrings(selectedLanguage)
 
     Scaffold(
         topBar = {

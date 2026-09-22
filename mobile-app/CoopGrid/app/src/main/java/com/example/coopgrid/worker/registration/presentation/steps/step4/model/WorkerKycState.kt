@@ -18,3 +18,9 @@ data class WorkerKycState(
     val isSubmitting: Boolean = false,
     val errorMessage: String? = null
 )
+
+data class CommonIdentityErrors(
+    val docNumberError: String? = null,
+    val frontImageError: String? = null,
+    val backImageError: String? = null
+)

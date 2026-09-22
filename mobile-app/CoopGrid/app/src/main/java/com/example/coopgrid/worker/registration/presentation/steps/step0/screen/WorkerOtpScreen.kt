@@ -21,19 +21,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.platform.LocalLocale
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.coopgrid.common.LanguageViewModel
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
-import com.example.coopgrid.worker.registration.presentation.steps.step0.WorkerAuthViewModel
+import com.example.coopgrid.worker.registration.presentation.steps.step0.WorkerAuthViewModelStepZero
 import com.example.coopgrid.worker.registration.presentation.steps.step0.string.getOtpStrings
 
 @Composable
 fun OtpScreen(
-    currentLanguage: AppLanguage,
     phoneNumber: String = "+91 9876543210",
     onVerifyClick: () -> Unit = {},
-    viewModel : WorkerAuthViewModel = viewModel(),
-    onResendClick: () -> Unit = {}
+    viewModel : WorkerAuthViewModelStepZero = hiltViewModel(),
+    onResendClick: () -> Unit = {},
+    languageViewModel: LanguageViewModel = hiltViewModel(),
 ) {
-    val strings = getOtpStrings(currentLanguage)
+    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
+    val strings = getOtpStrings(selectedLanguage)
     val state by viewModel.uiState.collectAsState()
 
     Column(
@@ -180,7 +183,7 @@ fun OtpScreen(
 @Composable
 fun OtpScreenLightPreview() {
     CoopGridTheme(darkTheme = false) {
-        OtpScreen(currentLanguage = AppLanguage.ENGLISH)
+        OtpScreen()
     }
 }
 
@@ -188,6 +191,6 @@ fun OtpScreenLightPreview() {
 @Composable
 fun OtpScreenDarkPreview() {
     CoopGridTheme(darkTheme = true) {
-        OtpScreen(currentLanguage = AppLanguage.HINGLISH)
+        OtpScreen()
     }
 }

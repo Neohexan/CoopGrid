@@ -39,7 +39,6 @@ fun NavGraphBuilder.employerNavGraph(
             val authViewModel: EmpAuthViewModel = viewModel(viewModelStoreOwner = parentEntry)
 
             PhoneNumberScreen(
-                currentLanguage = currentLanguage,
                 viewModel = authViewModel,
                 onNavigateToOtp = {
                     navController.navigate(EmployerRoutes.OTP_VERIFICATION)

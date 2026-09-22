@@ -1,6 +1,10 @@
 package com.example.coopgrid.worker.registration.presentation.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -17,7 +21,9 @@ fun AppTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     singleLine: Boolean = true,
     leadingIcon: @Composable (() -> Unit)? = null,
-    trailingIcon: @Composable (() -> Unit)? = null
+    trailingIcon: @Composable (() -> Unit)? = null,
+    isError: Boolean = false,               // 👈 Optional (Default false - Backward Compatible)
+    errorMessage: String? = null
 ) {
     OutlinedTextField(
         value = value,
@@ -39,7 +45,27 @@ fun AppTextField(
             unfocusedBorderColor = MaterialTheme.colorScheme.outline,
             focusedContainerColor = MaterialTheme.colorScheme.background,
             unfocusedContainerColor = MaterialTheme.colorScheme.background,
-            cursorColor = MaterialTheme.colorScheme.onBackground
+            cursorColor = MaterialTheme.colorScheme.onBackground,
+
+            // Error states colors (Theme defaults ke according)
+            errorBorderColor = MaterialTheme.colorScheme.error,
+            errorLeadingIconColor = MaterialTheme.colorScheme.error,
+            errorTrailingIconColor = MaterialTheme.colorScheme.error
         )
     )
+    // Error message handling with smooth visibility
+    AnimatedVisibility(
+        visible = isError && !errorMessage.isNullOrBlank(),
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        errorMessage?.let { error ->
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+            )
+        }
+    }
 }

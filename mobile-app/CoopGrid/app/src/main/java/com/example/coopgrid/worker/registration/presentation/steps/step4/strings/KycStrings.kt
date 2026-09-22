@@ -38,7 +38,11 @@ data class KycStrings(
     val uploadAction: String,
     val changeAction: String,
     val invalidDocNumberError: String,
-    val fillRequiredKycError: String
+    val fillRequiredKycError: String,
+
+    // error ke liye hai
+    val backPhotoRequiredError : String,
+    val frontPhotoRequiredError: String,
 )
 
 fun getKycStrings(language: AppLanguage): KycStrings {
@@ -67,7 +71,9 @@ fun getKycStrings(language: AppLanguage): KycStrings {
             uploadAction = "Upload",
             changeAction = "Change",
             invalidDocNumberError = "Please enter a valid document number format",
-            fillRequiredKycError = "Please upload required document photos to proceed"
+            fillRequiredKycError = "Please upload required document photos to proceed",
+            backPhotoRequiredError = "Back photo dena zaroori hai(T)",
+            frontPhotoRequiredError = "Front photo dena zaroori hai(T)"
         )
 
         AppLanguage.HINGLISH -> KycStrings(
@@ -94,7 +100,9 @@ fun getKycStrings(language: AppLanguage): KycStrings {
             uploadAction = "Upload",
             changeAction = "Badlein",
             invalidDocNumberError = "Kripya sahi document number enter karein",
-            fillRequiredKycError = "Kripya sabhi zaroori documents ki photo upload karein"
+            fillRequiredKycError = "Kripya sabhi zaroori documents ki photo upload karein",
+            backPhotoRequiredError = "Back photo dena zaroori hai(T)",
+            frontPhotoRequiredError = "Front photo dena zaroori hai(T)"
         )
     }
 }

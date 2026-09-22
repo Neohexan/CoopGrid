@@ -36,6 +36,8 @@ import com.example.coopgrid.worker.dashboard.WorkerJobViewModel
 import com.example.coopgrid.worker.dashboard.profile.WorkerProfileScreen
 import com.example.coopgrid.worker.dashboard.screen.JobDetailsScreen
 import com.example.coopgrid.worker.dashboard.strings.dummyServerBannersData
+import com.example.coopgrid.worker.registration.navigation.WorkerRoute
+import com.example.coopgrid.worker.registration.navigation.workerNavGraph
 
 @Composable
 fun AppNavGraph(
@@ -98,13 +100,23 @@ fun AppNavGraph(
                     navController.navigate(Screen.Login.route)
                 },
                 onRegisterWorkerClick = {
-                    navController.navigate(Screen.WorkerStep1.route)
+                    navController.navigate(WorkerRoute.OnboardingGraph)
                 },
                 onRegisterEmployerClick = {
                     navController.navigate(EmployerRoutes.GRAPH_ROUTE)
                 }
             )
         }
+
+        workerNavGraph(
+            navController = navController,
+            onOnboardingComplete = {
+                // Clear Onboarding Graph from backstack & Go to Home Screen
+                navController.navigate(Screen.WorkerHome.route) {
+                    popUpTo<WorkerRoute.OnboardingGraph> { inclusive = true }
+                }
+            }
+        )
 
         // 2. Naya Employer Flow (Graph Registration)
         employerNavGraph(

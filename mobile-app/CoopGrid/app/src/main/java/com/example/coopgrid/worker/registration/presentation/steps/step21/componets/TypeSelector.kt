@@ -1,5 +1,4 @@
-package com.example.coopgrid.worker.registration.presentation.steps.step3.components
-
+package com.example.coopgrid.worker.registration.presentation.steps.step21.componets
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -17,23 +16,23 @@ import com.example.coopgrid.worker.registration.presentation.steps.step3.model.A
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddressTypeSelector(
-    selectedType: AddressType,
-    onTypeSelected: (AddressType) -> Unit,
-    languageViewModel: LanguageViewModel = hiltViewModel(),
+fun <T> TypeSelector(
+    items: List<T>,
+    selectedItem: T?,
+    onItemSelected: (T) -> Unit,
+    itemLabel: (T) -> String,
     modifier: Modifier = Modifier
 ) {
-    val currentLanguage by languageViewModel.currentLanguage.collectAsState()
     LazyRow(
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(AddressType.entries.toTypedArray()) { type ->
-            val label = if (currentLanguage == AppLanguage.HINGLISH) type.labelHinglish else type.labelEnglish
+        items(items) { item ->
+            val isSelected = item == selectedItem
             FilterChip(
-                selected = (type == selectedType),
-                onClick = { onTypeSelected(type) },
-                label = { Text(text = label) }
+                selected = isSelected,
+                onClick = { onItemSelected(item) },
+                label = { Text(text = itemLabel(item)) }
             )
         }
     }

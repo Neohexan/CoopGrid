@@ -10,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.coopgrid.common.LanguageViewModel
 import com.example.coopgrid.ui.theme.AppLanguage
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.worker.registration.presentation.steps.step22.components.MachineryRentalCard
@@ -19,11 +21,12 @@ import com.example.coopgrid.worker.registration.presentation.steps.step22.string
 
 @Composable
 fun MachineryRentalScreen(
-    currentLanguage: AppLanguage,
+    languageViewModel: LanguageViewModel = hiltViewModel(),
     initialItems: List<MachineryRentalItem> = listOf(MachineryRentalItem()),
     onSaveAndContinue: (List<MachineryRentalItem>) -> Unit
 ) {
-    val strings = remember(currentLanguage) { getMachineryStrings(currentLanguage) }
+    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
+    val strings = getMachineryStrings(selectedLanguage)
 
     // Dynamic List State (Max 5 Machines)
     var machineryList by remember { mutableStateOf(initialItems) }
@@ -61,7 +64,6 @@ fun MachineryRentalScreen(
                     item = item,
                     categories = SampleMachineryCategories,
                     strings = strings,
-                    currentLanguage = currentLanguage,
                     showRemoveButton = machineryList.size > 1,
                     onItemChange = { updatedItem ->
                         validationError = null
@@ -129,7 +131,7 @@ fun MachineryRentalScreen(
                 }
 
                 if (hasInvalidItem) {
-                    validationError = if (currentLanguage == AppLanguage.HINGLISH)
+                    validationError = if (selectedLanguage == AppLanguage.HINGLISH)
                         "Kripya sabhi machines ki Category aur Rate bharein."
                     else
                         "Please fill in Category and Rate for all machinery items."
@@ -148,7 +150,6 @@ fun MachineryRentalScreenPreview() {
     MaterialTheme {
         Surface {
             MachineryRentalScreen(
-                currentLanguage = AppLanguage.ENGLISH,
                 onSaveAndContinue = {}
             )
         }

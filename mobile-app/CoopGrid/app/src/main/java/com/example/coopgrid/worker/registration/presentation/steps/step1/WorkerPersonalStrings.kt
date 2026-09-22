@@ -19,7 +19,11 @@ data class WorkerPersonalStrings(
     val emailLabel: String,
     val emailHint: String,
     val optionalTag: String,
-    val nextButton: String
+    val nextButton: String,
+    val invalidEmailError: String,
+
+    val confirmButton: String,
+    val cancelButton: String
 )
 
 fun getWorkerPersonalStrings(language: AppLanguage): WorkerPersonalStrings {
@@ -40,7 +44,11 @@ fun getWorkerPersonalStrings(language: AppLanguage): WorkerPersonalStrings {
             emailLabel = "Email Address",
             emailHint = "example@mail.com",
             optionalTag = "(Optional)",
-            nextButton = "Aage Badhein"
+            nextButton = "Aage Badhein",
+            invalidEmailError = "Kripya sahi email address darj karein (e.g. name@example.com).",
+
+            confirmButton = "Confirm",
+            cancelButton = "Radd Karein"
         )
         else -> WorkerPersonalStrings(
             title = "Personal Details",
@@ -58,7 +66,10 @@ fun getWorkerPersonalStrings(language: AppLanguage): WorkerPersonalStrings {
             emailLabel = "Email Address",
             emailHint = "example@mail.com",
             optionalTag = "(Optional)",
-            nextButton = "Save & Continue"
+            nextButton = "Save & Continue",
+            invalidEmailError = "Please enter a valid email address (e.g. name@example.com)",
+            confirmButton = "OK",
+            cancelButton = "Cancel"
         )
     }
 }

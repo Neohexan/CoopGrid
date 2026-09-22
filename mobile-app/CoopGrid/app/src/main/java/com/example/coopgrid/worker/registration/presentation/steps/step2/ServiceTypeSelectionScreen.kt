@@ -10,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.coopgrid.common.LanguageViewModel
 import com.example.coopgrid.ui.theme.AppLanguage
 import com.example.coopgrid.worker.registration.presentation.steps.step2.components.ServiceTypeOptionCard
 import com.example.coopgrid.worker.registration.presentation.steps.step2.model.ServiceOfferingType
@@ -17,11 +19,12 @@ import com.example.coopgrid.worker.registration.presentation.steps.step2.strings
 
 @Composable
 fun ServiceTypeSelectionScreen(
-    currentLanguage: AppLanguage,
     initialSelectedType: ServiceOfferingType? = null,
-    onNextClicked: (ServiceOfferingType) -> Unit
+    onNextClicked: (ServiceOfferingType) -> Unit,
+    languageViewModel: LanguageViewModel = hiltViewModel(),
 ) {
-    val strings = remember(currentLanguage) { getServiceTypeStrings(currentLanguage) }
+    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
+    val strings =  getServiceTypeStrings(selectedLanguage)
 
     // Single selection state
     var selectedType by remember { mutableStateOf(initialSelectedType) }
@@ -125,7 +128,6 @@ fun ServiceTypeSelectionHinglishPreview() {
     MaterialTheme {
         Surface {
             ServiceTypeSelectionScreen(
-                currentLanguage = AppLanguage.HINGLISH,
                 initialSelectedType = ServiceOfferingType.PERSONAL_SKILL,
                 onNextClicked = {}
             )
@@ -139,7 +141,6 @@ fun ServiceTypeSelectionEnglishPreview() {
     MaterialTheme {
         Surface {
             ServiceTypeSelectionScreen(
-                currentLanguage = AppLanguage.ENGLISH,
                 initialSelectedType = ServiceOfferingType.MACHINERY_RENTAL,
                 onNextClicked = {}
             )

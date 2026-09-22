@@ -15,23 +15,25 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.coopgrid.common.LanguageViewModel
 import com.example.coopgrid.ui.theme.AppLanguage
 import com.example.coopgrid.ui.theme.CoopGridTheme
 import com.example.coopgrid.ui.theme.GridGreenAccent
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.worker.registration.presentation.components.AppTextField
-import com.example.coopgrid.worker.registration.presentation.steps.step0.WorkerAuthViewModel
+import com.example.coopgrid.worker.registration.presentation.steps.step0.WorkerAuthViewModelStepZero
 import com.example.coopgrid.worker.registration.presentation.steps.step0.string.getPhoneNumStrings
 
 @Composable
 fun PhoneNumberScreen(
-    currentLanguage: AppLanguage,
-    viewModel : WorkerAuthViewModel = viewModel(),
+    viewModel : WorkerAuthViewModelStepZero = hiltViewModel(),
     onNavigateToOtp: () -> Unit = {},
     onNavigateToTerms: () -> Unit = {},
+    languageViewModel: LanguageViewModel = hiltViewModel(),
 ) {
-    val strings = getPhoneNumStrings(currentLanguage)
+    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
+    val strings = getPhoneNumStrings(selectedLanguage)
     val state by viewModel.uiState.collectAsState()
 
     Column(
@@ -121,9 +123,6 @@ fun PhoneNumberScreen(
 
             // Clickable Terms & Privacy Policy Text
             TermsAndPrivacyText(
-                fullText = strings.termsAgreementFull,
-                highlightText = strings.termsHighlightText,
-                highlightColor = GridGreenAccent, // Aapka Custom Accent Color
                 onTermsClick = {
                     onNavigateToTerms() // Navigation Callback
                 },
@@ -142,7 +141,7 @@ fun PhoneNumberScreen(
 @Composable
 fun PhoneNumberScreenEnglishLightPreview() {
     CoopGridTheme(darkTheme = false) {
-        PhoneNumberScreen(currentLanguage = AppLanguage.ENGLISH)
+        PhoneNumberScreen()
     }
 }
 
@@ -150,6 +149,6 @@ fun PhoneNumberScreenEnglishLightPreview() {
 @Composable
 fun PhoneNumberScreenHinglishDarkPreview() {
     CoopGridTheme(darkTheme = true) {
-        PhoneNumberScreen(currentLanguage = AppLanguage.HINGLISH)
+        PhoneNumberScreen()
     }
 }

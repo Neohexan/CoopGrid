@@ -19,11 +19,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.coopgrid.ui.theme.AppLanguage
+import com.example.coopgrid.common.LanguageViewModel
 import com.example.coopgrid.ui.theme.CoopGridTheme
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.worker.registration.presentation.components.AppTextField
+import com.example.coopgrid.worker.registration.presentation.steps.step1.model.ScreenValidation
 import com.example.coopgrid.worker.registration.viewmodel.WorkerFormState
 import com.example.coopgrid.worker.registration.viewmodel.WorkerFormViewModel
 import java.text.SimpleDateFormat
@@ -32,14 +34,12 @@ import java.util.Locale
 
 @Composable
 fun WorkerPersonalScreen(
-    currentLanguage: AppLanguage,
     onNextClick: () -> Unit,
-    viewModel: WorkerFormViewModel = viewModel()
+    viewModel: WorkerFormViewModel = viewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
 
     WorkerPersonalContent(
-        currentLanguage = currentLanguage,
         state = state,
         onFullNameChange = viewModel::onFullNameChange,
         onGenderChange = viewModel::onGenderChange,
@@ -53,16 +53,17 @@ fun WorkerPersonalScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkerPersonalContent(
-    currentLanguage: AppLanguage,
     state: WorkerFormState,
     onFullNameChange: (String) -> Unit,
     onGenderChange: (String) -> Unit,
     onDobChange: (Long?) -> Unit,
     onAltPhoneChange: (String) -> Unit,
     onEmailChange: (String) -> Unit,
+    languageViewModel: LanguageViewModel = hiltViewModel(),
     onNextClick: () -> Unit
 ) {
-    val strings = remember(currentLanguage) { getWorkerPersonalStrings(currentLanguage) }
+    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
+    val strings = getWorkerPersonalStrings(selectedLanguage)
     var showDatePicker by remember { mutableStateOf(false) }
 
     val formattedDob = remember(state.selectedDobMillis) {
@@ -70,6 +71,10 @@ fun WorkerPersonalContent(
             SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(it))
         } ?: ""
     }
+    val isEmailValid = remember(state.email) {
+        state.email.isBlank() || ScreenValidation.isValidEmail(state.email)
+    }
+
 
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState(
@@ -142,7 +147,12 @@ fun WorkerPersonalContent(
             Spacer(modifier = Modifier.height(8.dp))
             AppTextField(
                 value = state.fullName,
-                onValueChange = onFullNameChange,
+                onValueChange = { input ->
+                    // Direct restraint: Max 50 characters, extra characters enter nahi honge
+                    if (input.length <= ScreenValidation.MAX_NAME_LENGTH) {
+                        onFullNameChange(input)
+                    }
+                },
                 placeholderText = strings.fullNameHint,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
@@ -215,6 +225,52 @@ fun WorkerPersonalContent(
                 )
             }
 
+            // -------------------------------------------------------------
+            // 4. MATERIAL 3 DATE PICKER DIALOG (MAX AGE 18 RESTRICTION)
+            // -------------------------------------------------------------
+            if (showDatePicker) {
+                // Calculate 18 years ago timestamp
+                val default18YearsAgoMillis = remember { ScreenValidation.getMax18YearsAgoMillis() }
+
+                val datePickerState = rememberDatePickerState(
+                    // 1. Initial selected date (Ya to pehle se selected date ya default 18 saal purani date)
+                    initialSelectedDateMillis = state.selectedDobMillis ?: default18YearsAgoMillis,
+
+                    // 2. 🟢 THIS FIXES IT: Calendar open hote hi 18 saal purana month/year dikhayega!
+                    initialDisplayedMonthMillis = state.selectedDobMillis ?: default18YearsAgoMillis,
+
+                    // 3. Selection restriction (18 saal se chote dates grayed-out rahenge)
+                    selectableDates = object : SelectableDates {
+                        override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                            return utcTimeMillis <= default18YearsAgoMillis
+                        }
+                    }
+                )
+
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                datePickerState.selectedDateMillis?.let { selectedMillis ->
+                                    onDobChange(selectedMillis)
+                                }
+                                showDatePicker = false
+                            }
+                        ) {
+                            Text(strings.confirmButton)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDatePicker = false }) {
+                            Text(strings.cancelButton)
+                        }
+                    }
+                ) {
+                    DatePicker(state = datePickerState)
+                }
+            }
+
             Spacer(modifier = Modifier.height(20.dp))
 
             // 4. ALTERNATIVE PHONE NUMBER
@@ -261,12 +317,17 @@ fun WorkerPersonalContent(
             Spacer(modifier = Modifier.height(8.dp))
             AppTextField(
                 value = state.email,
-                onValueChange = onEmailChange,
+                onValueChange = { input ->
+                    // Space characters prevent karein email input me
+                    onEmailChange(input.trim().replace(" ", ""))
+                },
                 placeholderText = strings.emailHint,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Done
-                )
+                ),
+                isError = !isEmailValid,
+                errorMessage = if (!isEmailValid) strings.invalidEmailError else null
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -287,7 +348,7 @@ fun WorkerPersonalContent(
 @Composable
 fun WorkerPersonalScreenHinglishPreview() {
     CoopGridTheme(darkTheme = false) {
-        WorkerPersonalScreen(currentLanguage = AppLanguage.ENGLISH,
+        WorkerPersonalScreen(
             onNextClick = {})
     }
 }
@@ -296,7 +357,7 @@ fun WorkerPersonalScreenHinglishPreview() {
 @Composable
 fun WorkerPersonalScreenEnglishPreview() {
     CoopGridTheme(darkTheme = true) {
-        WorkerPersonalScreen(currentLanguage = AppLanguage.ENGLISH,
+        WorkerPersonalScreen(
             onNextClick = {})
     }
 }

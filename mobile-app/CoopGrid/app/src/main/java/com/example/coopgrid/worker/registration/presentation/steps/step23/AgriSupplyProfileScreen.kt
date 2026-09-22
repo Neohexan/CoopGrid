@@ -12,6 +12,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.coopgrid.ui.theme.AppLanguage
 import androidx.compose.ui.Alignment
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.coopgrid.common.LanguageViewModel
 import com.example.coopgrid.worker.registration.presentation.components.AppDropdown
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.worker.registration.presentation.components.AppTextField
@@ -22,13 +24,14 @@ import kotlin.math.roundToInt
 
 @Composable
 fun AgriSupplyProfileScreen(
-    currentLanguage: AppLanguage,
     item: AgriSupplyProfile,
     initialProfile: AgriSupplyProfile = AgriSupplyProfile(),
     onItemChange: (AgriSupplyProfile) -> Unit,
-    onSaveAndContinue: (AgriSupplyProfile) -> Unit
+    onSaveAndContinue: (AgriSupplyProfile) -> Unit,
+    languageViewModel: LanguageViewModel = hiltViewModel(),
 ) {
-    val strings = remember(currentLanguage) { getAgriProfileStrings(currentLanguage) }
+    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
+    val strings =  getAgriProfileStrings(selectedLanguage)
     var profile by remember { mutableStateOf(initialProfile) }
     var validationError by remember { mutableStateOf<String?>(null) }
 
@@ -78,7 +81,7 @@ fun AgriSupplyProfileScreen(
             AppDropdown(
                 items = SampleAgriBusinessCategories,
                 selectedItem = selectedCategory,
-                itemLabel = { if (currentLanguage == AppLanguage.HINGLISH) it.nameHinglish else it.nameEnglish },
+                itemLabel = { if (selectedLanguage == AppLanguage.HINGLISH) it.nameHinglish else it.nameEnglish },
                 placeholder = strings.selectCategoriesLabel,
                 onItemSelected = { cat ->
                     validationError = null
@@ -95,7 +98,7 @@ fun AgriSupplyProfileScreen(
                 AppDropdown(
                     items = selectedCategory.subCategories,
                     selectedItem = selectedSubCategory,
-                    itemLabel = { if (currentLanguage == AppLanguage.HINGLISH) it.nameHinglish else it.nameEnglish },
+                    itemLabel = { if (selectedLanguage == AppLanguage.HINGLISH) it.nameHinglish else it.nameEnglish },
                     placeholder = strings.selectSubCategoriesLabel,
                     onItemSelected = { subCat ->
                         profile = profile.copy(selectedSubCategoryIds = listOf(subCat.id))
@@ -193,7 +196,7 @@ fun AgriSupplyProfileScreen(
             text = strings.saveAndContinue,
             onClick = {
                 if (profile.selectedCategoryIds.isEmpty()) {
-                    validationError = if (currentLanguage == AppLanguage.HINGLISH)
+                    validationError = if (selectedLanguage == AppLanguage.HINGLISH)
                         "Kripya kam se kam ek Category zaroor chunein."
                     else
                         "Please select at least one Category."
@@ -212,7 +215,6 @@ fun AgriSupplyScreenPreview() {
     MaterialTheme {
         Surface {
             AgriSupplyProfileScreen(
-                currentLanguage = AppLanguage.HINGLISH,
                 onSaveAndContinue = {},
                 item = AgriSupplyProfile(
 

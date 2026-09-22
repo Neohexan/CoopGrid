@@ -4,6 +4,7 @@ package com.example.coopgrid.worker.registration.presentation.steps.step4.model
 enum class IdentityDocType(val label: String) {
     AADHAAR("Aadhaar Card"),
     PAN("PAN Card"),
+    VOTER_ID( "Voter Card"),
     DRIVING_LICENSE("Driving License")
 }
 

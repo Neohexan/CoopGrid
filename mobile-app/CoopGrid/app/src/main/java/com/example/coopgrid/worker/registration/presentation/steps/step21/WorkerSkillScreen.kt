@@ -12,24 +12,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.coopgrid.ui.theme.AppLanguage
 import com.example.coopgrid.ui.theme.CoopGridTheme
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.worker.registration.viewmodel.WorkerFormState
 import com.example.coopgrid.worker.registration.viewmodel.WorkerFormViewModel
 import com.example.coopgrid.worker.registration.viewmodel.WorkerSkillItem
+import com.example.coopgrid.common.LanguageViewModel
 
 @Composable
 fun WorkerSkillScreen(
-    currentLanguage: AppLanguage,
     onNextClick: () -> Unit,
-    viewModel: WorkerFormViewModel = viewModel()
+    viewModel: WorkerFormViewModel = hiltViewModel(),
 ) {
+
     val state by viewModel.uiState.collectAsState()
 
     WorkerSkillContent(
-        currentLanguage = currentLanguage,
         state = state,
         onAddSkill = viewModel::addSkill,
         onRemoveSkill = viewModel::removeSkill,
@@ -40,14 +40,15 @@ fun WorkerSkillScreen(
 
 @Composable
 fun WorkerSkillContent(
-    currentLanguage: AppLanguage,
     state: WorkerFormState,
     onAddSkill: () -> Unit,
     onRemoveSkill: (String) -> Unit,
     onUpdateSkill: (WorkerSkillItem) -> Unit,
-    onNextClick: () -> Unit
+    onNextClick: () -> Unit,
+    languageViewModel: LanguageViewModel = hiltViewModel(),
 ) {
-    val strings = remember(currentLanguage) { getWorkerSkillStrings(currentLanguage) }
+    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
+    val strings = getWorkerSkillStrings(selectedLanguage)
 
     Column(
         modifier = Modifier
@@ -88,7 +89,6 @@ fun WorkerSkillContent(
                     index = index,
                     skillItem = skillItem,
                     strings = strings,
-                    currentLanguage = currentLanguage,
                     showDelete = state.skillsList.size > 1, // Minimum 1 card mandatory
                     onUpdate = onUpdateSkill,
                     onDelete = { onRemoveSkill(skillItem.id) }
@@ -128,8 +128,9 @@ fun WorkerSkillContent(
 @Composable
 fun EmployerPersonalScreenDarkPreview() {
     CoopGridTheme(darkTheme = true) {
-        WorkerSkillScreen(currentLanguage = AppLanguage.HINGLISH,
-            onNextClick = {})
+        WorkerSkillScreen(
+            onNextClick = {},
+        )
     }
 }
 
@@ -137,7 +138,8 @@ fun EmployerPersonalScreenDarkPreview() {
 @Composable
 fun EmployerPersonalScreenLightPreview() {
     CoopGridTheme(darkTheme = false) {
-        WorkerSkillScreen(currentLanguage = AppLanguage.ENGLISH,
-            onNextClick = {})
+        WorkerSkillScreen(
+            onNextClick = {},
+        )
     }
 }

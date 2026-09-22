@@ -15,9 +15,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.coopgrid.common.LanguageViewModel
 import com.example.coopgrid.ui.theme.AppLanguage
 import com.example.coopgrid.worker.registration.presentation.components.AppDropdown
 import com.example.coopgrid.worker.registration.presentation.components.AppTextField
+import com.example.coopgrid.worker.registration.presentation.steps.step21.componets.TypeSelector
 import com.example.coopgrid.worker.registration.presentation.steps.step21.deta.SkillDataRepository
 import com.example.coopgrid.worker.registration.presentation.steps.step21.deta.strings.getSkillStrings
 import com.example.coopgrid.worker.registration.viewmodel.AvailabilityType
@@ -31,13 +34,14 @@ fun WorkerSkillCard(
     index: Int,
     skillItem: WorkerSkillItem,
     strings: WorkerSkillStrings,
-    currentLanguage: AppLanguage,
     showDelete: Boolean,
     onUpdate: (WorkerSkillItem) -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    languageViewModel: LanguageViewModel = hiltViewModel(),
 ) {
     val categories = remember { SkillDataRepository.getCategories() }
-    val skillStrings = remember(currentLanguage) { getSkillStrings(currentLanguage) }
+    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
+    val skillStrings =  getSkillStrings(selectedLanguage)
     val selectedCategory = remember(skillItem.primaryCategory) {
         categories.find { it.id == skillItem.primaryCategory }
     }
@@ -182,15 +186,14 @@ fun WorkerSkillCard(
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
             )
             Spacer(modifier = Modifier.height(6.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf("Fresh", "1-3 Yrs", "3-5 Yrs", "5+ Yrs").forEach { exp ->
-                    FilterChip(
-                        selected = skillItem.experienceYears == exp,
-                        onClick = { onUpdate(skillItem.copy(experienceYears = exp)) },
-                        label = { Text(exp) }
-                    )
+            TypeSelector(
+                items = listOf("Fresh", "1-3 Yrs", "3-5 Yrs", "5+ Yrs"),
+                selectedItem = skillItem.experienceYears,
+                itemLabel = { exp -> exp },
+                onItemSelected = { selectedExp ->
+                    onUpdate(skillItem.copy(experienceYears = selectedExp))
                 }
-            }
+            )
 
             Spacer(modifier = Modifier.height(14.dp))
 
@@ -200,19 +203,16 @@ fun WorkerSkillCard(
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
             )
             Spacer(modifier = Modifier.height(6.dp))
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                AvailabilityType.values().forEach { avail ->
-                    val label = if (currentLanguage == AppLanguage.HINGLISH) avail.labelHinglish else avail.labelEnglish
-                    FilterChip(
-                        selected = skillItem.availabilityType == avail,
-                        onClick = { onUpdate(skillItem.copy(availabilityType = avail)) },
-                        label = { Text(label) }
-                    )
+            TypeSelector(
+                items = AvailabilityType.entries,
+                selectedItem = skillItem.availabilityType,
+                itemLabel = { avail ->
+                    if (selectedLanguage == AppLanguage.HINGLISH) avail.labelHinglish else avail.labelEnglish
+                },
+                onItemSelected = { selectedAvail ->
+                    onUpdate(skillItem.copy(availabilityType = selectedAvail))
                 }
-            }
+            )
 
             Spacer(modifier = Modifier.height(14.dp))
 
@@ -272,7 +272,7 @@ fun WorkerSkillCard(
                 AppDropdown(
                     items = WageType.values().toList(),
                     selectedItem = skillItem.wageType,
-                    itemLabel = { if (currentLanguage == AppLanguage.HINGLISH) it.labelHinglish else it.labelEnglish },
+                    itemLabel = { if (selectedLanguage == AppLanguage.HINGLISH) it.labelHinglish else it.labelEnglish },
                     placeholder = "Select Unit",
                     onItemSelected = { onUpdate(skillItem.copy(wageType = it)) },
                     modifier = Modifier.weight(1f)

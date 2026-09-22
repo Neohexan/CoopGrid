@@ -13,6 +13,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.coopgrid.common.LanguageViewModel
 import com.example.coopgrid.ui.theme.AppLanguage
 import com.example.coopgrid.ui.theme.CoopGridTheme
 import com.example.coopgrid.worker.registration.presentation.components.AppDropdown
@@ -31,12 +33,13 @@ import kotlin.collections.map
 
 @Composable
 fun WorkerAddressScreen(
-    currentLanguage: AppLanguage,
     initialAddress: WorkerAddress = WorkerAddress(),
-    onSaveAndContinue: (WorkerAddress) -> Unit
+    onSaveAndContinue: (WorkerAddress) -> Unit,
+    languageViewModel: LanguageViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
-    val strings = remember(currentLanguage) { getAddressStrings(currentLanguage) }
+    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
+    val strings = getAddressStrings(selectedLanguage)
 
     // Direct Screen ke andar res/raw/india_locations.json se load
     val allLocations = remember {
@@ -97,7 +100,6 @@ fun WorkerAddressScreen(
             Text(text = strings.selectAddressType, style = MaterialTheme.typography.labelMedium)
             AddressTypeSelector(
                 selectedType = address.addressType,
-                currentLanguage = currentLanguage,
                 onTypeSelected = { address = address.copy(addressType = it) }
             )
 
@@ -239,9 +241,8 @@ fun WorkerAddressScreenPreview() {
     CoopGridTheme {
         Surface {
             WorkerAddressScreen(
-                currentLanguage = AppLanguage.HINGLISH,
                 initialAddress = WorkerAddress(),
-                onSaveAndContinue = {}
+                onSaveAndContinue = {},
             )
         }
     }
