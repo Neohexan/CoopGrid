@@ -1,4 +1,4 @@
-package com.example.coopgrid.employer.registration.presentation.steps.step3
+package com.example.coopgrid.employer.registration.presentation.steps.step3_1
 
 
 import androidx.compose.foundation.background
@@ -15,13 +15,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.coopgrid.employer.registration.presentation.components.AppPrimaryButton
-import com.example.coopgrid.employer.registration.presentation.steps.step3.components.AppDropdown
-import com.example.coopgrid.employer.registration.presentation.steps.step3.components.CompanyFormSection
-import com.example.coopgrid.employer.registration.presentation.steps.step3.components.FarmerFormSection
-import com.example.coopgrid.employer.registration.presentation.steps.step3.components.HouseholdFormSection
-import com.example.coopgrid.employer.registration.presentation.steps.step3.components.WholesalerFormSection
-import com.example.coopgrid.employer.registration.presentation.steps.step3.model.EmployerCategory
-import com.example.coopgrid.employer.registration.presentation.steps.step3.strings.getCategoryStrings
+import com.example.coopgrid.employer.registration.presentation.steps.step3_1.components.AppDropdown
+import com.example.coopgrid.employer.registration.presentation.steps.step3_1.components.CompanyFormSection
+import com.example.coopgrid.employer.registration.presentation.steps.step3_1.components.FarmerFormSection
+import com.example.coopgrid.employer.registration.presentation.steps.step3_1.components.HouseholdFormSection
+import com.example.coopgrid.employer.registration.presentation.steps.step3_1.components.WholesalerFormSection
+import com.example.coopgrid.employer.registration.presentation.steps.step3_1.model.EmployerCategory
+import com.example.coopgrid.employer.registration.presentation.steps.step3_1.strings.getCategoryStrings
 import com.example.coopgrid.employer.registration.viewmodel.EmployerFormViewModel
 import com.example.coopgrid.ui.theme.AppLanguage
 import com.example.coopgrid.ui.theme.CoopGridTheme

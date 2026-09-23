@@ -1,5 +1,7 @@
 package com.example.coopgrid
 
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,13 +20,13 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-//    override fun attachBaseContext(newBase: Context) {
-//        val overrideConfig = Configuration(newBase.resources.configuration).apply {
-//            fontScale = 0.85f // 0.85f se text size XS (Extra Small) par lock ho jayega
-//        }
-//        val context = newBase.createConfigurationContext(overrideConfig)
-//        super.attachBaseContext(context)
-//    }
+    override fun attachBaseContext(newBase: Context) {
+        val overrideConfig = Configuration(newBase.resources.configuration).apply {
+            fontScale = 0.85f // 0.85f se text size XS (Extra Small) par lock ho jayega
+        }
+        val context = newBase.createConfigurationContext(overrideConfig)
+        super.attachBaseContext(context)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Step A: Install System Splash

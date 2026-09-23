@@ -24,8 +24,6 @@ fun EmployerCategoryScreen(
     )
 }
 
-
-
 @Preview(showBackground = true, showSystemUi = true, name = "English Preview")
 @Composable
 private fun EmployerCategoryEnglishPreview() {

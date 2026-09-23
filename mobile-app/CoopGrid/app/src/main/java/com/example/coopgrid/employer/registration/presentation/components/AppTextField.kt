@@ -17,7 +17,9 @@ fun AppTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     singleLine: Boolean = true,
     leadingIcon: @Composable (() -> Unit)? = null,
-    trailingIcon: @Composable (() -> Unit)? = null
+    trailingIcon: @Composable (() -> Unit)? = null,
+    isError: Boolean = false,               // 👈 Optional (Default false - Backward Compatible)
+    errorMessage: String? = null
 ) {
     OutlinedTextField(
         value = value,

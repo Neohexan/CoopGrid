@@ -1,4 +1,4 @@
-package com.example.coopgrid.employer.registration.presentation.steps.step3.components
+package com.example.coopgrid.employer.registration.presentation.steps.step3_1.components
 
 import com.example.coopgrid.worker.registration.presentation.steps.step3.strings.AddressStrings
 

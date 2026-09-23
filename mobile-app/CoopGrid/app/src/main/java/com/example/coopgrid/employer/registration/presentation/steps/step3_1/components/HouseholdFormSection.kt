@@ -1,4 +1,4 @@
-package com.example.coopgrid.employer.registration.presentation.steps.step3.components
+package com.example.coopgrid.employer.registration.presentation.steps.step3_1.components
 
 
 import androidx.compose.foundation.layout.*
@@ -13,8 +13,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.Alignment
 import com.example.coopgrid.employer.registration.presentation.components.AppTextField
-import com.example.coopgrid.employer.registration.presentation.steps.step3.model.IndianStates
-import com.example.coopgrid.employer.registration.presentation.steps.step3.strings.CategoryStrings
+import com.example.coopgrid.employer.registration.presentation.steps.step3_1.model.IndianStates
+import com.example.coopgrid.employer.registration.presentation.steps.step3_1.strings.CategoryStrings
 
 @Composable
 fun HouseholdFormSection(

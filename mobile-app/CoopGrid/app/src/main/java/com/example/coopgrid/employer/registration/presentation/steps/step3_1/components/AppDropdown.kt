@@ -1,4 +1,4 @@
-package com.example.coopgrid.employer.registration.presentation.steps.step3.components
+package com.example.coopgrid.employer.registration.presentation.steps.step3_1.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape

@@ -1,4 +1,4 @@
-package com.example.coopgrid.employer.registration.presentation.steps.step3.model
+package com.example.coopgrid.employer.registration.presentation.steps.step3_1.model
 
 
 object IndianStates {

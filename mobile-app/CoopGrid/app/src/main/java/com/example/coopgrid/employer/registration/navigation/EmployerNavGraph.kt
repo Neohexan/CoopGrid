@@ -12,7 +12,7 @@ import com.example.coopgrid.employer.registration.presentation.steps.step0.scree
 import com.example.coopgrid.employer.registration.presentation.steps.step0.screen.PhoneNumberScreen
 import com.example.coopgrid.employer.registration.presentation.steps.step0.screen.TermsAndConditionsScreen
 import com.example.coopgrid.employer.registration.presentation.steps.step1.EmployerPersonalScreen
-import com.example.coopgrid.employer.registration.presentation.steps.step3.EmployerServiceScreen
+import com.example.coopgrid.employer.registration.presentation.steps.step3_1.EmployerServiceScreen
 import com.example.coopgrid.employer.registration.viewmodel.EmployerFormViewModel
 import com.example.coopgrid.ui.theme.AppLanguage
 
