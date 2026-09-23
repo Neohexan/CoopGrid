@@ -1,0 +1,94 @@
+{
+    "categories": [
+        {
+            "ecc": 3,
+            "categoryName": "COMPANY",
+            "categoryList": [
+                {
+                    "bcc": 301,
+                    "nameEn": "IT & Software Services",
+                    "nameHi": "IT & Software Services",
+                    "subCategories": [
+                        {
+                            "scc": 3011,
+                            "nameEn": "Web & App Development",
+                            "nameHi": "Web aur App Development"
+                        },
+                        {
+                            "scc": 3012,
+                            "nameEn": "BPO / Call Center",
+                            "nameHi": "BPO / Call Center"
+                        },
+                        {
+                            "scc": 3013,
+                            "nameEn": "Digital Marketing Agency",
+                            "nameHi": "Digital Marketing Agency"
+                        }
+                    ]
+                },
+                {
+                    "bcc": 302,
+                    "nameEn": "Manufacturing & Factory",
+                    "nameHi": "Manufacturing & Factory",
+                    "subCategories": [
+                        {
+                            "scc": 3021,
+                            "nameEn": "Textile & Garments",
+                            "nameHi": "Kapda & Garments Factory"
+                        },
+                        {
+                            "scc": 3022,
+                            "nameEn": "Food Processing",
+                            "nameHi": "Food Processing & Packing"
+                        },
+                        {
+                            "scc": 3023,
+                            "nameEn": "Auto Spare Parts",
+                            "nameHi": "Auto Parts Manufacturing"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "ecc": 4,
+            "categoryName": "WHOLESALER",
+            "categoryList": [
+                {
+                    "bcc": 401,
+                    "nameEn": "Mandi & Grain Trader",
+                    "nameHi": "Mandi aur Anaj Vyapar",
+                    "subCategories": [
+                        {
+                            "scc": 4011,
+                            "nameEn": "Grains & Pulses",
+                            "nameHi": "Anaj aur Dal Vyapari"
+                        },
+                        {
+                            "scc": 4012,
+                            "nameEn": "Fruits & Vegetables",
+                            "nameHi": "Fal aur Sabzi Mandi"
+                        }
+                    ]
+                },
+                {
+                    "bcc": 402,
+                    "nameEn": "FMCG & Grocery Wholesale",
+                    "nameHi": "FMCG aur Grocery Wholesale",
+                    "subCategories": [
+                        {
+                            "scc": 4021,
+                            "nameEn": "Bulk Kirana Supply",
+                            "nameHi": "Bulk Kirana Supply"
+                        },
+                        {
+                            "scc": 4022,
+                            "nameEn": "Packaging Materials",
+                            "nameHi": "Packaging Material Wholesale"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
