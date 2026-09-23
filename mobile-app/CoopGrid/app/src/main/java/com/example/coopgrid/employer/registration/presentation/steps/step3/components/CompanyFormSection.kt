@@ -1,5 +1,4 @@
-package com.example.coopgrid.employer.registration.presentation.steps.step2.components
-
+package com.example.coopgrid.employer.registration.presentation.steps.step3.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
@@ -8,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.coopgrid.ui.theme.AppLanguage
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -18,39 +18,39 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.example.coopgrid.employer.registration.presentation.components.AppTextField
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.IndianStates
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.wholesaler.TradeType
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.wholesaler.WholesaleCategory
-import com.example.coopgrid.employer.registration.presentation.steps.step2.strings.CategoryStrings
-import com.example.coopgrid.ui.theme.AppLanguage
+import com.example.coopgrid.employer.registration.presentation.steps.step3.model.IndianStates
+import com.example.coopgrid.employer.registration.presentation.steps.step3.model.company.OrganizationType
+import com.example.coopgrid.employer.registration.presentation.steps.step3.model.company.WorkSector
+import com.example.coopgrid.employer.registration.presentation.steps.step3.strings.CategoryStrings
 
 @Composable
-fun WholesalerFormSection(
+fun CompanyFormSection(
     strings: CategoryStrings,
     currentLanguage: AppLanguage,
-    firmName: String,
-    onFirmNameChange: (String) -> Unit,
-    tradeType: TradeType,
-    onTradeTypeChange: (TradeType) -> Unit,
-    wholesaleCategory: WholesaleCategory,
-    onWholesaleCategoryChange: (WholesaleCategory) -> Unit,
-    mandiName: String,
-    onMandiNameChange: (String) -> Unit,
+    companyName: String,
+    onCompanyNameChange: (String) -> Unit,
+    orgType: OrganizationType,
+    onOrgTypeChange: (OrganizationType) -> Unit,
+    workSector: WorkSector,
+    onWorkSectorChange: (WorkSector) -> Unit,
+    buildingNo: String,
+    onBuildingNoChange: (String) -> Unit,
+    street: String,
+    onStreetChange: (String) -> Unit,
+    landmark: String,
+    onLandmarkChange: (String) -> Unit,
     city: String,
     onCityChange: (String) -> Unit,
     state: String,
     onStateChange: (String) -> Unit,
     pincode: String,
     onPincodeChange: (String) -> Unit,
-    isGodownSameAsShop: Boolean,
-    onGodownSameAsShopChange: (Boolean) -> Unit,
-    godownLandmark: String,
-    onGodownLandmarkChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+//    var workSector by remember { mutableStateOf(WorkSector.CONSTRUCTION) }
     Column(modifier = modifier.fillMaxWidth()) {
 
-        // ================= SECTION 1: BUSINESS PROFILE =================
+        // ================= SECTION 1: BUSINESS DETAILS =================
         Text(
             text = strings.businessDetailsHeader,
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
@@ -58,17 +58,17 @@ fun WholesalerFormSection(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 1. Firm / Shop Name
+        // 1. Company Name
         Text(
-            text = strings.firmNameLabel,
+            text = strings.companyNameLabel,
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
             color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.height(6.dp))
         AppTextField(
-            value = firmName,
-            onValueChange = onFirmNameChange,
-            placeholderText = strings.firmNameHint,
+            value = companyName,
+            onValueChange = onCompanyNameChange,
+            placeholderText = strings.companyNameHint,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Next
@@ -77,59 +77,68 @@ fun WholesalerFormSection(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 2. Trade Type Dropdown
+        // 2. Organization Type Dropdown
         Text(
-            text = strings.tradeTypeLabel,
+            text = strings.orgTypeLabel,
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
             color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.height(6.dp))
         AppDropdown(
-            label = strings.tradeTypeHint,
-            items = TradeType.entries,
-            selectedItem = tradeType,
-            onItemSelected = onTradeTypeChange,
+            label = strings.orgTypeHint,
+            items = OrganizationType.entries,
+            selectedItem = orgType,
+            onItemSelected = onOrgTypeChange,
             itemLabelMapper = { it.getDisplayName(currentLanguage) }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 3. Wholesale Category Dropdown
-        Text(
-            text = strings.wholesaleCategoryLabel,
-            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        // 3. Work Sector Dropdown (AppTextField completely removed)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = strings.workSectorLabel,
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = strings.optionalTag,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+            )
+        }
         Spacer(modifier = Modifier.height(6.dp))
+
         AppDropdown(
-            label = strings.wholesaleCategoryHint,
-            items = WholesaleCategory.entries,
-            selectedItem = wholesaleCategory,
-            onItemSelected = onWholesaleCategoryChange,
+            label = strings.workSectorHint,
+            items = WorkSector.entries,
+            selectedItem = workSector,
+            onItemSelected = onWorkSectorChange,
             itemLabelMapper = { it.getDisplayName(currentLanguage) }
         )
 
         Spacer(modifier = Modifier.height(28.dp))
 
-        // ================= SECTION 2: MANDI / SHOP ADDRESS =================
+        // ================= SECTION 2: OFFICE ADDRESS =================
         Text(
-            text = strings.mandiAddressHeader,
+            text = strings.addressDetailsHeader,
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 4. Mandi Name & Shop No.
+        // 4. Building / Suite No.
         Text(
-            text = strings.mandiNameLabel,
+            text = strings.buildingNoLabel,
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
             color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.height(6.dp))
         AppTextField(
-            value = mandiName,
-            onValueChange = onMandiNameChange,
-            placeholderText = strings.mandiNameHint,
+            value = buildingNo,
+            onValueChange = onBuildingNoChange,
+            placeholderText = strings.buildingNoHint,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Next
@@ -138,7 +147,53 @@ fun WholesalerFormSection(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 5. City
+        // 5. Street / Locality
+        Text(
+            text = strings.streetLabel,
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        AppTextField(
+            value = street,
+            onValueChange = onStreetChange,
+            placeholderText = strings.streetHint,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next
+            )
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 6. Landmark (Optional)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = strings.landmarkLabel,
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = strings.optionalTag,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+            )
+        }
+        Spacer(modifier = Modifier.height(6.dp))
+        AppTextField(
+            value = landmark,
+            onValueChange = onLandmarkChange,
+            placeholderText = strings.landmarkHint,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next
+            )
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 7. City
         Text(
             text = strings.cityLabel,
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
@@ -157,7 +212,7 @@ fun WholesalerFormSection(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 6. State Selector Dropdown
+        // 8. State Selector Dropdown
         Text(
             text = strings.stateLabel,
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
@@ -174,7 +229,7 @@ fun WholesalerFormSection(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 7. Pincode
+        // 9. Pincode
         Text(
             text = strings.pincodeLabel,
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
@@ -195,9 +250,16 @@ fun WholesalerFormSection(
             )
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // 8. GPS Location Coordinates Placeholder
+        // ================= SECTION 3: FUTURE LOCATION PLACEHOLDER =================
+        Text(
+            text = strings.locationPlaceholderLabel,
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+
         Surface(
             shape = RoundedCornerShape(8.dp),
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
@@ -225,53 +287,6 @@ fun WholesalerFormSection(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-        }
-
-        Spacer(modifier = Modifier.height(28.dp))
-
-        // ================= SECTION 3: GODOWN DETAILS =================
-        Text(
-            text = strings.godownHeader,
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Checkbox "Same as Shop Address"
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Checkbox(
-                checked = isGodownSameAsShop,
-                onCheckedChange = onGodownSameAsShopChange
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = strings.sameAsShopCheckbox,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }
-
-        if (!isGodownSameAsShop) {
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = strings.godownLandmarkLabel,
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            AppTextField(
-                value = godownLandmark,
-                onValueChange = onGodownLandmarkChange,
-                placeholderText = strings.godownLandmarkHint,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next
-                )
-            )
         }
     }
 }

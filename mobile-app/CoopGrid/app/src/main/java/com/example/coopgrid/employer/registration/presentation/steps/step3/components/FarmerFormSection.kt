@@ -1,4 +1,4 @@
-package com.example.coopgrid.employer.registration.presentation.steps.step2.components
+package com.example.coopgrid.employer.registration.presentation.steps.step3.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
@@ -17,9 +17,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.example.coopgrid.employer.registration.presentation.components.AppTextField
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.FarmDistance
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.IndianStates
-import com.example.coopgrid.employer.registration.presentation.steps.step2.strings.CategoryStrings
+import com.example.coopgrid.employer.registration.presentation.steps.step3.model.FarmDistance
+import com.example.coopgrid.employer.registration.presentation.steps.step3.model.IndianStates
+import com.example.coopgrid.employer.registration.presentation.steps.step3.strings.CategoryStrings
 import com.example.coopgrid.ui.theme.AppLanguage
 
 

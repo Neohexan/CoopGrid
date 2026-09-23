@@ -1,4 +1,4 @@
-package com.example.coopgrid.employer.registration.presentation.steps.step2.model.company
+package com.example.coopgrid.employer.registration.presentation.steps.step3.model.company
 
 import com.example.coopgrid.ui.theme.AppLanguage
 

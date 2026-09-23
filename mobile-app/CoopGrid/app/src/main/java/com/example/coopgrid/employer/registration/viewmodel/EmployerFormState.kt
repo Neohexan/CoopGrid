@@ -1,11 +1,11 @@
 package com.example.coopgrid.employer.registration.viewmodel
 
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.EmployerCategory
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.FarmDistance
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.company.OrganizationType
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.company.WorkSector
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.wholesaler.TradeType
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.wholesaler.WholesaleCategory
+import com.example.coopgrid.employer.registration.presentation.steps.step3.model.EmployerCategory
+import com.example.coopgrid.employer.registration.presentation.steps.step3.model.FarmDistance
+import com.example.coopgrid.employer.registration.presentation.steps.step3.model.company.OrganizationType
+import com.example.coopgrid.employer.registration.presentation.steps.step3.model.company.WorkSector
+import com.example.coopgrid.employer.registration.presentation.steps.step3.model.wholesaler.TradeType
+import com.example.coopgrid.employer.registration.presentation.steps.step3.model.wholesaler.WholesaleCategory
 
 
 data class EmployerFormState(
