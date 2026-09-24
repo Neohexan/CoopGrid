@@ -1,6 +1,7 @@
 package com.example.coopgrid.worker.registration.viewmodel
 
 import androidx.lifecycle.ViewModel
+import com.example.coopgrid.worker.registration.presentation.steps.step21.model.WorkerSkillItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

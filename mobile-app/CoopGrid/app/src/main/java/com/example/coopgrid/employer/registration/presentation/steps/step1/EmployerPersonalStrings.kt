@@ -17,7 +17,9 @@ data class EmployerPersonalStrings(
     val emailHint: String,
     val optionalTag: String,
     val nextButton: String,
-    val selectDateTitle: String
+    val selectDateTitle: String,
+    val confirmButton: String,
+    val cancelButton: String
 )
 
 private val EnglishPersonalStrings = EmployerPersonalStrings(
@@ -35,7 +37,9 @@ private val EnglishPersonalStrings = EmployerPersonalStrings(
     emailHint = "e.g. employer@company.com",
     optionalTag = "(Optional)",
     nextButton = "Save & Continue",
-    selectDateTitle = "Select Date of Birth"
+    selectDateTitle = "Select Date of Birth",
+    confirmButton = "OK",
+    cancelButton = "Cancel"
 )
 
 private val HinglishPersonalStrings = EmployerPersonalStrings(
@@ -53,7 +57,9 @@ private val HinglishPersonalStrings = EmployerPersonalStrings(
     emailHint = "Jaise: employer@company.com",
     optionalTag = "(Aichhik / Optional)",
     nextButton = "Aage Badhein",
-    selectDateTitle = "Janm Tithi Chunein"
+    selectDateTitle = "Janm Tithi Chunein",
+    confirmButton = "Confirm",
+    cancelButton = "Radd Karein"
 )
 
 fun getEmployerPersonalStrings(language: AppLanguage): EmployerPersonalStrings {

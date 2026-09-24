@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -18,51 +19,59 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.coopgrid.common.LanguageViewModel
 import com.example.coopgrid.ui.theme.AppLanguage
+import com.example.coopgrid.worker.registration.data.util.WorkerDataLoader
 import com.example.coopgrid.worker.registration.presentation.components.AppDropdown
 import com.example.coopgrid.worker.registration.presentation.components.AppTextField
 import com.example.coopgrid.worker.registration.presentation.steps.step21.componets.TypeSelector
-import com.example.coopgrid.worker.registration.presentation.steps.step21.deta.SkillDataRepository
-import com.example.coopgrid.worker.registration.presentation.steps.step21.deta.strings.getSkillStrings
+import com.example.coopgrid.worker.registration.presentation.steps.step21.model.JobCategory
+import com.example.coopgrid.worker.registration.presentation.steps.step21.model.WorkerSkillItem
 import com.example.coopgrid.worker.registration.viewmodel.AvailabilityType
 import com.example.coopgrid.worker.registration.viewmodel.WageType
-import com.example.coopgrid.worker.registration.viewmodel.WorkerSkillItem
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun WorkerSkillCard(
     index: Int,
-    skillItem: WorkerSkillItem,
+    skillItem: WorkerSkillItem, // Expected to hold categoryCode, tradeCode, skillCode
     strings: WorkerSkillStrings,
     showDelete: Boolean,
+    categories: List<JobCategory>, // Pass raw JSON list from ViewModel/Repository
     onUpdate: (WorkerSkillItem) -> Unit,
     onDelete: () -> Unit,
-    languageViewModel: LanguageViewModel = hiltViewModel(),
+    languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
-    val categories = remember { SkillDataRepository.getCategories() }
+    val context = LocalContext.current
     val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
-    val skillStrings =  getSkillStrings(selectedLanguage)
-    val selectedCategory = remember(skillItem.primaryCategory) {
-        categories.find { it.id == skillItem.primaryCategory }
+
+    // 🔹 Direct local load using remember (Executes only once)
+    val categories = remember {
+        WorkerDataLoader.loadWorkerCategories(context)
     }
 
-    val availableSpecificSkills = remember(selectedCategory) {
-        selectedCategory?.let { SkillDataRepository.getSpecificSkills(it.id) } ?: emptyList()
+    // 1. Find Selected Category from categoryCode
+    val selectedCategory = remember(skillItem.primaryCategory, categories) {
+        categories.find { it.categoryCode == skillItem.primaryCategory }
     }
 
-    val selectedSpecificSkill = remember(skillItem.specificSkill, availableSpecificSkills) {
-        availableSpecificSkills.find { it.id == skillItem.specificSkill }
+    // 2. Available Trades under selected category
+    val availableTrades = remember(selectedCategory) {
+        selectedCategory?.trades ?: emptyList()
     }
 
-    val availableSubSkills = remember(selectedCategory?.id, selectedSpecificSkill?.id) {
-        if (selectedCategory != null && selectedSpecificSkill != null) {
-            SkillDataRepository.getSubSkills(selectedCategory.id, selectedSpecificSkill.id)
-        } else emptyList()
+    // Find Selected Trade from tradeCode
+    val selectedTrade = remember(skillItem.specificSkill, availableTrades) {
+        availableTrades.find { it.tradeCode == skillItem.specificSkill }
     }
 
-    // Single sub-skill string find karne ke liye
-    val selectedSubSkill = remember(skillItem.subSkill, availableSubSkills) {
-        availableSubSkills.find { it.id == skillItem.subSkill }
+    // 3. Available Skills under selected trade
+    val availableSkills = remember(selectedTrade) {
+        selectedTrade?.skills ?: emptyList()
+    }
+
+    // Find Selected Skill from skillCode
+    val selectedSkill = remember(skillItem.subSkill, availableSkills) {
+        availableSkills.find { it.skillCode == skillItem.subSkill }
     }
 
     Card(
@@ -111,15 +120,12 @@ fun WorkerSkillCard(
             AppDropdown(
                 items = categories,
                 selectedItem = selectedCategory,
-                itemLabel = { category ->
-                    // HERE: Repository ki ID ko correct language text me convert karega
-                    skillStrings.getCategoryName(category.id)
-                },
+                itemLabel = { category -> category.categoryName },
                 placeholder = "Select Category",
                 onItemSelected = { cat ->
                     onUpdate(
                         skillItem.copy(
-                            primaryCategory = cat.id,
+                            primaryCategory = cat.categoryCode,
                             specificSkill = "",
                             subSkill = ""
                         )
@@ -129,7 +135,7 @@ fun WorkerSkillCard(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // 2. SPECIFIC SKILL DROPDOWN
+            // 2. SPECIFIC TRADE DROPDOWN
             if (selectedCategory != null) {
                 Text(
                     text = strings.specificSkillLabel,
@@ -137,17 +143,14 @@ fun WorkerSkillCard(
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 AppDropdown(
-                    items = availableSpecificSkills,
-                    selectedItem = selectedSpecificSkill,
-                    itemLabel = { specSkill ->
-                        // HERE: ID -> String Translation
-                        skillStrings.getSpecificSkillName(specSkill.id)
-                    },
-                    placeholder = "Select Specific Skill",
-                    onItemSelected = { specSkill ->
+                    items = availableTrades,
+                    selectedItem = selectedTrade,
+                    itemLabel = { trade -> trade.tradeName },
+                    placeholder = "Select Trade",
+                    onItemSelected = { trade ->
                         onUpdate(
                             skillItem.copy(
-                                specificSkill = specSkill.id,
+                                specificSkill = trade.tradeCode,
                                 subSkill = ""
                             )
                         )
@@ -157,23 +160,20 @@ fun WorkerSkillCard(
                 Spacer(modifier = Modifier.height(14.dp))
             }
 
-            // 3. SUB-SKILL / SPECIALIZATION DROPDOWN (Ab ye bhi dropdown ban gaya hai)
-            if (availableSubSkills.isNotEmpty()) {
+            // 3. SPECIFIC SKILL DROPDOWN
+            if (selectedTrade != null && availableSkills.isNotEmpty()) {
                 Text(
                     text = strings.subSkillsLabel,
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 AppDropdown(
-                    items = availableSubSkills,
-                    selectedItem = selectedSubSkill,
-                    itemLabel = { subSkill ->
-                        // HERE: ID -> String Translation
-                        skillStrings.getSubSkillName(subSkill.id)
-                    },
-                    placeholder = "Select Sub-Skill / Specialization",
-                    onItemSelected = { sub ->
-                        onUpdate(skillItem.copy(subSkill = sub.id))
+                    items = availableSkills,
+                    selectedItem = selectedSkill,
+                    itemLabel = { skill -> skill.skillName },
+                    placeholder = "Select Skill",
+                    onItemSelected = { skill ->
+                        onUpdate(skillItem.copy(subSkill = skill.skillCode))
                     }
                 )
 

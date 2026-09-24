@@ -24,24 +24,49 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.coopgrid.employer.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.employer.registration.presentation.components.AppTextField
+import com.example.coopgrid.employer.registration.viewmodel.EmployerFormState
 import com.example.coopgrid.employer.registration.viewmodel.EmployerFormViewModel
+import com.example.coopgrid.worker.registration.presentation.steps.step1.model.ScreenValidation
 
-
-@OptIn(ExperimentalMaterial3Api::class)
+// 1. MAIN STATEFUL COMPOSABLE (ViewModel Integration & Routing)
 @Composable
 fun EmployerPersonalScreen(
     currentLanguage: AppLanguage,
     onNextClick: () -> Unit,
-    viewModel: EmployerFormViewModel = viewModel()
+    viewModel: EmployerFormViewModel = hiltViewModel()
 ) {
-    // 1. ViewModel se State collect ho rahi hai
     val state by viewModel.uiState.collectAsState()
+
+    EmployerPersonalScreenContent(
+        state = state,
+        currentLanguage = currentLanguage,
+        onFullNameChange = viewModel::onFullNameChange,
+        onGenderChange = viewModel::onGenderChange,
+        onDobChange = viewModel::onDobChange,
+        onEmailChange = viewModel::onEmailChange,
+        onNextClick = onNextClick
+    )
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun EmployerPersonalScreenContent(
+    state: EmployerFormState,
+    currentLanguage: AppLanguage,
+    onFullNameChange: (String) -> Unit,
+    onGenderChange: (String) -> Unit,
+    onDobChange: (Long?) -> Unit,
+    onEmailChange: (String) -> Unit,
+    onNextClick: () -> Unit
+) {
     val strings = remember(currentLanguage) { getEmployerPersonalStrings(currentLanguage) }
 
     // DatePicker Dialog UI Visibility State (Local UI state)
@@ -54,10 +79,26 @@ fun EmployerPersonalScreen(
         } ?: ""
     }
 
-    // Material 3 Date Picker Dialog
+    // -------------------------------------------------------------
+    // 3. MATERIAL 3 DATE PICKER DIALOG (MAX AGE 18 RESTRICTION)
+    // -------------------------------------------------------------
     if (showDatePicker) {
+        // Calculate 18 years ago timestamp
+        val default18YearsAgoMillis = remember { ScreenValidation.getMax18YearsAgoMillis() }
+
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = state.selectedDobMillis ?: System.currentTimeMillis()
+            // 1. Initial selected date (Ya to pehle se selected date ya default 18 saal purani date)
+            initialSelectedDateMillis = state.selectedDobMillis ?: default18YearsAgoMillis,
+
+            // 2. 🟢 THIS FIXES IT: Calendar open hote hi 18 saal purana month/year dikhayega!
+            initialDisplayedMonthMillis = state.selectedDobMillis ?: default18YearsAgoMillis,
+
+            // 3. Selection restriction (18 saal se chote dates grayed-out rahenge)
+            selectableDates = object : SelectableDates {
+                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                    return utcTimeMillis <= default18YearsAgoMillis
+                }
+            }
         )
 
         DatePickerDialog(
@@ -65,16 +106,18 @@ fun EmployerPersonalScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.onDobChange(datePickerState.selectedDateMillis)
+                        datePickerState.selectedDateMillis?.let { selectedMillis ->
+                            onDobChange(selectedMillis)
+                        }
                         showDatePicker = false
                     }
                 ) {
-                    Text("OK")
+                    Text(strings.confirmButton)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
+                    Text(strings.cancelButton)
                 }
             }
         ) {
@@ -127,7 +170,7 @@ fun EmployerPersonalScreen(
             Spacer(modifier = Modifier.height(8.dp))
             AppTextField(
                 value = state.fullName,
-                onValueChange = viewModel::onFullNameChange,
+                onValueChange = onFullNameChange,
                 placeholderText = strings.fullNameHint,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
@@ -156,7 +199,7 @@ fun EmployerPersonalScreen(
                     val isSelected = state.selectedGender == key
                     FilterChip(
                         selected = isSelected,
-                        onClick = { viewModel.onGenderChange(key) },
+                        onClick = { onGenderChange(key) },
                         label = { Text(text = label) },
                         shape = RoundedCornerShape(8.dp),
                         colors = FilterChipDefaults.filterChipColors(
@@ -221,7 +264,7 @@ fun EmployerPersonalScreen(
             Spacer(modifier = Modifier.height(8.dp))
             AppTextField(
                 value = state.email,
-                onValueChange = viewModel::onEmailChange,
+                onValueChange = onEmailChange,
                 placeholderText = strings.emailHint,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
@@ -244,20 +287,22 @@ fun EmployerPersonalScreen(
 // ==========================================
 // PREVIEWS
 // ==========================================
-@Preview(showBackground = true, name = "Personal Details Light Mode")
+@Preview(showBackground = true)
 @Composable
-fun EmployerPersonalScreenLightPreview() {
-    CoopGridTheme(darkTheme = false) {
-        EmployerPersonalScreen(currentLanguage = AppLanguage.ENGLISH,
-            onNextClick = {})
-    }
-}
-
-@Preview(showBackground = true, name = "Personal Details Dark Mode", backgroundColor = 0xFF121212)
-@Composable
-fun EmployerPersonalScreenDarkPreview() {
-    CoopGridTheme(darkTheme = true) {
-        EmployerPersonalScreen(currentLanguage = AppLanguage.HINGLISH,
-            onNextClick = {})
+private fun EmployerPersonalScreenPreview() {
+    MaterialTheme {
+        EmployerPersonalScreenContent(
+            state = EmployerFormState(
+                fullName = "Ramesh Kumar",
+                selectedGender = "Male",
+                email = "ramesh@example.com"
+            ),
+            currentLanguage = AppLanguage.ENGLISH,
+            onFullNameChange = {},
+            onGenderChange = {},
+            onDobChange = {},
+            onEmailChange = {},
+            onNextClick = {}
+        )
     }
 }

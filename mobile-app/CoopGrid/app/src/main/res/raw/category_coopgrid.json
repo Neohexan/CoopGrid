@@ -1,0 +1,238 @@
+[
+  {
+    "categoryName": "Technical & Skilled Trade",
+    "categoryCode": "CAT-100",
+    "trades": [
+      {
+        "tradeName": "Plumber",
+        "tradeCode": "TRD-101",
+        "skills": [
+          { "skillName": "Pipe Fitting & Leakage", "skillCode": "SKL-1011" },
+          { "skillName": "Sanitaryware Installation", "skillCode": "SKL-1012" },
+          { "skillName": "Geyser Installation", "skillCode": "SKL-1013" },
+          { "skillName": "Water Tank Cleaning & Fitting", "skillCode": "SKL-1014" },
+          { "skillName": "Motor & Pump Repair", "skillCode": "SKL-1015" }
+        ]
+      },
+      {
+        "tradeName": "Electrician",
+        "tradeCode": "TRD-102",
+        "skills": [
+          { "skillName": "Wiring & Rewiring", "skillCode": "SKL-1021" },
+          { "skillName": "Switchboard & MCB Repair", "skillCode": "SKL-1022" },
+          { "skillName": "Inverter & Battery Setup", "skillCode": "SKL-1023" },
+          { "skillName": "Ceiling Fan & Motor Repair", "skillCode": "SKL-1024" },
+          { "skillName": "Meter Board Installation", "skillCode": "SKL-1025" }
+        ]
+      },
+      {
+        "tradeName": "Carpenter",
+        "tradeCode": "TRD-103",
+        "skills": [
+          { "skillName": "Furniture Assembly & Repair", "skillCode": "SKL-1031" },
+          { "skillName": "Door & Window Fitting", "skillCode": "SKL-1032" },
+          { "skillName": "Lock Repair & Replacement", "skillCode": "SKL-1033" },
+          { "skillName": "Wood Polishing & Varnishing", "skillCode": "SKL-1034" }
+        ]
+      },
+      {
+        "tradeName": "Painter",
+        "tradeCode": "TRD-104",
+        "skills": [
+          { "skillName": "Interior Wall Painting", "skillCode": "SKL-1041" },
+          { "skillName": "Exterior Wall Painting", "skillCode": "SKL-1042" },
+          { "skillName": "Waterproofing & Putty Work", "skillCode": "SKL-1043" },
+          { "skillName": "Iron Grill & Gate Painting", "skillCode": "SKL-1044" }
+        ]
+      },
+      {
+        "tradeName": "Mason / Construction Worker",
+        "tradeCode": "TRD-105",
+        "skills": [
+          { "skillName": "Bricklaying & Plastering", "skillCode": "SKL-1051" },
+          { "skillName": "Tile & Marble Laying", "skillCode": "SKL-1052" },
+          { "skillName": "Concrete Mixing & Roofing", "skillCode": "SKL-1053" },
+          { "skillName": "Minor Demolition & Wall Repair", "skillCode": "SKL-1054" }
+        ]
+      },
+      {
+        "tradeName": "Mechanic (Automotive & Machinery)",
+        "tradeCode": "TRD-106",
+        "skills": [
+          { "skillName": "Tractor & Farm Machinery Repair", "skillCode": "SKL-1061" },
+          { "skillName": "Two-Wheeler Servicing", "skillCode": "SKL-1062" },
+          { "skillName": "Water Pump Engine Repair", "skillCode": "SKL-1063" },
+          { "skillName": "Generator Maintenance", "skillCode": "SKL-1064" }
+        ]
+      },
+      {
+        "tradeName": "Welder / Fabricator",
+        "tradeCode": "TRD-107",
+        "skills": [
+          { "skillName": "Iron Gate & Grill Repair", "skillCode": "SKL-1071" },
+          { "skillName": "Tin Shed Fabrication", "skillCode": "SKL-1072" },
+          { "skillName": "Arc Welding", "skillCode": "SKL-1073" }
+        ]
+      },
+      {
+        "tradeName": "Appliance Technician",
+        "tradeCode": "TRD-108",
+        "skills": [
+          { "skillName": "AC Installation & Servicing", "skillCode": "SKL-1081" },
+          { "skillName": "Refrigerator Repair", "skillCode": "SKL-1082" },
+          { "skillName": "Washing Machine Repair", "skillCode": "SKL-1083" },
+          { "skillName": "RO / Water Purifier Servicing", "skillCode": "SKL-1084" }
+        ]
+      }
+    ]
+  },
+  {
+    "categoryName": "Household & Domestic",
+    "categoryCode": "CAT-200",
+    "trades": [
+      {
+        "tradeName": "Househelper / Maid",
+        "tradeCode": "TRD-201",
+        "skills": [
+          { "skillName": "Sweeping & Mopping", "skillCode": "SKL-2011" },
+          { "skillName": "Utensil Cleaning", "skillCode": "SKL-2012" },
+          { "skillName": "Clothes Washing & Ironing", "skillCode": "SKL-2013" },
+          { "skillName": "Deep House Cleaning", "skillCode": "SKL-2014" }
+        ]
+      },
+      {
+        "tradeName": "Cook / Chef",
+        "tradeCode": "TRD-202",
+        "skills": [
+          { "skillName": "Daily Meals (Vegetarian)", "skillCode": "SKL-2021" },
+          { "skillName": "Daily Meals (Non-Vegetarian)", "skillCode": "SKL-2022" },
+          { "skillName": "Festival or Party Cooking", "skillCode": "SKL-2023" },
+          { "skillName": "Special Dietary Cooking", "skillCode": "SKL-2024" }
+        ]
+      },
+      {
+        "tradeName": "Caregiver / Nurse",
+        "tradeCode": "TRD-203",
+        "skills": [
+          { "skillName": "Elderly Care", "skillCode": "SKL-2031" },
+          { "skillName": "Baby Sitting / Nanny", "skillCode": "SKL-2032" },
+          { "skillName": "Patient Care / Nursing Aide", "skillCode": "SKL-2033" },
+          { "skillName": "Post-Operative Support", "skillCode": "SKL-2034" }
+        ]
+      },
+      {
+        "tradeName": "Gardener / Farm Helper",
+        "tradeCode": "TRD-204",
+        "skills": [
+          { "skillName": "Lawn Maintenance & Weeding", "skillCode": "SKL-2041" },
+          { "skillName": "Planting & Pruning", "skillCode": "SKL-2042" },
+          { "skillName": "Fertilizer & Pesticide Spraying", "skillCode": "SKL-2043" },
+          { "skillName": "Harvesting Assistance", "skillCode": "SKL-2044" }
+        ]
+      },
+      {
+        "tradeName": "Tailor",
+        "tradeCode": "TRD-205",
+        "skills": [
+          { "skillName": "Clothes Alterations & Repair", "skillCode": "SKL-2051" },
+          { "skillName": "Custom Garment Stitching", "skillCode": "SKL-2052" },
+          { "skillName": "Curtain & Upholstery Stitching", "skillCode": "SKL-2053" }
+        ]
+      },
+      {
+        "tradeName": "Driver",
+        "tradeCode": "TRD-206",
+        "skills": [
+          { "skillName": "Daily Commute (Car)", "skillCode": "SKL-2061" },
+          { "skillName": "Heavy Vehicle (Tractor/Truck)", "skillCode": "SKL-2062" },
+          { "skillName": "Outstation Travel", "skillCode": "SKL-2063" }
+        ]
+      },
+      {
+        "tradeName": "Security Guard / Watchman",
+        "tradeCode": "TRD-207",
+        "skills": [
+          { "skillName": "Residential Security", "skillCode": "SKL-2071" },
+          { "skillName": "Farm or Estate Guarding", "skillCode": "SKL-2072" },
+          { "skillName": "Night Watch", "skillCode": "SKL-2073" }
+        ]
+      },
+      {
+        "tradeName": "Barber / Men's Grooming",
+        "tradeCode": "TRD-208",
+        "skills": [
+          { "skillName": "Haircut & Styling", "skillCode": "SKL-2081" },
+          { "skillName": "Beard Trimming & Shaving", "skillCode": "SKL-2082" },
+          { "skillName": "Head & Shoulder Massage", "skillCode": "SKL-2083" },
+          { "skillName": "Hair Coloring / Dyeing", "skillCode": "SKL-2084" }
+        ]
+      },
+      {
+        "tradeName": "Beautician / Salon at Home",
+        "tradeCode": "TRD-209",
+        "skills": [
+          { "skillName": "Facial & Skin Cleanup", "skillCode": "SKL-2091" },
+          { "skillName": "Waxing & Threading", "skillCode": "SKL-2092" },
+          { "skillName": "Manicure & Pedicure", "skillCode": "SKL-2093" },
+          { "skillName": "Party / Event Makeup", "skillCode": "SKL-2094" },
+          { "skillName": "Hair Spa & Treatment", "skillCode": "SKL-2095" }
+        ]
+      },
+      {
+        "tradeName": "Mehndi Artist (Henna)",
+        "tradeCode": "TRD-210",
+        "skills": [
+          { "skillName": "Bridal Mehndi", "skillCode": "SKL-2101" },
+          { "skillName": "Arabic / Designer Mehndi", "skillCode": "SKL-2102" },
+          { "skillName": "Basic / Festival Mehndi", "skillCode": "SKL-2103" }
+        ]
+      }
+    ]
+  },
+  {
+    "categoryName": "Unskilled Labour / General Labour",
+    "categoryCode": "CAT-300",
+    "trades": [
+      {
+        "tradeName": "Construction Helper (Mazdoor / Beldar)",
+        "tradeCode": "TRD-301",
+        "skills": [
+          { "skillName": "Brick & Cement Carrying", "skillCode": "SKL-3011" },
+          { "skillName": "Manual Concrete Mixing", "skillCode": "SKL-3012" },
+          { "skillName": "Site Cleanup & Debris Removal", "skillCode": "SKL-3013" },
+          { "skillName": "Earth Digging & Trenching", "skillCode": "SKL-3014" }
+        ]
+      },
+      {
+        "tradeName": "Agricultural / Farm Labourer",
+        "tradeCode": "TRD-302",
+        "skills": [
+          { "skillName": "Manual Crop Harvesting", "skillCode": "SKL-3021" },
+          { "skillName": "Seed Sowing & Planting", "skillCode": "SKL-3022" },
+          { "skillName": "Crop Loading & Unloading", "skillCode": "SKL-3023" },
+          { "skillName": "Field Clearing & Manual Weeding", "skillCode": "SKL-3024" }
+        ]
+      },
+      {
+        "tradeName": "Loading & Unloading (Porter / Hamal)",
+        "tradeCode": "TRD-303",
+        "skills": [
+          { "skillName": "House Shifting & Relocation Help", "skillCode": "SKL-3031" },
+          { "skillName": "Truck / Tractor Loading & Unloading", "skillCode": "SKL-3032" },
+          { "skillName": "Warehouse Goods Shifting", "skillCode": "SKL-3033" },
+          { "skillName": "Heavy Material Lifting", "skillCode": "SKL-3034" }
+        ]
+      },
+      {
+        "tradeName": "General Helper / Daily Wager",
+        "tradeCode": "TRD-304",
+        "skills": [
+          { "skillName": "Event Setup & Tent Dismantling", "skillCode": "SKL-3041" },
+          { "skillName": "Material Sorting & Packaging", "skillCode": "SKL-3042" },
+          { "skillName": "Deep Drain & Gutter Cleaning", "skillCode": "SKL-3043" },
+          { "skillName": "Road & Pathway Maintenance", "skillCode": "SKL-3044" }
+        ]
+      }
+    ]
+  }
+]

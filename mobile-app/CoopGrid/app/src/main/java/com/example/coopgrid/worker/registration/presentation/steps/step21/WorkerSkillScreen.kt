@@ -18,8 +18,8 @@ import com.example.coopgrid.ui.theme.CoopGridTheme
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.worker.registration.viewmodel.WorkerFormState
 import com.example.coopgrid.worker.registration.viewmodel.WorkerFormViewModel
-import com.example.coopgrid.worker.registration.viewmodel.WorkerSkillItem
 import com.example.coopgrid.common.LanguageViewModel
+import com.example.coopgrid.worker.registration.presentation.steps.step21.model.WorkerSkillItem
 
 @Composable
 fun WorkerSkillScreen(
@@ -90,6 +90,7 @@ fun WorkerSkillContent(
                     skillItem = skillItem,
                     strings = strings,
                     showDelete = state.skillsList.size > 1, // Minimum 1 card mandatory
+                    categories = state.categories,
                     onUpdate = onUpdateSkill,
                     onDelete = { onRemoveSkill(skillItem.id) }
                 )

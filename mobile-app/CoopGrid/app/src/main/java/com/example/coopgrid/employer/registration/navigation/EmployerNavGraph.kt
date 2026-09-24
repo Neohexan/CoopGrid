@@ -7,12 +7,16 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import androidx.navigation.toRoute
 import com.example.coopgrid.employer.registration.presentation.steps.step0.EmpAuthViewModel
 import com.example.coopgrid.employer.registration.presentation.steps.step0.screen.OtpScreen
 import com.example.coopgrid.employer.registration.presentation.steps.step0.screen.PhoneNumberScreen
 import com.example.coopgrid.employer.registration.presentation.steps.step0.screen.TermsAndConditionsScreen
 import com.example.coopgrid.employer.registration.presentation.steps.step1.EmployerPersonalScreen
-import com.example.coopgrid.employer.registration.presentation.steps.step3_1.EmployerServiceScreen
+import com.example.coopgrid.employer.registration.presentation.steps.step2.EmployerCategoryScreen
+import com.example.coopgrid.employer.registration.presentation.steps.step2.model.EmployerCategory
+import com.example.coopgrid.employer.registration.presentation.steps.step21.EmployerBusinessDetailsContent
+import com.example.coopgrid.employer.registration.presentation.steps.step3.EmployerAddressScreen
 import com.example.coopgrid.employer.registration.viewmodel.EmployerFormViewModel
 import com.example.coopgrid.ui.theme.AppLanguage
 
@@ -22,9 +26,9 @@ fun NavGraphBuilder.employerNavGraph(
     currentLanguage: AppLanguage,
     onOnboardingComplete: () -> Unit
 ) {
-    navigation(
-        startDestination = EmployerRoutes.PHONE_NUMBER,
-        route = EmployerRoutes.GRAPH_ROUTE
+    // 🔹 Type-Safe Nested Navigation Graph
+    navigation<EmployerRoute.Graph>(
+        startDestination = EmployerRoute.PhoneNumber
     ) {
 
         // -------------------------------------------------------------
@@ -32,23 +36,28 @@ fun NavGraphBuilder.employerNavGraph(
         // -------------------------------------------------------------
 
         // 1. Phone Number Screen
-        composable(EmployerRoutes.PHONE_NUMBER) { backStackEntry ->
+        // 1. Phone Number Screen
+        composable<EmployerRoute.PhoneNumber> { backStackEntry ->
             val parentEntry = remember(backStackEntry) {
-                navController.getBackStackEntry(EmployerRoutes.GRAPH_ROUTE)
+                navController.getBackStackEntry<EmployerRoute.Graph>()
             }
             val authViewModel: EmpAuthViewModel = viewModel(viewModelStoreOwner = parentEntry)
 
             PhoneNumberScreen(
                 viewModel = authViewModel,
                 onNavigateToOtp = {
-                    navController.navigate(EmployerRoutes.OTP_VERIFICATION)
+                    // 🔹 UiState se phone number value read karke pass kar rahe hain
+                    val currentPhone = authViewModel.uiState.value.phoneNumber
+                    navController.navigate(EmployerRoute.OtpVerification(phoneNumber = currentPhone))
                 },
                 onNavigateToTerms = {
-                    navController.navigate(EmployerRoutes.TERMS_AND_CONDITIONS)
+                    navController.navigate(EmployerRoute.TermsAndConditions)
                 }
             )
         }
-        composable(EmployerRoutes.TERMS_AND_CONDITIONS) {
+
+        // Terms and Conditions Screen
+        composable<EmployerRoute.TermsAndConditions> {
             TermsAndConditionsScreen(
                 currentLanguage = currentLanguage,
                 onBackClick = { navController.popBackStack() }
@@ -56,9 +65,10 @@ fun NavGraphBuilder.employerNavGraph(
         }
 
         // 2. OTP Verification Screen
-        composable(EmployerRoutes.OTP_VERIFICATION) { backStackEntry ->
+        composable<EmployerRoute.OtpVerification> { backStackEntry ->
+            // Extract route arguments if needed: val routeData = backStackEntry.toRoute<EmployerRoute.OtpVerification>()
             val parentEntry = remember(backStackEntry) {
-                navController.getBackStackEntry(EmployerRoutes.GRAPH_ROUTE)
+                navController.getBackStackEntry<EmployerRoute.Graph>()
             }
             val authViewModel: EmpAuthViewModel = viewModel(viewModelStoreOwner = parentEntry)
 
@@ -67,8 +77,8 @@ fun NavGraphBuilder.employerNavGraph(
                 viewModel = authViewModel,
                 onVerifyClick = {
                     // Navigate to Personal Details screen and clear Auth screens from backstack
-                    navController.navigate(EmployerRoutes.PERSONAL_DETAILS) {
-                        popUpTo(EmployerRoutes.PHONE_NUMBER) { inclusive = true }
+                    navController.navigate(EmployerRoute.PersonalDetails) {
+                        popUpTo<EmployerRoute.PhoneNumber> { inclusive = true }
                     }
                 }
             )
@@ -79,9 +89,9 @@ fun NavGraphBuilder.employerNavGraph(
         // -------------------------------------------------------------
 
         // 3. Employer Personal Details Screen
-        composable(EmployerRoutes.PERSONAL_DETAILS) { backStackEntry ->
+        composable<EmployerRoute.PersonalDetails> { backStackEntry ->
             val parentEntry = remember(backStackEntry) {
-                navController.getBackStackEntry(EmployerRoutes.GRAPH_ROUTE)
+                navController.getBackStackEntry<EmployerRoute.Graph>()
             }
             val formViewModel: EmployerFormViewModel = viewModel(viewModelStoreOwner = parentEntry)
 
@@ -89,26 +99,68 @@ fun NavGraphBuilder.employerNavGraph(
                 currentLanguage = currentLanguage,
                 viewModel = formViewModel,
                 onNextClick = {
-                    navController.navigate(EmployerRoutes.CATEGORY_SELECTION)
+                    navController.navigate(EmployerRoute.CategorySelection)
+                },
+            )
+        }
+
+        // 4. Category Selection Screen (Step 2)
+        composable<EmployerRoute.CategorySelection> { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry<EmployerRoute.Graph>()
+            }
+            val formViewModel: EmployerFormViewModel = viewModel(viewModelStoreOwner = parentEntry)
+
+            EmployerCategoryScreen(
+                onNextClick = { selectedCategory ->
+                    formViewModel.onCategoryChange(selectedCategory)
+
+                    when (selectedCategory) {
+                        EmployerCategory.HOUSEHOLD,
+                        EmployerCategory.FARMER -> {
+                            // Direct Step 3 (Address) par category pass karke navigate karein
+                            navController.navigate(EmployerRoute.Address(category = selectedCategory))
+                        }
+                        EmployerCategory.COMPANY,
+                        EmployerCategory.WHOLESALER -> {
+                            // Step 21 (Business Details) par navigate karein
+                            navController.navigate(
+                                EmployerRoute.BusinessDetails(category = selectedCategory)
+                            )
+                        }
+                    }
                 }
             )
         }
 
-        // 4. Employer Category Selection Screen
-        composable(EmployerRoutes.CATEGORY_SELECTION) { backStackEntry ->
-            val parentEntry = remember(backStackEntry) {
-                navController.getBackStackEntry(EmployerRoutes.GRAPH_ROUTE)
-            }
-            val formViewModel: EmployerFormViewModel = viewModel(viewModelStoreOwner = parentEntry)
+        // 5. Business Details Screen (Step 21 - Only for Company & Wholesaler)
+        composable<EmployerRoute.BusinessDetails> { backStackEntry ->
+            val routeData = backStackEntry.toRoute<EmployerRoute.BusinessDetails>()
+            val selectedCategory = routeData.category
 
-            EmployerServiceScreen(
-                currentLanguage = currentLanguage,
-                viewModel = formViewModel,
-                onContinueClick = {
-                    // Triggers API submission inside ViewModel and navigates home on success
-                    formViewModel.submitBasicRegistration {
-                        onOnboardingComplete()
-                    }
+            EmployerBusinessDetailsContent(
+                selectedLanguage = currentLanguage,
+                category = selectedCategory,
+                onChangeCategoryClick = {
+                    navController.popBackStack()
+                },
+                onSubmitBusinessDetails = { formState ->
+                    // Business details submit hone par Address screen par bhej do
+                    navController.navigate(EmployerRoute.Address(category = selectedCategory))
+                }
+            )
+        }
+
+        // 6. Address Screen (Step 3 - Final Onboarding Step)
+        composable<EmployerRoute.Address> { backStackEntry ->
+            val routeData = backStackEntry.toRoute<EmployerRoute.Address>()
+            val selectedCategory = routeData.category
+
+            EmployerAddressScreen(
+                category = selectedCategory,
+                onAddressSubmitted = { addressState ->
+                    // Onboarding poori ho chuki hai, main App screen par navigate karne ke liye callback trigger karein
+                    onOnboardingComplete()
                 }
             )
         }

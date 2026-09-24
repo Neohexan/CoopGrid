@@ -21,7 +21,6 @@ import com.example.coopgrid.common.auth.screen.OtpScreen
 import com.example.coopgrid.common.splash.AuthState
 import com.example.coopgrid.common.splash.SplashScreen
 import com.example.coopgrid.common.splash.SplashViewModel
-import com.example.coopgrid.employer.registration.navigation.EmployerRoutes
 import com.example.coopgrid.employer.registration.navigation.employerNavGraph
 import com.example.coopgrid.ui.screens.employer.auth.EmployerAuthViewModel
 import com.example.coopgrid.ui.screens.employer.auth.screen.EmployerRegisterStep1Screen
@@ -29,6 +28,7 @@ import com.example.coopgrid.ui.screens.employer.auth.screen.EmployerRegisterStep
 import com.example.coopgrid.employer.dashboard.EmployerHomeScreen
 import com.example.coopgrid.employer.dashboard.screen.CreateJobScreen
 import com.example.coopgrid.employer.dashboard.screen.EmployerProfileScreen
+import com.example.coopgrid.employer.registration.navigation.EmployerRoute
 import com.example.coopgrid.ui.screens.worker.auth.WorkerAuthViewModel
 import com.example.coopgrid.worker.dashboard.JobDetailsViewModel
 import com.example.coopgrid.worker.dashboard.WorkerHomeScreen
@@ -103,7 +103,7 @@ fun AppNavGraph(
                     navController.navigate(WorkerRoute.OnboardingGraph)
                 },
                 onRegisterEmployerClick = {
-                    navController.navigate(EmployerRoutes.GRAPH_ROUTE)
+                    navController.navigate(EmployerRoute.Graph)
                 }
             )
         }
@@ -125,7 +125,7 @@ fun AppNavGraph(
             onOnboardingComplete = {
                 // Employer Registration complete hone par Home / Dashboard Screen par bhejein
                 navController.navigate(Screen.EmployerHome.route) {
-                    popUpTo(EmployerRoutes.GRAPH_ROUTE) { inclusive = true }
+                    popUpTo(EmployerRoute.Graph) { inclusive = true }
                 }
             }
         )

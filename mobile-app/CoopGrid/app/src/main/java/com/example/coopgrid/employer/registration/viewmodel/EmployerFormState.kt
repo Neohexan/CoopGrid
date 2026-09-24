@@ -1,11 +1,6 @@
 package com.example.coopgrid.employer.registration.viewmodel
 
-import com.example.coopgrid.employer.registration.presentation.steps.step3_1.model.EmployerCategory
-import com.example.coopgrid.employer.registration.presentation.steps.step3_1.model.FarmDistance
-import com.example.coopgrid.employer.registration.presentation.steps.step3_1.model.company.OrganizationType
-import com.example.coopgrid.employer.registration.presentation.steps.step3_1.model.company.WorkSector
-import com.example.coopgrid.employer.registration.presentation.steps.step3_1.model.wholesaler.TradeType
-import com.example.coopgrid.employer.registration.presentation.steps.step3_1.model.wholesaler.WholesaleCategory
+import com.example.coopgrid.employer.registration.presentation.steps.step2.model.EmployerCategory
 
 
 data class EmployerFormState(
@@ -17,7 +12,7 @@ data class EmployerFormState(
     val email: String = "", // Optional
 
     // Global Category Selection
-    val selectedCategory: EmployerCategory = EmployerCategory.FARMER,
+    val selectedCategory: EmployerCategory? = null,
 
     // Shared Address Fields
     val houseNo: String = "",
@@ -33,8 +28,6 @@ data class EmployerFormState(
 
     // Company Specific Fields
     val companyName: String = "",
-    val orgType: OrganizationType = OrganizationType.PVT_LTD,
-    val workSector: WorkSector = WorkSector.IT_SOFTWARE,
 
     // Farmer Specific Fields
     val village: String = "",
@@ -42,12 +35,9 @@ data class EmployerFormState(
     val district: String = "",
     val isSameAsHome: Boolean = true,
     val farmLandmark: String = "",
-    val farmDistance: FarmDistance = FarmDistance.NEAR_HOME,
 
     // Wholesaler Specific
     val firmName: String = "",
-    val tradeType: TradeType = TradeType.WHOLESALER,
-    val wholesaleCategory: WholesaleCategory = WholesaleCategory.GRAINS_PULSES,
     val mandiName: String = "",
     val isGodownSameAsShop: Boolean = true,
     val godownLandmark: String = "",

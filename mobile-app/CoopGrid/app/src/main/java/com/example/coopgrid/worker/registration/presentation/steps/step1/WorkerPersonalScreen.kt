@@ -75,34 +75,6 @@ fun WorkerPersonalContent(
         state.email.isBlank() || ScreenValidation.isValidEmail(state.email)
     }
 
-
-    if (showDatePicker) {
-        val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = state.selectedDobMillis ?: System.currentTimeMillis()
-        )
-
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onDobChange(datePickerState.selectedDateMillis)
-                        showDatePicker = false
-                    }
-                ) {
-                    Text("OK")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
-                }
-            }
-        ) {
-            DatePicker(state = datePickerState)
-        }
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()

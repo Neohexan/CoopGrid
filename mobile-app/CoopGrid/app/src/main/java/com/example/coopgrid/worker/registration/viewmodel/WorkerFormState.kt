@@ -1,5 +1,7 @@
 package com.example.coopgrid.worker.registration.viewmodel
 
+import com.example.coopgrid.worker.registration.presentation.steps.step21.model.JobCategory
+import com.example.coopgrid.worker.registration.presentation.steps.step21.model.WorkerSkillItem
 import java.util.UUID
 
 enum class WageType(val labelHinglish: String, val labelEnglish: String) {
@@ -15,18 +17,21 @@ enum class AvailabilityType(val labelEnglish: String, val labelHinglish: String)
     WEEKEND("Weekend Only", "Sirf Weekend")
 }
 
-data class WorkerSkillItem(
-    val id: String = UUID.randomUUID().toString(),
-    val primaryCategory: String = "",
-    val specificSkill: String = "",
-    val subSkill: String = "",
-    val selectedSubSkills: List<String> = emptyList(),
-    val experienceYears: String = "1-3 Years",
-    val expectedWage: String = "",
-    val wageType: WageType = WageType.PER_DAY,
-    val workRadiusKm: Float = 10f, // Default 10 KM
-    val availabilityType: AvailabilityType = AvailabilityType.FULL_TIME
-)
+//data class WorkerSkillItem(
+//    val id: String = UUID.randomUUID().toString(),
+//    val selectedCategoryCode: String? = null,
+//    val selectedTradeCode: String? = null,
+//    val selectedSkillCodes: List<String> = emptyList(), // Multi-select support
+//    val primaryCategory: String = "",
+//    val specificSkill: String = "",
+//    val subSkill: String = "",
+//    val selectedSubSkills: List<String> = emptyList(),
+//    val experienceYears: String = "1-3 Years",
+//    val expectedWage: String = "",
+//    val wageType: WageType = WageType.PER_DAY,
+//    val workRadiusKm: Float = 10f, // Default 10 KM
+//    val availabilityType: AvailabilityType = AvailabilityType.FULL_TIME
+//)
 
 data class WorkerFormState(
     // Step 1: Personal Details
@@ -35,7 +40,7 @@ data class WorkerFormState(
     val selectedDobMillis: Long? = null,
     val altPhoneNumber: String = "",
     val email: String = "",
-
+    val categories: List<JobCategory> = emptyList(),
     // Step 2: Multi-Skills (1 to 3 items)
     val skillsList: List<WorkerSkillItem> = listOf(WorkerSkillItem()),
 
