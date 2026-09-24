@@ -1,4 +1,4 @@
-package com.example.coopgrid.employer.registration.presentation.steps.step3.utils
+package com.example.coopgrid.employer.data.utils
 
 import android.content.Context
 import com.example.coopgrid.R

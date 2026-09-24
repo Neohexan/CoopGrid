@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.coopgrid.common.LanguageViewModel
 import com.example.coopgrid.ui.theme.AppLanguage
-import com.example.coopgrid.worker.registration.data.util.WorkerDataLoader
+import com.example.coopgrid.worker.data.util.EpmAppJsonReader
 import com.example.coopgrid.worker.registration.presentation.components.AppDropdown
 import com.example.coopgrid.worker.registration.presentation.components.AppTextField
 import com.example.coopgrid.worker.registration.presentation.steps.step21.componets.TypeSelector
@@ -46,7 +46,7 @@ fun WorkerSkillCard(
 
     // 🔹 Direct local load using remember (Executes only once)
     val categories = remember {
-        WorkerDataLoader.loadWorkerCategories(context)
+        EpmAppJsonReader.loadWorkerCategories(context)
     }
 
     // 1. Find Selected Category from categoryCode

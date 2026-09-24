@@ -1,16 +1,11 @@
 package com.example.coopgrid.employer.registration.presentation.steps.step3
 
 import androidx.compose.runtime.Composable
-import android.content.Context
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.coopgrid.employer.registration.presentation.components.AppDropdown
 import com.example.coopgrid.employer.registration.presentation.components.AppPrimaryButton
@@ -22,7 +17,7 @@ import com.example.coopgrid.employer.registration.presentation.steps.step3.model
 import com.example.coopgrid.employer.registration.presentation.steps.step3.models.EmpDistrictLocationData
 import com.example.coopgrid.employer.registration.presentation.steps.step3.models.StateOption
 import com.example.coopgrid.employer.registration.presentation.steps.step3.strings.getAddressStrings
-import com.example.coopgrid.employer.registration.presentation.steps.step3.utils.LocationDataLoader
+import com.example.coopgrid.employer.data.utils.LocationDataLoader
 import com.example.coopgrid.ui.theme.AppLanguage
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.Alignment
@@ -45,7 +40,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 
 @Composable
 fun EmployerAddressContent(

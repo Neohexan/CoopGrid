@@ -31,7 +31,7 @@ import com.example.coopgrid.employer.registration.presentation.steps.step21.mode
 import com.example.coopgrid.employer.registration.presentation.steps.step21.model.BusinessSubCategoryItem
 import com.example.coopgrid.employer.registration.presentation.steps.step21.model.EmployerBusinessFormState
 import com.example.coopgrid.employer.registration.presentation.steps.step21.strings.getBusinessDetailsStrings
-import com.example.coopgrid.employer.registration.presentation.steps.step21.util.BusinessDataLoader
+import com.example.coopgrid.employer.data.utils.BusinessDataLoader
 import com.example.coopgrid.ui.theme.AppLanguage
 
 @Composable

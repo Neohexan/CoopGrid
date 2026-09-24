@@ -1,23 +1,16 @@
 package com.example.coopgrid.employer.registration.presentation.steps.step3
 
-import android.content.Context
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.coopgrid.common.LanguageViewModel
 import com.example.coopgrid.employer.registration.presentation.steps.step2.model.EmployerCategory
 import com.example.coopgrid.employer.registration.presentation.steps.step3.models.AddressFormState
 import com.example.coopgrid.ui.theme.AppLanguage
 import com.example.coopgrid.ui.theme.CoopGridTheme
-import com.example.coopgrid.worker.registration.presentation.steps.step3.util.LocationDataLoader
 
 // 1. MAIN CONTAINER SCREEN (Data Layer, ViewModel, Navigation Handle Karayala)
 @Composable

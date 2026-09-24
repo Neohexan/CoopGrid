@@ -15,7 +15,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.coopgrid.common.LanguageViewModel
-import com.example.coopgrid.ui.theme.AppLanguage
 import com.example.coopgrid.ui.theme.CoopGridTheme
 import com.example.coopgrid.worker.registration.presentation.components.AppDropdown
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
@@ -27,7 +26,7 @@ import com.example.coopgrid.worker.registration.presentation.steps.step3.model.D
 import com.example.coopgrid.worker.registration.presentation.steps.step3.model.StateOption
 import com.example.coopgrid.worker.registration.presentation.steps.step3.model.WorkerAddress
 import com.example.coopgrid.worker.registration.presentation.steps.step3.strings.getAddressStrings
-import com.example.coopgrid.worker.registration.presentation.steps.step3.util.LocationDataLoader
+import com.example.coopgrid.worker.data.util.LocationDataLoader
 import kotlin.collections.distinctBy
 import kotlin.collections.map
 

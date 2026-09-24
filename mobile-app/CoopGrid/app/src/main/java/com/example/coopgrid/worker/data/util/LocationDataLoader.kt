@@ -1,10 +1,9 @@
-package com.example.coopgrid.worker.registration.presentation.steps.step3.util
+package com.example.coopgrid.worker.data.util
 
 import android.content.Context
 import com.example.coopgrid.R
 import com.example.coopgrid.worker.registration.presentation.steps.step3.model.DistrictLocationData
 import kotlinx.serialization.json.Json
-
 
 object LocationDataLoader {
 
