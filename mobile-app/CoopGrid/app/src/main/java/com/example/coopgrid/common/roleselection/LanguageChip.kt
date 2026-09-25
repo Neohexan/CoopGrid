@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.coopgrid.ui.theme.AppLanguage
+import com.example.coopgrid.data.lanlocal.model.AppLanguage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

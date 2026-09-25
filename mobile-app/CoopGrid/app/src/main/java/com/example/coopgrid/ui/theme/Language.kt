@@ -4,9 +4,6 @@ package com.example.coopgrid.ui.theme
 enum class AppLanguage(val displayName: String) {
     ENGLISH("English"),
     HINGLISH("Hinglish");
-//    HINDI("Hindi"),
-//    BHOJPURI("Bhojpuri"),
-//    MAITHILI("Maithili");
 
     companion object {
         // Safe fallback - agar koi unknown String saved mil jaye toh default ENGLISH return karega

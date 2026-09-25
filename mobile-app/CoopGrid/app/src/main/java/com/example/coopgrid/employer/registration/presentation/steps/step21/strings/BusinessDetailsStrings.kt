@@ -2,6 +2,54 @@ package com.example.coopgrid.employer.registration.presentation.steps.step21.str
 
 import com.example.coopgrid.employer.registration.presentation.steps.step2.model.EmployerCategory
 import com.example.coopgrid.ui.theme.AppLanguage
+import kotlinx.serialization.Serializable
+
+
+@Serializable
+data class BusinessDetails(
+    val screenCode: String = "SCR_EMP_206",
+    val screenTitleCompany: String = "",
+    val screenTitleBusiness: String = "",
+    val screenSubtitle: String = "",
+    val selectedCategoryTag: String = "",
+    val companyTitle: String = "",
+    val wholesalerTitle: String = "",
+    val changeCategoryText: String = "",
+    val officialNameLabelCompany: String = "",
+    val officialNameLabelBusiness: String = "",
+    val officialNamePlaceholderCompany: String = "",
+    val officialNamePlaceholderBusiness: String = "",
+    val categoryLabel: String = "",
+    val categoryPlaceholder: String = "",
+    val subCategoryLabel: String = "",
+    val subCategoryPlaceholder: String = "",
+    val gstLabel: String = "",
+    val gstPlaceholder: String = "",
+    val continueButton: String = "",
+    val fieldRequiredError: String = ""
+) {
+    /**
+     * Selected category (COMPANY vs WHOLESALER/BUSINESS) ke basis par
+     * correct Screen Title return karne ke liye helper method.
+     */
+    fun getScreenTitle(isCompany: Boolean): String {
+        return if (isCompany) screenTitleCompany else screenTitleBusiness
+    }
+
+    /**
+     * Selected category ke basis par dynamic input label return karega.
+     */
+    fun getOfficialNameLabel(isCompany: Boolean): String {
+        return if (isCompany) officialNameLabelCompany else officialNameLabelBusiness
+    }
+
+    /**
+     * Selected category ke basis par dynamic input placeholder return karega.
+     */
+    fun getOfficialNamePlaceholder(isCompany: Boolean): String {
+        return if (isCompany) officialNamePlaceholderCompany else officialNamePlaceholderBusiness
+    }
+}
 
 data class BusinessDetailsStrings(
     val screenTitle: String,

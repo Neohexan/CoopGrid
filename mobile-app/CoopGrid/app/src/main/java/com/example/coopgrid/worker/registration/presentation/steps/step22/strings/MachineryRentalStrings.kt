@@ -2,6 +2,47 @@ package com.example.coopgrid.worker.registration.presentation.steps.step22.strin
 
 import com.example.coopgrid.ui.theme.AppLanguage
 import com.example.coopgrid.worker.registration.presentation.steps.step22.model.MachineryRateUnit
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class RateUnitsStrings(
+    val PER_HOUR: String = "",
+    val PER_ACRE: String = "",
+    val PER_DAY: String = "",
+    val PER_TRIP: String = ""
+) {
+    // Helper function jo Enum ke according dynamic string return karega
+    fun getUnitLabel(unit: MachineryRateUnit): String {
+        return when (unit) {
+            MachineryRateUnit.PER_HOUR -> PER_HOUR
+            MachineryRateUnit.PER_ACRE -> PER_ACRE
+            MachineryRateUnit.PER_DAY -> PER_DAY
+            MachineryRateUnit.PER_TRIP -> PER_TRIP
+        }
+    }
+}
+
+@Serializable
+data class MachineryRental(
+    val screenCode: String = "",
+    val screenTitle: String  = "Json load nahi ho raha",
+    val screenSubtitle: String  = "",
+    val addMachineButton: String  = "",
+    val removeMachineButton: String  = "",
+    val maxLimitReachedWarning: String  = "",
+    val categoryLabel: String  = "",
+    val subCategoryLabel: String  = "",
+    val customNameLabel: String  = "",
+    val customNameHint: String  = "",
+    val radiusLabel: String  = "",
+    val rateLabel: String  = "",
+    val rateUnitLabel: String  = "",
+    val driverFuelToggleLabel: String  = "",
+    val driverFuelYes: String  = "",
+    val driverFuelNo: String  = "",
+    val saveAndContinue: String  = "",
+    val rateUnits: RateUnitsStrings = RateUnitsStrings()
+)
 
 
 data class MachineryRentalStrings(

@@ -33,27 +33,58 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.coopgrid.common.LanguageViewModel
-import com.example.coopgrid.ui.theme.AppLanguage
 import androidx.compose.material3.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.coopgrid.common.language.LanguageViewModel
+import com.example.coopgrid.data.lanlocal.model.AppLanguage
 import com.example.coopgrid.ui.theme.nonScaleSp
 
+// =================================================================
+// 1. STATEFUL ROUTE (Hilt & ViewModel Injection)
+// =================================================================
 @Composable
-fun AuthSelectionScreen(
+fun AuthSelectionRoute(
     viewModel: LanguageViewModel = hiltViewModel(),
     onLoginClick: () -> Unit = {},
     onRegisterWorkerClick: () -> Unit = {},
     onRegisterEmployerClick: () -> Unit = {}
 ) {
-    // 1. Language State Observation
-    val selectedLanguage by viewModel.currentLanguage.collectAsState()
-    val strings = getAuthSelectionStrings(selectedLanguage)
+    val appStrings by viewModel.appStrings.collectAsStateWithLifecycle()
+    val currentLanguage by viewModel.currentLanguage.collectAsStateWithLifecycle()
 
-    // 2. Two-Tone App Name Custom Styling
+    AuthSelectionScreen(
+        strings = appStrings.authSelection,
+        currentLanguage = currentLanguage,
+        availableLanguages = viewModel.availableLanguages,
+        onLanguageSelected = { newLang ->
+            viewModel.selectLanguage(newLang)
+        },
+        onLoginClick = onLoginClick,
+        onRegisterWorkerClick = onRegisterWorkerClick,
+        onRegisterEmployerClick = onRegisterEmployerClick
+    )
+}
+
+
+// =================================================================
+// 2. STATELESS SCREEN (Pure UI - Ideal for Previews & Unit Tests)
+// =================================================================
+@Composable
+fun AuthSelectionScreen(
+    strings: AuthSelectionMain,
+    currentLanguage: AppLanguage,
+    availableLanguages: List<AppLanguage>,
+    onLanguageSelected: (AppLanguage) -> Unit,
+    onLoginClick: () -> Unit = {},
+    onRegisterWorkerClick: () -> Unit = {},
+    onRegisterEmployerClick: () -> Unit = {}
+) {
+    // Two-Tone App Name Custom Styling
     val coopColor = Color(0xFF2196F3)
     val gridColor = Color(0xFF2E7D32)
 
@@ -73,7 +104,7 @@ fun AuthSelectionScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background) // Auto Light/Dark
+                .background(MaterialTheme.colorScheme.background)
                 .padding(innerPadding)
                 .padding(
                     top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 16.dp,
@@ -95,11 +126,9 @@ fun AuthSelectionScreen(
                     horizontalArrangement = Arrangement.End
                 ) {
                     LanguageChip(
-                        selectedLanguage = selectedLanguage,
-                        availableLanguages = viewModel.availableLanguages,
-                        onLanguageSelected = { newLang: AppLanguage ->
-                            viewModel.selectLanguage(newLang)
-                        }
+                        selectedLanguage = currentLanguage,
+                        availableLanguages = availableLanguages,
+                        onLanguageSelected = onLanguageSelected
                     )
                 }
 
@@ -110,7 +139,7 @@ fun AuthSelectionScreen(
                     text = styledAppName,
                     style = MaterialTheme.typography.displayLarge,
                     fontSize = 32.nonScaleSp(),
-                    letterSpacing = 1.nonScaleSp(), // Letter spacing thoda kam rakhein
+                    letterSpacing = 1.nonScaleSp(),
                     maxLines = 1,
                     softWrap = false,
                     modifier = Modifier.fillMaxWidth(),
@@ -238,20 +267,26 @@ fun RoleSelectionCard(
     }
 }
 
-// --- Previews ---
+@Preview(showBackground = true, name = "Hinglish Auth Screen")
+@Composable
+fun AuthSelectionScreenPreviewHinglish() {
+    val dummyHinglishStrings = AuthSelectionMain(
+        appName = "CoopGrid",
+        subtitle = "Aapki Nayi Shuruat Yahan Se Hoti Hai",
+        createAccountHeader = "Naya Account Banayein",
+        workerTitle = "Kaam Chahiye (Worker)",
+        workerDesc = "Naye kaam dhoondhein aur direct apply karein",
+        employerTitle = "Worker Chahiye (Employer)",
+        employerDesc = "Apne kaam ke liye sahi logon ko hire karein",
+        alreadyAccount = "Pahle Se Account Hai?"
+    )
 
-//@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun AuthSelectionLightPreview() {
-//    CoopGridTheme(darkTheme = false) {
-//        AuthSelectionScreen()
-//    }
-//}
-//
-//@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun AuthSelectionDarkPreview() {
-//    CoopGridTheme(darkTheme = true) {
-//        AuthSelectionScreen()
-//    }
-//}
+    MaterialTheme {
+        AuthSelectionScreen(
+            strings = dummyHinglishStrings,
+            currentLanguage = AppLanguage.HINGLISH,
+            availableLanguages = AppLanguage.entries,
+            onLanguageSelected = {}
+        )
+    }
+}

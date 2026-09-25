@@ -1,6 +1,52 @@
 package com.example.coopgrid.worker.registration.presentation.steps.step4.strings
 
 import com.example.coopgrid.ui.theme.AppLanguage
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class WorkerKyc(
+    val screenCode: String = "",
+    // Common Headers
+    val screenTitle: String = "Json load nahi ho raha",
+    val screenSubtitle: String = "",
+    val submitKycButton: String = "",
+
+    // Common Identity Card
+    val commonIdentityTitle: String = "",
+    val selectDocTypeLabel: String = "",
+    val enterDocNumberHint: String = "",
+    val frontDocPhotoLabel: String = "",
+    val backDocPhotoLabel: String = "",
+
+    // Skill KYC Card
+    val skillKycTitle: String = "",
+    val skillCertHint: String = "",
+    val skillCertPhotoLabel: String = "",
+
+    // Machinery KYC Card
+    val machineryKycTitle: String = "",
+    val rcNumberHint: String = "",
+    val rcPhotoLabel: String = "",
+    val machinePhotoLabel: String = "",
+
+    // Agri-Supply KYC Card
+    val agriKycTitle: String = "",
+    val businessNameHint: String = "",
+    val licenseNumberHint: String = "",
+    val licenseDocPhotoLabel: String = "",
+    val shopPhotoLabel: String = "",
+
+    // Upload Actions & Errors
+    val uploadAction: String = "",
+    val changeAction: String = "",
+    val invalidDocNumberError: String = "",
+    val fillRequiredKycError: String = "",
+
+    // error ke liye hai
+    val backPhotoRequiredError : String = "",
+    val frontPhotoRequiredError: String = "",
+)
+
 
 
 data class KycStrings(

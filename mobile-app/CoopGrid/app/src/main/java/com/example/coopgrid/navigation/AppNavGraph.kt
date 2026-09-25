@@ -1,7 +1,6 @@
 package com.example.coopgrid.navigation
 
 import android.util.Log
-import com.example.coopgrid.common.roleselection.AuthSelectionScreen
 import com.example.coopgrid.ui.screens.worker.auth.screen.WorkerRegisterStep1Screen
 import com.example.coopgrid.ui.screens.worker.auth.screen.WorkerRegisterStep2Screen
 import com.example.coopgrid.ui.screens.worker.auth.screen.WorkerRegisterStep3Screen
@@ -18,6 +17,7 @@ import com.example.coopgrid.data.sampleEmployerServices
 import com.example.coopgrid.common.LanguageViewModel
 import com.example.coopgrid.common.auth.screen.LoginScreen
 import com.example.coopgrid.common.auth.screen.OtpScreen
+import com.example.coopgrid.common.roleselection.AuthSelectionRoute
 import com.example.coopgrid.common.splash.AuthState
 import com.example.coopgrid.common.splash.SplashScreen
 import com.example.coopgrid.common.splash.SplashViewModel
@@ -94,8 +94,7 @@ fun AppNavGraph(
 
         // 2. Auth Selection Screen
         composable(route = Screen.AuthSelection.route) {
-            AuthSelectionScreen(
-                viewModel = languageViewModel,
+            AuthSelectionRoute(
                 onLoginClick = {
                     navController.navigate(Screen.Login.route)
                 },

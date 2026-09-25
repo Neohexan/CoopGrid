@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.example.coopgrid.common.language.TestLocalizationScreen
 import com.example.coopgrid.navigation.AppNavGraph
 import com.example.coopgrid.ui.theme.CoopGridTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -51,6 +52,7 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .padding(innerPadding) // Status bar & Bottom bar ke liye exact safe margin
                     ) {
+//                        TestLocalizationScreen()
                         AppNavGraph()
                     }
                 }

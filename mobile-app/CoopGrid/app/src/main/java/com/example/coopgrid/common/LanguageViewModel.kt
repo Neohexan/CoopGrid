@@ -32,7 +32,7 @@ class LanguageViewModel @Inject constructor(
     fun selectLanguage(newLanguage: AppLanguage) {
         viewModelScope.launch {
             _currentLanguage.value = newLanguage
-            prefManager.saveLanguage(newLanguage)
+//            prefManager.saveLanguage(newLanguage)
         }
     }
 }

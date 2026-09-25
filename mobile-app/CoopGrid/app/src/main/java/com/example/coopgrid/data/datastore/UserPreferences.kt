@@ -5,7 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.example.coopgrid.ui.theme.AppLanguage
+import com.example.coopgrid.data.lanlocal.model.AppLanguage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -25,9 +25,14 @@ class UserPreferences @Inject constructor(
     // 1. Saved Language Flow (Default: HINGLISH)
     val selectedLanguage: Flow<String> = dataStore.data.map { prefs ->
         val langString = prefs[KEY_SELECTED_LANGUAGE]  // Default value -> ENGLISH
-        AppLanguage.fromString(langString).displayName
+        AppLanguage.fromString(langString).isoCode
     }
-
+    // 2. Language Save Method
+    suspend fun saveLanguage(languageCode: AppLanguage) {
+        dataStore.edit { prefs ->
+            prefs[KEY_SELECTED_LANGUAGE] = languageCode.isoCode
+        }
+    }
     val isLoggedIn: Flow<Boolean> = dataStore.data.map { prefs ->
         prefs[KEY_IS_LOGGED_IN] ?: false
     }
@@ -49,13 +54,6 @@ class UserPreferences @Inject constructor(
         }
     }
 
-    // 2. Language Save Method
-    suspend fun saveLanguage(languageCode: AppLanguage) {
-        dataStore.edit { prefs ->
-            prefs[KEY_SELECTED_LANGUAGE] = languageCode.displayName
-        }
-    }
-// fddfg
     // Logout karne par session clear karein
     suspend fun clearSession() {
         dataStore.edit { prefs ->
