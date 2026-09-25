@@ -10,20 +10,15 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.coopgrid.common.LanguageViewModel
-import com.example.coopgrid.ui.theme.AppLanguage
 import com.example.coopgrid.worker.registration.presentation.components.AppDropdown
 import com.example.coopgrid.worker.registration.presentation.components.AppTextField
 import com.example.coopgrid.worker.registration.presentation.steps.step22.model.MachineryCategory
 import com.example.coopgrid.worker.registration.presentation.steps.step22.model.MachineryRentalItem
-import com.example.coopgrid.worker.registration.presentation.steps.step22.strings.MachineryRentalStrings
+import com.example.coopgrid.worker.registration.presentation.steps.step22.strings.MachineryRental
 import kotlin.math.roundToInt
 
 @Composable
@@ -31,15 +26,14 @@ fun MachineryRentalCard(
     itemNumber: Int,
     item: MachineryRentalItem,
     categories: List<MachineryCategory>,
-    strings: MachineryRentalStrings,
+    isHinglish: Boolean, // Clean boolean parameter instead of ViewModel
+    strings: MachineryRental,
     showRemoveButton: Boolean,
     onItemChange: (MachineryRentalItem) -> Unit,
     onRemoveClick: () -> Unit,
     onToggleExpand: () -> Unit,
-    languageViewModel: LanguageViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
-    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
     val selectedCategory = categories.find { it.id == item.categoryId }
     val selectedSubCategory = selectedCategory?.subCategories?.find { it.id == item.subCategoryId }
 
@@ -101,7 +95,7 @@ fun MachineryRentalCard(
                     AppDropdown(
                         items = categories,
                         selectedItem = selectedCategory,
-                        itemLabel = { if (selectedLanguage == AppLanguage.HINGLISH) it.nameHinglish else it.nameEnglish },
+                        itemLabel = { it.getDisplayName(isHinglish) },
                         placeholder = strings.categoryLabel,
                         onItemSelected = { cat ->
                             onItemChange(item.copy(categoryId = cat.id, subCategoryId = ""))
@@ -114,7 +108,7 @@ fun MachineryRentalCard(
                         AppDropdown(
                             items = selectedCategory.subCategories,
                             selectedItem = selectedSubCategory,
-                            itemLabel = { if (selectedLanguage == AppLanguage.HINGLISH) it.nameHinglish else it.nameEnglish },
+                            itemLabel = { it.getDisplayName(isHinglish) },
                             placeholder = strings.subCategoryLabel,
                             onItemSelected = { subCat ->
                                 onItemChange(item.copy(subCategoryId = subCat.id))
@@ -130,7 +124,7 @@ fun MachineryRentalCard(
                         placeholderText = strings.customNameHint
                     )
 
-                    // 6. service RADIUS (SLIDER)
+                    // 4. Service Radius (Slider)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -152,12 +146,12 @@ fun MachineryRentalCard(
                             onItemChange(item.copy(serviceRadiusKm = newRadius))
                         },
                         valueRange = 2f..50f,
-                        steps = 23 // Increases in ~2 KM steps
+                        steps = 23
                     )
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
-                    // 4. Rate Input + Unit Selector
+                    // 5. Rate Input + Unit Selector Group
                     MachineryRateInputGroup(
                         rate = item.rate,
                         selectedUnit = item.rateUnit,
@@ -166,7 +160,7 @@ fun MachineryRentalCard(
                         onUnitSelected = { newUnit -> onItemChange(item.copy(rateUnit = newUnit)) }
                     )
 
-                    // 5. Driver & Fuel Inclusion Switch/Choice
+                    // 6. Driver & Fuel Inclusion Switch
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,

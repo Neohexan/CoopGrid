@@ -1,0 +1,75 @@
+[
+    {
+        "id": "seeds_plants",
+        "nameEnglish": "Seeds & Plants / Nursery",
+        "nameHinglish": "Beej & Paudhe / Nursery",
+        "subCategories": [
+            {
+                "id": "crop_seeds",
+                "nameEnglish": "Crop Seeds",
+                "nameHinglish": "Fasal Ke Beej"
+            },
+            {
+                "id": "veg_seeds",
+                "nameEnglish": "Vegetable Seeds",
+                "nameHinglish": "Sabzio Ke Beej"
+            },
+            {
+                "id": "nursery_plants",
+                "nameEnglish": "Nursery Saplings",
+                "nameHinglish": "Nursery Ke Paudhe"
+            }
+        ]
+    },
+    {
+        "id": "fertilizer_soil",
+        "nameEnglish": "Fertilizers & Soil Nutrition",
+        "nameHinglish": "Khad & Mitti Poshan",
+        "subCategories": [
+            {
+                "id": "organic_compost",
+                "nameEnglish": "Organic / Vermicompost",
+                "nameHinglish": "Gobar Khad / Vermicompost"
+            },
+            {
+                "id": "fertilizers",
+                "nameEnglish": "Chemical & Bio Fertilizers",
+                "nameHinglish": "Khad & Jaivik Dawa"
+            }
+        ]
+    },
+    {
+        "id": "farm_produce_bulk",
+        "nameEnglish": "Farm Produce & Fodder Trader",
+        "nameHinglish": "Fasal & Bhoosa / Chara Vyapar",
+        "subCategories": [
+            {
+                "id": "grains_trader",
+                "nameEnglish": "Grains & Pulses",
+                "nameHinglish": "Anaj & Daal"
+            },
+            {
+                "id": "fodder_trader",
+                "nameEnglish": "Fodder / Cattle Feed",
+                "nameHinglish": "Chara & Bhoosa"
+            }
+        ]
+    },
+    {
+        "id": "small_tools",
+        "nameEnglish": "Small Agri Tools & Hardware",
+        "nameHinglish": "Kheti Ke Chote Auzaar & Tirpal",
+        "subCategories": [
+            {
+                "id": "spray_pumps",
+                "nameEnglish": "Spray Pumps & Pipes",
+                "nameHinglish": "Spray Pump & Pipe"
+            },
+            {
+                "id": "hand_tools",
+                "nameEnglish": "Hand Tools & Nets",
+                "nameHinglish": "Khurpi, Tirpal & Auzaar"
+            }
+        ]
+    }
+]

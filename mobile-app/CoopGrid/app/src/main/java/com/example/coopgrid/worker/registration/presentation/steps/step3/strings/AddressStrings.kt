@@ -4,7 +4,7 @@ import com.example.coopgrid.ui.theme.AppLanguage
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class WorkerAddress(
+data class WorkerAddressStrings(
     val screenTitle: String = "Json load nahi ho raha",
     val screenSubtitle: String = "",
     val selectAddressType: String = "",
@@ -16,6 +16,8 @@ data class WorkerAddress(
     val pincodeHint: String = "",
     val cityLabel: String = "",
     val cityHint: String = "",
+    val blockLabel: String = "Json khali",
+    val blockHint: String = "Json khali",
     val districtLabel: String = "",
     val districtHint: String = "",
     val stateLabel: String = "",

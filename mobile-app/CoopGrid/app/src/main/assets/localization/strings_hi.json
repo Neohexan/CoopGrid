@@ -133,10 +133,10 @@
             "driverFuelNo": "नहीं (केवल मशीन)",
             "saveAndContinue": "सहेजें और आगे बढ़ें",
             "rateUnits": {
-                "PER_HOUR": "प्रति घंटा",
-                "PER_ACRE": "प्रति एकड़",
-                "PER_DAY": "प्रति दिन",
-                "PER_TRIP": "प्रति ट्रिप"
+                "perHour": "प्रति घंटा",
+                "perAcre": "प्रति एकड़",
+                "perDay": "प्रति दिन",
+                "perTrip": "प्रति ट्रिप"
             }
         },
         "agriSupplyProfile": {

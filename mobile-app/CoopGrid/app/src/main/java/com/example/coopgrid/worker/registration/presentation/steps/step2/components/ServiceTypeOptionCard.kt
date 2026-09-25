@@ -10,11 +10,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.coopgrid.worker.registration.presentation.steps.step2.strings.ServiceTypeOptionUIModel
+import com.example.coopgrid.worker.registration.presentation.steps.step2.strings.ServiceTypeOption
 
 @Composable
 fun ServiceTypeOptionCard(
-    option: ServiceTypeOptionUIModel,
+    option: ServiceTypeOption,
     isSelected: Boolean,
     onSelect: () -> Unit
 ) {

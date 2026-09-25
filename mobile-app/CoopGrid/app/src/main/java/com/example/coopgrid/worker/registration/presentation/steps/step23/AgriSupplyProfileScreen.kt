@@ -10,41 +10,72 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.coopgrid.ui.theme.AppLanguage
 import androidx.compose.ui.Alignment
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.coopgrid.common.LanguageViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.coopgrid.common.language.LanguageViewModel
+import com.example.coopgrid.data.lanlocal.model.AppLanguage
 import com.example.coopgrid.worker.registration.presentation.components.AppDropdown
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.worker.registration.presentation.components.AppTextField
+import com.example.coopgrid.worker.registration.presentation.steps.step23.model.AgriBusinessCategory
 import com.example.coopgrid.worker.registration.presentation.steps.step23.model.AgriSupplyProfile
-import com.example.coopgrid.worker.registration.presentation.steps.step23.model.SampleAgriBusinessCategories
-import com.example.coopgrid.worker.registration.presentation.steps.step23.strings.getAgriProfileStrings
+import com.example.coopgrid.worker.registration.presentation.steps.step23.strings.AgriSupplyProfileStrings
 import kotlin.math.roundToInt
 
+// =================================================================
+// 1. STATEFUL ROUTE
+// =================================================================
+@Composable
+fun AgriSupplyProfileRoute(
+    agriSupplyProfile: AgriSupplyProfile = AgriSupplyProfile(),
+    onSaveAndContinue: (AgriSupplyProfile) -> Unit,
+    agriViewModel: AgriSupplyViewModel = hiltViewModel(),
+    languageViewModel: LanguageViewModel = hiltViewModel()
+) {
+    // ViewModel se JSON Loaded Categories collect karna
+    val categories by agriViewModel.categories.collectAsStateWithLifecycle()
+    val selectedLanguage by languageViewModel.currentLanguage.collectAsStateWithLifecycle()
+    val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
+
+    AgriSupplyProfileScreen(
+        categories = categories,
+        selectedLanguage = selectedLanguage,
+        strings = appStrings.workerFlow.agriSupplyProfile,
+        initialProfile = agriSupplyProfile,
+        onSaveAndContinue = onSaveAndContinue
+    )
+}
+
+// =================================================================
+// 2. STATELESS SCREEN (Pure UI Component)
+// =================================================================
 @Composable
 fun AgriSupplyProfileScreen(
-    item: AgriSupplyProfile,
+    categories: List<AgriBusinessCategory>,
+    selectedLanguage: AppLanguage,
+    strings: AgriSupplyProfileStrings,
     initialProfile: AgriSupplyProfile = AgriSupplyProfile(),
-    onItemChange: (AgriSupplyProfile) -> Unit,
     onSaveAndContinue: (AgriSupplyProfile) -> Unit,
-    languageViewModel: LanguageViewModel = hiltViewModel(),
+    modifier: Modifier = Modifier
 ) {
-    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
-    val strings =  getAgriProfileStrings(selectedLanguage)
-    var profile by remember { mutableStateOf(initialProfile) }
+    var profile by remember(initialProfile) { mutableStateOf(initialProfile) }
     var validationError by remember { mutableStateOf<String?>(null) }
 
-    val selectedCategory = SampleAgriBusinessCategories.find {
+    val isHinglish = selectedLanguage == AppLanguage.HINGLISH
+
+    // Selected Category find from ViewModel JSON List
+    val selectedCategory = categories.find {
         profile.selectedCategoryIds.contains(it.id)
     }
 
+    // Selected SubCategory find from Category's subcategories
     val selectedSubCategory = selectedCategory?.subCategories?.find {
         profile.selectedSubCategoryIds.contains(it.id)
     }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
@@ -54,7 +85,7 @@ fun AgriSupplyProfileScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header
+            // Header Section
             Text(
                 text = strings.screenTitle,
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
@@ -68,7 +99,7 @@ fun AgriSupplyProfileScreen(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // 1. Business/Shop Name
+            // 1. Business / Shop Name
             Text(text = strings.businessNameLabel, style = MaterialTheme.typography.labelMedium)
             AppTextField(
                 value = profile.businessName,
@@ -76,18 +107,18 @@ fun AgriSupplyProfileScreen(
                 placeholderText = strings.businessNameHint
             )
 
-            // 2. Category Dropdown
+            // 2. Category Dropdown (JSON Data Driven)
             Text(text = strings.selectCategoriesLabel, style = MaterialTheme.typography.labelMedium)
             AppDropdown(
-                items = SampleAgriBusinessCategories,
+                items = categories,
                 selectedItem = selectedCategory,
-                itemLabel = { if (selectedLanguage == AppLanguage.HINGLISH) it.nameHinglish else it.nameEnglish },
+                itemLabel = { it.getDisplayName(isHinglish) },
                 placeholder = strings.selectCategoriesLabel,
                 onItemSelected = { cat ->
                     validationError = null
                     profile = profile.copy(
                         selectedCategoryIds = listOf(cat.id),
-                        selectedSubCategoryIds = emptyList()
+                        selectedSubCategoryIds = emptyList() // Reset subcategory on category change
                     )
                 }
             )
@@ -98,7 +129,7 @@ fun AgriSupplyProfileScreen(
                 AppDropdown(
                     items = selectedCategory.subCategories,
                     selectedItem = selectedSubCategory,
-                    itemLabel = { if (selectedLanguage == AppLanguage.HINGLISH) it.nameHinglish else it.nameEnglish },
+                    itemLabel = { it.getDisplayName(isHinglish) },
                     placeholder = strings.selectSubCategoriesLabel,
                     onItemSelected = { subCat ->
                         profile = profile.copy(selectedSubCategoryIds = listOf(subCat.id))
@@ -108,7 +139,7 @@ fun AgriSupplyProfileScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 6. WORK RADIUS (SLIDER)
+            // 4. WORK RADIUS (SLIDER)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -119,25 +150,25 @@ fun AgriSupplyProfileScreen(
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
                 )
                 Text(
-                    text = "${item.serviceRadiusKm.roundToInt()} KM",
+                    text = "${profile.serviceRadiusKm.roundToInt()} KM",
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.primary
                 )
             }
             Slider(
-                value = item.serviceRadiusKm,
+                value = profile.serviceRadiusKm,
                 onValueChange = { newRadius ->
-                    onItemChange(item.copy(serviceRadiusKm = newRadius))
+                    profile = profile.copy(serviceRadiusKm = newRadius)
                 },
                 valueRange = 2f..50f,
-                steps = 23 // Increases in ~2 KM steps
+                steps = 23
             )
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // 4. Service Capability Switches
+            // 5. Service Capability Switches
             Text(
-                text = "Service Options",
+                text = strings.serviceOptionsTitle,
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
             )
 
@@ -191,36 +222,17 @@ fun AgriSupplyProfileScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Save Button
+        // Save & Continue Button
         AppPrimaryButton(
             text = strings.saveAndContinue,
             onClick = {
                 if (profile.selectedCategoryIds.isEmpty()) {
-                    validationError = if (selectedLanguage == AppLanguage.HINGLISH)
-                        "Kripya kam se kam ek Category zaroor chunein."
-                    else
-                        "Please select at least one Category."
+                    validationError = strings.categoryRequiredError
                 } else {
                     onSaveAndContinue(profile)
                 }
             },
             modifier = Modifier.fillMaxWidth()
         )
-    }
-}
-
-@Preview(name = "Step 23 - Agri Supply Screen", showBackground = true)
-@Composable
-fun AgriSupplyScreenPreview() {
-    MaterialTheme {
-        Surface {
-            AgriSupplyProfileScreen(
-                onSaveAndContinue = {},
-                item = AgriSupplyProfile(
-
-                ),
-                onItemChange = {}
-            )
-        }
     }
 }

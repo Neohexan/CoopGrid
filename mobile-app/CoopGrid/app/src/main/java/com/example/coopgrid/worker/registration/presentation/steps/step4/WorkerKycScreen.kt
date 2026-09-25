@@ -7,13 +7,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.coopgrid.common.LanguageViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.coopgrid.common.language.LanguageViewModel
 import com.example.coopgrid.ui.theme.AppLanguage
 import com.example.coopgrid.worker.registration.presentation.components.AppDropdown
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
@@ -26,6 +28,7 @@ import com.example.coopgrid.worker.registration.presentation.steps.step4.compone
 import com.example.coopgrid.worker.registration.presentation.steps.step4.model.CommonIdentityErrors
 import com.example.coopgrid.worker.registration.presentation.steps.step4.model.IdentityDocType
 import com.example.coopgrid.worker.registration.presentation.steps.step4.model.WorkerKycState
+import com.example.coopgrid.worker.registration.presentation.steps.step4.strings.WorkerKyc
 import com.example.coopgrid.worker.registration.presentation.steps.step4.strings.getKycStrings
 import com.example.coopgrid.worker.registration.presentation.steps.step4.util.KycValidation
 
@@ -37,11 +40,11 @@ fun WorkerKycScreen(
     languageViewModel: LanguageViewModel = hiltViewModel(),
     // Agar KycViewModel hai toh yahan pass kar sakte hain
 ) {
-    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
+    val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
 
     WorkerKycContent(
         selectedServices = selectedServices,
-        selectedLanguage = selectedLanguage,
+        strings = appStrings.workerFlow.kyc,
         onSubmitKyc = onSubmitKyc
     )
 }
@@ -50,12 +53,10 @@ fun WorkerKycScreen(
 @Composable
 fun WorkerKycContent(
     selectedServices: List<ServiceOfferingType>,
-    selectedLanguage: AppLanguage,
+    strings: WorkerKyc,
     onSubmitKyc: (WorkerKycState) -> Unit,
     initialState: WorkerKycState = WorkerKycState()
 ) {
-    val strings = remember(selectedLanguage) { getKycStrings(selectedLanguage) }
-
     var kycState by remember {
         mutableStateOf(initialState.copy(selectedServices = selectedServices))
     }
@@ -275,20 +276,3 @@ fun WorkerKycContent(
 // ---------------------------------------------------------------------
 // PREVIEW (Android Studio Interactive & Design Preview)
 // ---------------------------------------------------------------------
-
-@Preview(showBackground = true, showSystemUi = true, name = "Step 3 - KYC Preview (Multi Service)")
-@Composable
-fun WorkerKycScreenPreview() {
-    MaterialTheme {
-        Surface {
-            WorkerKycContent(
-                selectedServices = listOf(
-                    ServiceOfferingType.PERSONAL_SKILL,
-                    ServiceOfferingType.AGRI_SUPPLY
-                ),
-                selectedLanguage = AppLanguage.HINGLISH,
-                onSubmitKyc = {}
-            )
-        }
-    }
-}

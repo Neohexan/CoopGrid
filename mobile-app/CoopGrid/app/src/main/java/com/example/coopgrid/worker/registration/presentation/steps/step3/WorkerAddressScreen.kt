@@ -7,6 +7,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -14,7 +15,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.coopgrid.common.LanguageViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.coopgrid.common.language.LanguageViewModel
 import com.example.coopgrid.ui.theme.CoopGridTheme
 import com.example.coopgrid.worker.registration.presentation.components.AppDropdown
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
@@ -27,51 +29,69 @@ import com.example.coopgrid.worker.registration.presentation.steps.step3.model.S
 import com.example.coopgrid.worker.registration.presentation.steps.step3.model.WorkerAddress
 import com.example.coopgrid.worker.registration.presentation.steps.step3.strings.getAddressStrings
 import com.example.coopgrid.worker.data.util.LocationDataLoader
+import com.example.coopgrid.worker.registration.presentation.steps.step3.strings.WorkerAddressStrings
 import kotlin.collections.distinctBy
 import kotlin.collections.map
 
 @Composable
-fun WorkerAddressScreen(
+fun WorkerAddressRoute(
     initialAddress: WorkerAddress = WorkerAddress(),
     onSaveAndContinue: (WorkerAddress) -> Unit,
-    languageViewModel: LanguageViewModel = hiltViewModel(),
+    addressViewModel: WorkerAddressViewModel = hiltViewModel(),
+    languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
-    val strings = getAddressStrings(selectedLanguage)
+    val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
+    val allLocations by addressViewModel.locations.collectAsStateWithLifecycle()
+    val stateOptions by addressViewModel.stateOptions.collectAsStateWithLifecycle()
+    val isLoading by addressViewModel.isLoading.collectAsStateWithLifecycle()
 
-    // Direct Screen ke andar res/raw/india_locations.json se load
-    val allLocations = remember {
-        LocationDataLoader.loadLocationsFromRaw(context)
+    if (isLoading) {
+        // App Progress Indicator / Loading UI
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    } else {
+        WorkerAddressScreen(
+            allLocations = allLocations,
+            stateOptions = stateOptions,
+            strings = appStrings.workerFlow.address,
+            initialAddress = initialAddress,
+            onSaveAndContinue = onSaveAndContinue
+        )
     }
-    var address by remember { mutableStateOf(initialAddress) }
+}
+
+
+// 2. Pure Stateless Screen Component
+@Composable
+fun WorkerAddressScreen(
+    allLocations: List<DistrictLocationData>,
+    stateOptions: List<StateOption>,
+    strings: WorkerAddressStrings,
+    initialAddress: WorkerAddress = WorkerAddress(),
+    onSaveAndContinue: (WorkerAddress) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var address by remember(initialAddress) { mutableStateOf(initialAddress) }
     var validationError by remember { mutableStateOf<String?>(null) }
 
-    // State list unique extraction
-    val stateOptions = remember(allLocations) {
-        allLocations.distinctBy { it.stateCode }.map {
-            StateOption(
-                stateCode = it.stateCode,
-                stateNameEn = it.stateNameEn,
-                stateNameHi = it.stateNameEn // Hinglish / English fallback
-            )
-        }
-    }
-
-    // Selected State ke anusar Districts filter
+    // Districts Filtered by Selected State
     val availableDistricts = remember(address.selectedStateCode, allLocations) {
         if (address.selectedStateCode.isBlank()) emptyList()
         else allLocations.filter { it.stateCode == address.selectedStateCode }
     }
 
-    // Selected District ke anusar Blocks filter
+    // Blocks Filtered by Selected District
     val availableBlocks = remember(address.selectedDistrictCode, availableDistricts) {
         val matchedDistrict = availableDistricts.find { it.districtCode == address.selectedDistrictCode }
         matchedDistrict?.blockList ?: emptyList()
     }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .systemBarsPadding()
             .padding(16.dp)
@@ -95,14 +115,14 @@ fun WorkerAddressScreen(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Address Type Selection
+            // Address Type Selection (Home / Shop / Warehouse)
             Text(text = strings.selectAddressType, style = MaterialTheme.typography.labelMedium)
             AddressTypeSelector(
                 selectedType = address.addressType,
                 onTypeSelected = { address = address.copy(addressType = it) }
             )
 
-            // House/Building No
+            // House / Building No Input
             Text(text = strings.houseNoLabel, style = MaterialTheme.typography.labelMedium)
             AppTextField(
                 value = address.houseOrBuildingNo,
@@ -110,7 +130,7 @@ fun WorkerAddressScreen(
                 placeholderText = strings.houseNoHint
             )
 
-            // Street / Locality
+            // Street / Locality Input
             Text(text = strings.streetLabel, style = MaterialTheme.typography.labelMedium)
             AppTextField(
                 value = address.streetLocality,
@@ -118,12 +138,12 @@ fun WorkerAddressScreen(
                 placeholderText = strings.streetHint
             )
 
-            // 1. STATE DROPDOWN
+            // 1. STATE DROPDOWN (Strictly English Name)
             Text(text = strings.stateLabel, style = MaterialTheme.typography.labelMedium)
             AppDropdown<StateOption>(
                 items = stateOptions,
                 selectedItem = stateOptions.find { it.stateCode == address.selectedStateCode },
-                itemLabel = { it.stateNameEn },
+                itemLabel = { it.stateNameEn }, // Always English
                 placeholder = strings.stateHint,
                 onItemSelected = { selectedState ->
                     address = address.copy(
@@ -137,12 +157,12 @@ fun WorkerAddressScreen(
                 }
             )
 
-            // 2. DISTRICT DROPDOWN
+            // 2. DISTRICT DROPDOWN (Strictly English Name)
             Text(text = strings.districtLabel, style = MaterialTheme.typography.labelMedium)
             AppDropdown<DistrictLocationData>(
                 items = availableDistricts,
                 selectedItem = availableDistricts.find { it.districtCode == address.selectedDistrictCode },
-                itemLabel = { it.districtName },
+                itemLabel = { it.districtName }, // Always English
                 placeholder = strings.districtHint,
                 enabled = address.selectedStateCode.isNotBlank(),
                 onItemSelected = { selectedDist ->
@@ -155,19 +175,20 @@ fun WorkerAddressScreen(
                 }
             )
 
-            // 3. BLOCK DROPDOWN & PINCODE (Row)
+            // 3. BLOCK DROPDOWN & PINCODE ROW
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                // Block Dropdown
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "Block / Tehsil", style = MaterialTheme.typography.labelMedium)
+                    Text(text = strings.blockLabel, style = MaterialTheme.typography.labelMedium)
                     Spacer(modifier = Modifier.height(4.dp))
                     AppDropdown<BlockLocationData>(
                         items = availableBlocks,
                         selectedItem = availableBlocks.find { it.blockCode == address.selectedBlockCode },
-                        itemLabel = { it.blockNameEn },
-                        placeholder = "Select Block",
+                        itemLabel = { it.blockNameEn }, // Always English
+                        placeholder = strings.blockHint,
                         enabled = address.selectedDistrictCode.isNotBlank(),
                         onItemSelected = { selectedBlock ->
                             address = address.copy(
@@ -178,14 +199,15 @@ fun WorkerAddressScreen(
                     )
                 }
 
+                // Pincode Field
                 Column(modifier = Modifier.weight(1f)) {
                     Text(text = strings.pincodeLabel, style = MaterialTheme.typography.labelMedium)
                     Spacer(modifier = Modifier.height(4.dp))
                     AppTextField(
                         value = address.pincode,
-                        onValueChange = {
-                            if (it.length <= 6 && it.all { char -> char.isDigit() }) {
-                                address = address.copy(pincode = it)
+                        onValueChange = { input ->
+                            if (input.length <= 6 && input.all { char -> char.isDigit() }) {
+                                address = address.copy(pincode = input)
                             }
                         },
                         placeholderText = strings.pincodeHint,
@@ -196,7 +218,7 @@ fun WorkerAddressScreen(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // GPS Coordinates Card
+            // GPS Location Card
             GpsLocationCard(
                 isGpsCaptured = address.isGpsCaptured,
                 latitude = address.latitude,
@@ -218,11 +240,15 @@ fun WorkerAddressScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // Save & Continue Action Button
         AppPrimaryButton(
             text = strings.saveAndContinue,
             onClick = {
-                if (address.streetLocality.isBlank() || address.selectedStateCode.isBlank() ||
-                    address.selectedDistrictCode.isBlank() || address.pincode.length < 6) {
+                if (address.streetLocality.isBlank() ||
+                    address.selectedStateCode.isBlank() ||
+                    address.selectedDistrictCode.isBlank() ||
+                    address.pincode.length < 6
+                ) {
                     validationError = strings.fillRequiredFieldsError
                 } else {
                     onSaveAndContinue(address)
@@ -233,16 +259,3 @@ fun WorkerAddressScreen(
     }
 }
 
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun WorkerAddressScreenPreview() {
-    CoopGridTheme {
-        Surface {
-            WorkerAddressScreen(
-                initialAddress = WorkerAddress(),
-                onSaveAndContinue = {},
-            )
-        }
-    }
-}

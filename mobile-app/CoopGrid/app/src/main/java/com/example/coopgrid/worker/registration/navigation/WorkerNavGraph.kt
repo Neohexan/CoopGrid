@@ -12,17 +12,16 @@ import com.example.coopgrid.worker.registration.presentation.steps.step2.model.S
 import com.example.coopgrid.worker.registration.presentation.steps.step3.WorkerAddressScreen
 import com.example.coopgrid.worker.registration.presentation.steps.step4.WorkerKycScreen
 import androidx.navigation.toRoute
-import com.example.coopgrid.ui.screens.worker.auth.WorkerAuthViewModel
 import com.example.coopgrid.worker.registration.presentation.steps.step0.WorkerAuthViewModelStepZero
 import com.example.coopgrid.worker.registration.presentation.steps.step0.screen.OtpRoute
 import com.example.coopgrid.worker.registration.presentation.steps.step0.screen.TermsAndConditionsRoute
 import com.example.coopgrid.worker.registration.presentation.steps.step0.screen.WorkerPhoneRoute
 import com.example.coopgrid.worker.registration.presentation.steps.step1.WorkerPersonalScreen
-import com.example.coopgrid.worker.registration.presentation.steps.step2.ServiceTypeSelectionScreen
+import com.example.coopgrid.worker.registration.presentation.steps.step2.ServiceTypeSelectionRoute
 import com.example.coopgrid.worker.registration.presentation.steps.step21.WorkerSkillScreen
-import com.example.coopgrid.worker.registration.presentation.steps.step22.MachineryRentalScreen
-import com.example.coopgrid.worker.registration.presentation.steps.step23.AgriSupplyProfileScreen
-import com.example.coopgrid.worker.registration.presentation.steps.step23.model.AgriSupplyProfile
+import com.example.coopgrid.worker.registration.presentation.steps.step22.MachineryRentalRoute
+import com.example.coopgrid.worker.registration.presentation.steps.step23.AgriSupplyProfileRoute
+import com.example.coopgrid.worker.registration.presentation.steps.step3.WorkerAddressRoute
 import com.example.coopgrid.worker.registration.viewmodel.WorkerFormViewModel
 
 fun NavGraphBuilder.workerNavGraph(
@@ -105,7 +104,7 @@ fun NavGraphBuilder.workerNavGraph(
             val savedServices = backStackEntry.savedStateHandle.get<List<ServiceOfferingType>>("selected_services")
             val previousSelection = savedServices?.firstOrNull()
 
-            ServiceTypeSelectionScreen(
+            ServiceTypeSelectionRoute(
                 initialSelectedType = previousSelection, // Restore previous selection on Back press
                 onNextClicked = { selectedService ->
                     backStackEntry.savedStateHandle["selected_services"] = listOf(selectedService)
@@ -144,7 +143,7 @@ fun NavGraphBuilder.workerNavGraph(
         // STEP 2.2: Machinery Rental Form
         // -------------------------------------------------------------
         composable<WorkerRoute.Step2MachineryRental> {
-            MachineryRentalScreen(
+            MachineryRentalRoute(
                 onSaveAndContinue = { machineryList ->
                     // (Optional) Backstack entry ya ViewModel me list save kar sakte hain
                     navController.navigate(WorkerRoute.Step3Address)
@@ -156,9 +155,7 @@ fun NavGraphBuilder.workerNavGraph(
         // STEP 2.3: Agri Supply Form
         // -------------------------------------------------------------
         composable<WorkerRoute.Step2AgriSupply> {
-            AgriSupplyProfileScreen(
-                item = AgriSupplyProfile(),
-                onItemChange = { updatedProfile -> },
+            AgriSupplyProfileRoute(
                 onSaveAndContinue = { savedProfile ->
                     navController.navigate(WorkerRoute.Step3Address)
                 }
@@ -173,7 +170,7 @@ fun NavGraphBuilder.workerNavGraph(
             val previousEntry = navController.getBackStackEntry<WorkerRoute.Step2ServiceSelection>()
             val selectedServices = previousEntry.savedStateHandle.get<List<ServiceOfferingType>>("selected_services") ?: emptyList()
 
-            WorkerAddressScreen(
+            WorkerAddressRoute(
                 onSaveAndContinue = { savedAddress ->
                     // Selected services ko Step 4 KYC me pass karein
                     navController.navigate(

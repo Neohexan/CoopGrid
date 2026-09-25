@@ -7,8 +7,8 @@ import com.example.coopgrid.worker.registration.presentation.steps.step1.WorkerP
 import com.example.coopgrid.worker.registration.presentation.steps.step2.strings.ServiceType
 import com.example.coopgrid.worker.registration.presentation.steps.step21.WorkerSkill
 import com.example.coopgrid.worker.registration.presentation.steps.step22.strings.MachineryRental
-import com.example.coopgrid.worker.registration.presentation.steps.step23.strings.AgriSupplyProfile
-import com.example.coopgrid.worker.registration.presentation.steps.step3.strings.WorkerAddress
+import com.example.coopgrid.worker.registration.presentation.steps.step23.strings.AgriSupplyProfileStrings
+import com.example.coopgrid.worker.registration.presentation.steps.step3.strings.WorkerAddressStrings
 import com.example.coopgrid.worker.registration.presentation.steps.step4.strings.WorkerKyc
 import kotlinx.serialization.Serializable
 
@@ -22,7 +22,7 @@ data class WorkerFlowStrings(
     val serviceType: ServiceType = ServiceType(),
     val workerSkill: WorkerSkill = WorkerSkill(),
     val machineryRental: MachineryRental = MachineryRental(),
-    val agriSupplyProfile: AgriSupplyProfile = AgriSupplyProfile(),
-    val address: WorkerAddress = WorkerAddress(),
+    val agriSupplyProfile: AgriSupplyProfileStrings = AgriSupplyProfileStrings(),
+    val address: WorkerAddressStrings = WorkerAddressStrings(),
     val kyc: WorkerKyc = WorkerKyc(),
 )

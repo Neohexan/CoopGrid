@@ -11,12 +11,13 @@ import com.example.coopgrid.worker.registration.presentation.steps.step4.model.A
 import com.example.coopgrid.worker.registration.presentation.steps.step4.model.MachineryRentalKyc
 import com.example.coopgrid.worker.registration.presentation.steps.step4.model.PersonalSkillKyc
 import com.example.coopgrid.worker.registration.presentation.steps.step4.strings.KycStrings
+import com.example.coopgrid.worker.registration.presentation.steps.step4.strings.WorkerKyc
 
 // 1. PERSONAL SKILL KYC CARD
 @Composable
 fun PersonalSkillKycCard(
     state: PersonalSkillKyc,
-    strings: KycStrings,
+    strings: WorkerKyc,
     onStateChange: (PersonalSkillKyc) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -53,7 +54,7 @@ fun PersonalSkillKycCard(
 @Composable
 fun MachineryRentalKycCard(
     state: MachineryRentalKyc,
-    strings: KycStrings,
+    strings: WorkerKyc,
     onStateChange: (MachineryRentalKyc) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -97,7 +98,7 @@ fun MachineryRentalKycCard(
 @Composable
 fun AgriSupplyKycCard(
     state: AgriSupplyKyc,
-    strings: KycStrings,
+    strings: WorkerKyc,
     onStateChange: (AgriSupplyKyc) -> Unit,
     modifier: Modifier = Modifier
 ) {

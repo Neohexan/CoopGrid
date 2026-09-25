@@ -11,29 +11,59 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.coopgrid.common.LanguageViewModel
-import com.example.coopgrid.ui.theme.AppLanguage
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.coopgrid.common.language.LanguageViewModel
+import com.example.coopgrid.data.lanlocal.model.AppLanguage
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.worker.registration.presentation.steps.step22.components.MachineryRentalCard
+import com.example.coopgrid.worker.registration.presentation.steps.step22.model.MachineryCategory
 import com.example.coopgrid.worker.registration.presentation.steps.step22.model.MachineryRentalItem
-import com.example.coopgrid.worker.registration.presentation.steps.step22.model.SampleMachineryCategories
-import com.example.coopgrid.worker.registration.presentation.steps.step22.strings.getMachineryStrings
+import com.example.coopgrid.worker.registration.presentation.steps.step22.strings.MachineryRental
 
+// =================================================================
+// 1. STATEFUL ROUTE (ViewModel & App Navigation Binding)
+// =================================================================
 @Composable
-fun MachineryRentalScreen(
-    languageViewModel: LanguageViewModel = hiltViewModel(),
+fun MachineryRentalRoute(
     initialItems: List<MachineryRentalItem> = listOf(MachineryRentalItem()),
-    onSaveAndContinue: (List<MachineryRentalItem>) -> Unit
+    onSaveAndContinue: (List<MachineryRentalItem>) -> Unit,
+    machineryViewModel: MachineryViewModel = hiltViewModel(),
+    languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
-    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
-    val strings = getMachineryStrings(selectedLanguage)
+    val categories by machineryViewModel.categories.collectAsStateWithLifecycle()
+    val isLoading by machineryViewModel.isLoading.collectAsStateWithLifecycle()
+    val selectedLanguage by languageViewModel.currentLanguage.collectAsStateWithLifecycle()
+    val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
 
-    // Dynamic List State (Max 5 Machines)
-    var machineryList by remember { mutableStateOf(initialItems) }
+
+    MachineryRentalContent(
+        categories = categories,
+        selectedLanguage = selectedLanguage,
+        strings = appStrings.workerFlow.machineryRental,
+        initialItems = initialItems,
+        onSaveAndContinue = onSaveAndContinue
+    )
+}
+
+
+// =================================================================
+// 2. STATELESS UI CONTENT (Pure Screen Rendering)
+// =================================================================
+@Composable
+fun MachineryRentalContent(
+    categories: List<MachineryCategory>,
+    selectedLanguage: AppLanguage,
+    strings: MachineryRental,
+    initialItems: List<MachineryRentalItem> = listOf(MachineryRentalItem()),
+    onSaveAndContinue: (List<MachineryRentalItem>) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val isHinglish = selectedLanguage == AppLanguage.HINGLISH
+    var machineryList by remember(initialItems) { mutableStateOf(initialItems) }
     var validationError by remember { mutableStateOf<String?>(null) }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
@@ -57,40 +87,39 @@ fun MachineryRentalScreen(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Dynamic Machinery Cards Render
+            // Dynamic Machinery Cards
             machineryList.forEachIndexed { index, item ->
                 MachineryRentalCard(
                     itemNumber = index + 1,
                     item = item,
-                    categories = SampleMachineryCategories,
+                    categories = categories, // Fixed: Passed JSON categories parameter
+                    isHinglish = isHinglish,  // Fixed: Clean language parameter
                     strings = strings,
                     showRemoveButton = machineryList.size > 1,
                     onItemChange = { updatedItem ->
                         validationError = null
-                        machineryList = machineryList.toMutableList().apply {
-                            set(index, updatedItem)
+                        machineryList = machineryList.mapIndexed { i, currentItem ->
+                            if (i == index) updatedItem else currentItem
                         }
                     },
                     onRemoveClick = {
                         validationError = null
-                        machineryList = machineryList.toMutableList().apply {
-                            removeAt(index)
-                        }
+                        machineryList = machineryList.filterIndexed { i, _ -> i != index }
                     },
                     onToggleExpand = {
-                        machineryList = machineryList.toMutableList().apply {
-                            set(index, item.copy(isExpanded = !item.isExpanded))
+                        machineryList = machineryList.mapIndexed { i, currentItem ->
+                            if (i == index) currentItem.copy(isExpanded = !currentItem.isExpanded)
+                            else currentItem
                         }
                     }
                 )
             }
 
-            // "+ Add Another Machine" Button (Only if count < 5)
+            // "+ Add Another Machine" Button (Max limit 5)
             if (machineryList.size < 5) {
                 OutlinedButton(
                     onClick = {
                         validationError = null
-                        // Pehle wale cards collapse karke new card add hoga
                         val collapsedList = machineryList.map { it.copy(isExpanded = false) }
                         machineryList = collapsedList + MachineryRentalItem(isExpanded = true)
                     },
@@ -121,37 +150,21 @@ fun MachineryRentalScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Universal Primary Button for Save & Continue
+        // Save & Continue Action Button
         AppPrimaryButton(
             text = strings.saveAndContinue,
             onClick = {
-                // Basic Validation: Category & Rate check
                 val hasInvalidItem = machineryList.any {
                     it.categoryId.isBlank() || it.rate.isBlank()
                 }
 
                 if (hasInvalidItem) {
-                    validationError = if (selectedLanguage == AppLanguage.HINGLISH)
-                        "Kripya sabhi machines ki Category aur Rate bharein."
-                    else
-                        "Please fill in Category and Rate for all machinery items."
+                    validationError = strings.requiredFieldError
                 } else {
                     onSaveAndContinue(machineryList)
                 }
             },
             modifier = Modifier.fillMaxWidth()
         )
-    }
-}
-
-@Preview(name = "Step 22 - Machinery Rental Screen", showBackground = true)
-@Composable
-fun MachineryRentalScreenPreview() {
-    MaterialTheme {
-        Surface {
-            MachineryRentalScreen(
-                onSaveAndContinue = {}
-            )
-        }
     }
 }

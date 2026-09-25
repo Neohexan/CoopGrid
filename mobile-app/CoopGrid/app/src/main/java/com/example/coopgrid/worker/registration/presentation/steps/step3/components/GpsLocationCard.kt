@@ -14,13 +14,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.coopgrid.worker.registration.presentation.steps.step3.strings.AddressStrings
+import com.example.coopgrid.worker.registration.presentation.steps.step3.strings.WorkerAddressStrings
 
 @Composable
 fun GpsLocationCard(
     isGpsCaptured: Boolean,
     latitude: Double?,
     longitude: Double?,
-    strings: AddressStrings,
+    strings: WorkerAddressStrings,
     onDetectLocation: (Double, Double) -> Unit,
     modifier: Modifier = Modifier
 ) {

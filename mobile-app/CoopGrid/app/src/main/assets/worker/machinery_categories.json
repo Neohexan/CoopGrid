@@ -1,0 +1,90 @@
+[
+    {
+        "id": "agri_machinery",
+        "nameEnglish": "Farming & Agriculture",
+        "nameHinglish": "Kheti Ki Machinery",
+        "subCategories": [
+            {
+                "id": "tractor",
+                "nameEnglish": "Tractor",
+                "nameHinglish": "Tractor"
+            },
+            {
+                "id": "thresher",
+                "nameEnglish": "Thresher",
+                "nameHinglish": "Thresher"
+            },
+            {
+                "id": "harvester",
+                "nameEnglish": "Combine Harvester",
+                "nameHinglish": "Harvester / Kataai Machine"
+            },
+            {
+                "id": "rotavator",
+                "nameEnglish": "Rotavator / Cultivator",
+                "nameHinglish": "Rotavator / Jutaai Machine"
+            },
+            {
+                "id": "seed_drill",
+                "nameEnglish": "Seed Drill Machine",
+                "nameHinglish": "Beej Boyi Machine"
+            }
+        ]
+    },
+    {
+        "id": "water_irrigation",
+        "nameEnglish": "Water & Irrigation",
+        "nameHinglish": "Paani & Sinchaai Equipment",
+        "subCategories": [
+            {
+                "id": "water_pump",
+                "nameEnglish": "Diesel / Electric Water Pump",
+                "nameHinglish": "Paani Ka Engine / Pump"
+            },
+            {
+                "id": "borewell_rig",
+                "nameEnglish": "Borewell Machine",
+                "nameHinglish": "Borewell Machine"
+            },
+            {
+                "id": "sprinkler_set",
+                "nameEnglish": "Sprinkler Pipe Set",
+                "nameHinglish": "Fawwara Pipe Set"
+            }
+        ]
+    },
+    {
+        "id": "construction_earthmoving",
+        "nameEnglish": "Construction & Digging",
+        "nameHinglish": "Khudai & Construction Machinery",
+        "subCategories": [
+            {
+                "id": "jcb_excavator",
+                "nameEnglish": "JCB / Excavator",
+                "nameHinglish": "JCB / Khudaayi Machine"
+            },
+            {
+                "id": "mixer_machine",
+                "nameEnglish": "Concrete Mixer",
+                "nameHinglish": "Reta-Ciment Mixer Machine"
+            }
+        ]
+    },
+    {
+        "id": "transport_hauling",
+        "nameEnglish": "Transport & Loading",
+        "nameHinglish": "Saman Dhone Wale Waahan",
+        "subCategories": [
+            {
+                "id": "trolley",
+                "nameEnglish": "Tractor Trolley",
+                "nameHinglish": "Tractor Trolley"
+            },
+            {
+                "id": "pickup_auto",
+                "nameEnglish": "Pickup Auto / Loader",
+                "nameHinglish": "Pickup / Chhota Hathi"
+            }
+        ]
+    }
+]

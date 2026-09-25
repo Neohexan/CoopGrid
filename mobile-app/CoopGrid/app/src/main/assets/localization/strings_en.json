@@ -133,10 +133,10 @@
             "driverFuelNo": "No (Machine Only)",
             "saveAndContinue": "Save & Continue",
             "rateUnits": {
-                "PER_HOUR": "Per Hour",
-                "PER_ACRE": "Per Acre",
-                "PER_DAY": "Per Day",
-                "PER_TRIP": "Per Trip"
+                "perHour": "Per Hour",
+                "perAcre": "Per Acre",
+                "perDay": "Per Day",
+                "perTrip": "Per Trip"
             }
         },
         "agriSupplyProfile": {

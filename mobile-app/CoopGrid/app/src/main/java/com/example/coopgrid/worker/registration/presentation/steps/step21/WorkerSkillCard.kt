@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.coopgrid.common.LanguageViewModel
 import com.example.coopgrid.ui.theme.AppLanguage
-import com.example.coopgrid.worker.data.util.EpmAppJsonReader
+import com.example.coopgrid.worker.data.util.WorkerJsonReader
 import com.example.coopgrid.worker.registration.presentation.components.AppDropdown
 import com.example.coopgrid.worker.registration.presentation.components.AppTextField
 import com.example.coopgrid.worker.registration.presentation.steps.step21.componets.TypeSelector
@@ -34,9 +34,8 @@ import kotlin.math.roundToInt
 fun WorkerSkillCard(
     index: Int,
     skillItem: WorkerSkillItem, // Expected to hold categoryCode, tradeCode, skillCode
-    strings: WorkerSkillStrings,
+    strings: WorkerSkill,
     showDelete: Boolean,
-    categories: List<JobCategory>, // Pass raw JSON list from ViewModel/Repository
     onUpdate: (WorkerSkillItem) -> Unit,
     onDelete: () -> Unit,
     languageViewModel: LanguageViewModel = hiltViewModel()
@@ -46,7 +45,7 @@ fun WorkerSkillCard(
 
     // 🔹 Direct local load using remember (Executes only once)
     val categories = remember {
-        EpmAppJsonReader.loadWorkerCategories(context)
+        WorkerJsonReader.loadWorkerSkillsCategoriesFromAssets(context)
     }
 
     // 1. Find Selected Category from categoryCode

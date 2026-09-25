@@ -11,27 +11,47 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.coopgrid.common.LanguageViewModel
-import com.example.coopgrid.ui.theme.AppLanguage
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.coopgrid.common.language.LanguageViewModel
 import com.example.coopgrid.worker.registration.presentation.steps.step2.components.ServiceTypeOptionCard
 import com.example.coopgrid.worker.registration.presentation.steps.step2.model.ServiceOfferingType
-import com.example.coopgrid.worker.registration.presentation.steps.step2.strings.getServiceTypeStrings
+import com.example.coopgrid.worker.registration.presentation.steps.step2.strings.ServiceType
+import com.example.coopgrid.worker.registration.presentation.steps.step2.strings.ServiceTypeOption
 
+
+// =================================================================
+// 1. STATEFUL ROUTE (Connects LanguageViewModel & NavHost)
+// =================================================================
 @Composable
-fun ServiceTypeSelectionScreen(
+fun ServiceTypeSelectionRoute(
     initialSelectedType: ServiceOfferingType? = null,
     onNextClicked: (ServiceOfferingType) -> Unit,
-    languageViewModel: LanguageViewModel = hiltViewModel(),
+    languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
-    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
-    val strings =  getServiceTypeStrings(selectedLanguage)
+    val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
 
-    // Single selection state
+    ServiceTypeSelectionContent(
+        strings = appStrings.workerFlow.serviceType, // 👈 Localized JSON model
+        initialSelectedType = initialSelectedType,
+        onNextClicked = onNextClicked
+    )
+}
+
+// =================================================================
+// 2. STATELESS UI CONTENT (Pure Render & Events)
+// =================================================================
+@Composable
+fun ServiceTypeSelectionContent(
+    strings: ServiceType,
+    initialSelectedType: ServiceOfferingType? = null,
+    onNextClicked: (ServiceOfferingType) -> Unit,
+    modifier: Modifier = Modifier
+) {
     var selectedType by remember { mutableStateOf(initialSelectedType) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
@@ -122,28 +142,35 @@ fun ServiceTypeSelectionScreen(
         }
     }
 }
-@Preview(name = "Hinglish - Default State", showBackground = true)
-@Composable
-fun ServiceTypeSelectionHinglishPreview() {
-    MaterialTheme {
-        Surface {
-            ServiceTypeSelectionScreen(
-                initialSelectedType = ServiceOfferingType.PERSONAL_SKILL,
-                onNextClicked = {}
-            )
-        }
-    }
-}
 
-@Preview(name = "English - Multiple Selection State", showBackground = true)
+@Preview(showBackground = true, name = "Service Type Preview")
 @Composable
-fun ServiceTypeSelectionEnglishPreview() {
+fun ServiceTypeSelectionContentPreview() {
+    val sampleStrings = ServiceType(
+        screenCode = "SCR_WRK_102",
+        screenTitle = "Seva Ke Prakaar Chuna",
+        screenSubtitle = "Aap kis tarah ke kaam ya services dena chahte hain?",
+        personalSkillOption = ServiceTypeOption(
+            title = "Vyaktigat Kushalta (Personal Skill)",
+            description = "Daily-wage ya skilled kaam jaise mistri, mazdoor, etc."
+        ),
+        machineryRentalOption = ServiceTypeOption(
+            title = "Kheti Ke Upkaran (Machinery Rental)",
+            description = "Tractor, Harvester ya kheti ke equipment kiraye par dene ke liye."
+        ),
+        agriSupplyOption = ServiceTypeOption(
+            title = "Krishi Saamagri (Agri Supply)",
+            description = "Beej, khaad ya krishi se jude products ke liye."
+        ),
+        continueButton = "Aage Badha",
+        selectAtLeastOneError = "Kripya aage badhne ke liye ek option chuna."
+    )
+
     MaterialTheme {
-        Surface {
-            ServiceTypeSelectionScreen(
-                initialSelectedType = ServiceOfferingType.MACHINERY_RENTAL,
-                onNextClicked = {}
-            )
-        }
+        ServiceTypeSelectionContent(
+            strings = sampleStrings,
+            initialSelectedType = ServiceOfferingType.PERSONAL_SKILL,
+            onNextClicked = {}
+        )
     }
 }

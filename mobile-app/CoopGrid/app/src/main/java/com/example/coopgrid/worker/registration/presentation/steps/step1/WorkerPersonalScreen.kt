@@ -20,8 +20,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.coopgrid.common.LanguageViewModel
+import com.example.coopgrid.common.language.LanguageViewModel
 import com.example.coopgrid.ui.theme.CoopGridTheme
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.worker.registration.presentation.components.AppTextField
@@ -36,11 +37,14 @@ import java.util.Locale
 fun WorkerPersonalScreen(
     onNextClick: () -> Unit,
     viewModel: WorkerFormViewModel = viewModel(),
+    languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
+    val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
     val state by viewModel.uiState.collectAsState()
 
     WorkerPersonalContent(
         state = state,
+        strings = appStrings.workerFlow.workerPersonal,
         onFullNameChange = viewModel::onFullNameChange,
         onGenderChange = viewModel::onGenderChange,
         onDobChange = viewModel::onDobChange,
@@ -54,16 +58,14 @@ fun WorkerPersonalScreen(
 @Composable
 fun WorkerPersonalContent(
     state: WorkerFormState,
+    strings: WorkerPersonal,
     onFullNameChange: (String) -> Unit,
     onGenderChange: (String) -> Unit,
     onDobChange: (Long?) -> Unit,
     onAltPhoneChange: (String) -> Unit,
     onEmailChange: (String) -> Unit,
-    languageViewModel: LanguageViewModel = hiltViewModel(),
     onNextClick: () -> Unit
 ) {
-    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
-    val strings = getWorkerPersonalStrings(selectedLanguage)
     var showDatePicker by remember { mutableStateOf(false) }
 
     val formattedDob = remember(state.selectedDobMillis) {
@@ -316,20 +318,29 @@ fun WorkerPersonalContent(
 
 // --- COMPOSE PREVIEWS ---
 
-@Preview(showBackground = true, name = "Worker Personal Screen Hinglish")
+@Preview(showBackground = true, name = "Worker Personal Form Preview")
 @Composable
-fun WorkerPersonalScreenHinglishPreview() {
-    CoopGridTheme(darkTheme = false) {
-        WorkerPersonalScreen(
-            onNextClick = {})
-    }
-}
+fun WorkerPersonalContentPreview() {
 
-@Preview(showBackground = true, name = "Worker Personal Screen English")
-@Composable
-fun WorkerPersonalScreenEnglishPreview() {
-    CoopGridTheme(darkTheme = true) {
-        WorkerPersonalScreen(
-            onNextClick = {})
+    // yaha dummy deta nahi banane se screen par kuchh nahi dikh raha
+
+    // 1. Dummy Strings Model (JSON mock data)
+    val dummyStrings = WorkerPersonal()
+
+    // 2. Dummy State Object
+    val dummyState = WorkerFormState()
+
+    // 3. Render Pure Stateless Component
+    MaterialTheme {
+        WorkerPersonalContent(
+            state = dummyState,
+            strings = dummyStrings,
+            onFullNameChange = {},
+            onGenderChange = {},
+            onDobChange = {},
+            onAltPhoneChange = {},
+            onEmailChange = {},
+            onNextClick = {}
+        )
     }
 }

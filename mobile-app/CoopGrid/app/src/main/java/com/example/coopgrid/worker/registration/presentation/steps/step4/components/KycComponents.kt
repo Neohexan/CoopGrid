@@ -18,12 +18,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.coopgrid.worker.registration.presentation.steps.step4.strings.KycStrings
+import com.example.coopgrid.worker.registration.presentation.steps.step4.strings.WorkerKyc
 
 @Composable
 fun DocumentUploadCard(
     title: String,
     selectedImageUri: String?,
-    strings: KycStrings,
+    strings: WorkerKyc,
     onImageSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {

@@ -12,13 +12,13 @@ import androidx.compose.ui.unit.dp
 import com.example.coopgrid.worker.registration.presentation.components.AppDropdown
 import com.example.coopgrid.worker.registration.presentation.components.AppTextField
 import com.example.coopgrid.worker.registration.presentation.steps.step22.model.MachineryRateUnit
-import com.example.coopgrid.worker.registration.presentation.steps.step22.strings.MachineryRentalStrings
+import com.example.coopgrid.worker.registration.presentation.steps.step22.strings.MachineryRental
 
 @Composable
 fun MachineryRateInputGroup(
     rate: String,
     selectedUnit: MachineryRateUnit,
-    strings: MachineryRentalStrings,
+    strings: MachineryRental,
     onRateChange: (String) -> Unit,
     onUnitSelected: (MachineryRateUnit) -> Unit,
     modifier: Modifier = Modifier
@@ -49,9 +49,9 @@ fun MachineryRateInputGroup(
 
             // Unit Selector Dropdown
             AppDropdown(
-                items = MachineryRateUnit.values().toList(),
+                items = MachineryRateUnit.entries, // or MachineryRateUnit.values().toList()
                 selectedItem = selectedUnit,
-                itemLabel = { strings.rateUnits[it] ?: "" },
+                itemLabel = { unit -> strings.rateUnits.getUnitLabel(unit) },
                 placeholder = strings.rateUnitLabel,
                 onItemSelected = onUnitSelected,
                 modifier = Modifier.weight(1.2f)

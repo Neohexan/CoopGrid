@@ -133,10 +133,10 @@
             "driverFuelNo": "Nahi (Keval Machine)",
             "saveAndContinue": "Save Kara Aur Aage Badha",
             "rateUnits": {
-                "PER_HOUR": "Prati Ghanta (Per Hour)",
-                "PER_ACRE": "Prati Ekar (Per Acre)",
-                "PER_DAY": "Prati Din (Per Day)",
-                "PER_TRIP": "Prati Trip (Per Trip)"
+                "perHour": "Prati Ghanta (Per Hour)",
+                "perAcre": "Prati Ekar (Per Acre)",
+                "perDay": "Prati Din (Per Day)",
+                "perTrip": "Prati Trip (Per Trip)"
             }
         },
         "agriSupplyProfile": {
