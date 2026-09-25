@@ -1,7 +1,5 @@
 package com.example.coopgrid.worker.registration.presentation.steps.step0.screen
 
-
-
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,20 +22,40 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.coopgrid.common.LanguageViewModel
-import com.example.coopgrid.ui.theme.AppLanguage
-import com.example.coopgrid.worker.registration.presentation.steps.step0.string.getTermsStrings
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.coopgrid.common.language.LanguageViewModel
+import com.example.coopgrid.worker.registration.presentation.steps.step0.string.WorkerTerms
 
+
+// =================================================================
+// 1. STATEFUL ROUTE (NavHost & ViewModel Injection)
+// =================================================================
+@Composable
+fun TermsAndConditionsRoute(
+    languageViewModel: LanguageViewModel = hiltViewModel(),
+    onBackClick: () -> Unit = {}
+) {
+    val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
+
+    TermsAndConditionsContent(
+        strings = appStrings.workerFlow.terms, // 👈 Directly passing terms strings from JSON
+        onBackClick = onBackClick
+    )
+}
+
+
+// =================================================================
+// 2. STATELESS UI CONTENT (Pure UI Component)
+// =================================================================
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TermsAndConditionsScreen(
-    onBackClick: () -> Unit,
-    languageViewModel: LanguageViewModel = hiltViewModel(),
+fun TermsAndConditionsContent(
+    strings: WorkerTerms,
+    onBackClick: () -> Unit
 ) {
-    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
-    val strings = getTermsStrings(selectedLanguage)
 
     Scaffold(
         topBar = {
@@ -109,18 +127,38 @@ fun TermsAndConditionsScreen(
 @Composable
 private fun TermsSection(
     title: String,
-    body: String
+    body: String,
+    modifier: Modifier = Modifier
 ) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-        color = MaterialTheme.colorScheme.onBackground
+    Column(modifier = modifier.padding(bottom = 16.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = body,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Terms Screen Preview")
+@Composable
+fun TermsAndConditionsPreview() {
+    val dummyTerms = WorkerTerms(
+        title = "Niyam aur Shartein",
+        lastUpdated = "Aakhri baar update hua: 15 March 2026",
+        section1Title = "1. Seva Ki Shartein",
+        section1Body = "Humare platform par register karke aap sabhi kanooni sharton ka palan karne ke liye sehamat hote hain..."
     )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-        text = body,
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-    )
-    Spacer(modifier = Modifier.height(20.dp))
+
+    MaterialTheme {
+        TermsAndConditionsContent(
+            strings = dummyTerms,
+            onBackClick = {}
+        )
+    }
 }

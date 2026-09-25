@@ -13,23 +13,17 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.coopgrid.common.LanguageViewModel
-import com.example.coopgrid.ui.theme.AppLanguage
 import com.example.coopgrid.ui.theme.GridGreenAccent
-import com.example.coopgrid.worker.registration.presentation.steps.step0.string.getPhoneNumStrings
 
 @Composable
-fun TermsAndPrivacyText( // e.g. "By continuing, you agree to our Terms & Privacy Policy."
+fun TermsAndPrivacyText(
+    fullText: String,
+    highlightText: String,
     onTermsClick: () -> Unit,
-    languageViewModel: LanguageViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
-    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
-    val strings = getPhoneNumStrings(selectedLanguage)
-    val fullText = strings.termsAgreementFull
-    val highlightText = strings.termsHighlightText
-    val highlightColor = GridGreenAccent
+    val highlightColor = GridGreenAccent // YA GridGreenAccent
+
     // 1. Find start and end index of clickable link text
     val startIndex = fullText.indexOf(highlightText)
     val endIndex = if (startIndex != -1) startIndex + highlightText.length else -1
@@ -52,7 +46,7 @@ fun TermsAndPrivacyText( // e.g. "By continuing, you agree to our Terms & Privac
             }
             pop()
 
-            // Remaining text after highlight (if any)
+            // Remaining text after highlight
             append(fullText.substring(endIndex))
         } else {
             // Fallback if highlight substring is not found

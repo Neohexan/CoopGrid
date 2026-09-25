@@ -14,10 +14,9 @@ import com.example.coopgrid.worker.registration.presentation.steps.step4.WorkerK
 import androidx.navigation.toRoute
 import com.example.coopgrid.ui.screens.worker.auth.WorkerAuthViewModel
 import com.example.coopgrid.worker.registration.presentation.steps.step0.WorkerAuthViewModelStepZero
-import com.example.coopgrid.worker.registration.presentation.steps.step0.screen.OtpScreen
-import com.example.coopgrid.worker.registration.presentation.steps.step0.screen.PhoneNumberScreen
-import com.example.coopgrid.worker.registration.presentation.steps.step0.screen.TermsAndConditionsScreen
-import com.example.coopgrid.worker.registration.presentation.steps.step0.screen.TermsAndPrivacyText
+import com.example.coopgrid.worker.registration.presentation.steps.step0.screen.OtpRoute
+import com.example.coopgrid.worker.registration.presentation.steps.step0.screen.TermsAndConditionsRoute
+import com.example.coopgrid.worker.registration.presentation.steps.step0.screen.WorkerPhoneRoute
 import com.example.coopgrid.worker.registration.presentation.steps.step1.WorkerPersonalScreen
 import com.example.coopgrid.worker.registration.presentation.steps.step2.ServiceTypeSelectionScreen
 import com.example.coopgrid.worker.registration.presentation.steps.step21.WorkerSkillScreen
@@ -44,8 +43,8 @@ fun NavGraphBuilder.workerNavGraph(
             }
             val authViewModel: WorkerAuthViewModelStepZero = hiltViewModel(parentEntry)
 
-            PhoneNumberScreen(
-                viewModel = authViewModel,
+            WorkerPhoneRoute(
+                authViewModel = authViewModel,
                 onNavigateToOtp = {
                     navController.navigate(
                         WorkerRoute.Step0OtpVerification(phoneNumber = "9876543210")
@@ -62,7 +61,7 @@ fun NavGraphBuilder.workerNavGraph(
         // -------------------------------------------------------------
         // TERMS & PRIVACY POLICY SCREEN
         composable<WorkerRoute.TermsAndPrivacy> {
-            TermsAndConditionsScreen(
+            TermsAndConditionsRoute(
                 onBackClick = { navController.popBackStack() }
             )
         }
@@ -78,10 +77,10 @@ fun NavGraphBuilder.workerNavGraph(
             }
             val authViewModel: WorkerAuthViewModelStepZero = hiltViewModel(parentEntry)
 
-            OtpScreen(
+            OtpRoute(
                 phoneNumber = args.phoneNumber,
                 viewModel = authViewModel,
-                onVerifyClick = {
+                onVerifySuccess = {
                     navController.navigate(WorkerRoute.Step1PersonalDetails)
                 }
             )

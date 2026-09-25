@@ -16,26 +16,52 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.coopgrid.common.LanguageViewModel
-import com.example.coopgrid.ui.theme.AppLanguage
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.coopgrid.common.language.LanguageViewModel
 import com.example.coopgrid.ui.theme.CoopGridTheme
-import com.example.coopgrid.ui.theme.GridGreenAccent
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.worker.registration.presentation.components.AppTextField
 import com.example.coopgrid.worker.registration.presentation.steps.step0.WorkerAuthViewModelStepZero
-import com.example.coopgrid.worker.registration.presentation.steps.step0.string.getPhoneNumStrings
+import com.example.coopgrid.worker.registration.presentation.steps.step0.string.WorkerPhoneNumStrings
 
+// =================================================================
+// 1. STATEFUL ROUTE (NavHost & ViewModels Injection)
+// =================================================================
 @Composable
-fun PhoneNumberScreen(
-    viewModel : WorkerAuthViewModelStepZero = hiltViewModel(),
-    onNavigateToOtp: () -> Unit = {},
-    onNavigateToTerms: () -> Unit = {},
+fun WorkerPhoneRoute(
+    authViewModel: WorkerAuthViewModelStepZero = hiltViewModel(),
     languageViewModel: LanguageViewModel = hiltViewModel(),
+    onNavigateToOtp: () -> Unit = {},
+    onNavigateToTerms: () -> Unit = {}
 ) {
-    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
-    val strings = getPhoneNumStrings(selectedLanguage)
-    val state by viewModel.uiState.collectAsState()
+    // Collect Localization JSON State & UI State
+    val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
+    val authState by authViewModel.uiState.collectAsStateWithLifecycle()
 
+    WorkerPhoneContent(
+        strings = appStrings.workerFlow.workerPhone,
+        phoneNumber = authState.phoneNumber,
+        isPhoneValid = authState.isPhoneValid,
+        isLoading = authState.isLoading,
+        onPhoneNumberChange = authViewModel::onPhoneNumberChange,
+        onContinueClick = { authViewModel.sendOtp(onNavigateToOtp) },
+        onTermsClick = onNavigateToTerms
+    )
+}
+
+// =================================================================
+// 2. STATELESS UI CONTENT (Pure UI - Fully Previewable)
+// =================================================================
+@Composable
+fun WorkerPhoneContent(
+    strings: WorkerPhoneNumStrings,
+    phoneNumber: String,
+    isPhoneValid: Boolean,
+    isLoading: Boolean,
+    onPhoneNumberChange: (String) -> Unit,
+    onContinueClick: () -> Unit,
+    onTermsClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -43,7 +69,7 @@ fun PhoneNumberScreen(
             .padding(24.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // TOP SECTION: Header & Text Fields
+        // TOP SECTION: Header & Input Fields
         Column(modifier = Modifier.fillMaxWidth()) {
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -69,12 +95,11 @@ fun PhoneNumberScreen(
 
             Spacer(modifier = Modifier.height(36.dp))
 
-            // Input Row: Country Code Box + Phone Number Field
+            // Input Row: Country Code Box (+91) + Phone Input Field
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Fixed Country Code Box (+91)
                 Box(
                     modifier = Modifier
                         .height(56.dp)
@@ -97,13 +122,12 @@ fun PhoneNumberScreen(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                // Phone Input Field
                 AppTextField(
-                    value = state.phoneNumber,
-                    onValueChange = viewModel::onPhoneNumberChange,
-                    placeholderText = "Phone Number",
+                    value = phoneNumber,
+                    onValueChange = onPhoneNumberChange,
+                    placeholderText = strings.phonePlaceholder,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.weight(1f) // Phone number row mein fit hoga
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
@@ -115,40 +139,48 @@ fun PhoneNumberScreen(
         ) {
             AppPrimaryButton(
                 text = strings.continueButton,
-                onClick = { viewModel.sendOtp(onNavigateToOtp) },
-                enabled = state.isPhoneValid && !state.isLoading
+                onClick = onContinueClick,
+                enabled = isPhoneValid && !isLoading
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Clickable Terms & Privacy Policy Text
             TermsAndPrivacyText(
-                onTermsClick = {
-                    onNavigateToTerms() // Navigation Callback
-                },
+                fullText = strings.termsAgreementFull,
+                highlightText = strings.termsHighlightText,
+                onTermsClick = onTermsClick,
                 modifier = Modifier.padding(horizontal = 12.dp)
             )
-
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
-
 // ==========================================
 // PREVIEWS
 // ==========================================
-@Preview(showBackground = true, name = "English Light Mode")
+@Preview(showBackground = true, showSystemUi = true, name = "Company Preview - English (Light)" )
 @Composable
-fun PhoneNumberScreenEnglishLightPreview() {
+fun WorkerPhoneContentPreview() {
+    val dummyStrings = WorkerPhoneNumStrings(
+        title = "Mobile Number Darj Kara",
+        subtitle = "Aapke number par ek OTP bheja jayega verification ke liye.",
+        phonePlaceholder = "10 Digit Mobile Number",
+        continueButton = "OTP Bheja"
+    )
     CoopGridTheme(darkTheme = false) {
-        PhoneNumberScreen()
-    }
-}
-
-@Preview(showBackground = true, name = "Hinglish Dark Mode", backgroundColor = 0xFF121212)
-@Composable
-fun PhoneNumberScreenHinglishDarkPreview() {
-    CoopGridTheme(darkTheme = true) {
-        PhoneNumberScreen()
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            WorkerPhoneContent(
+                strings = dummyStrings,
+                phoneNumber = "9876543210",
+                isPhoneValid = true,
+                isLoading = false,
+                onPhoneNumberChange = {},
+                onContinueClick = {},
+                onTermsClick = {}
+            )
+        }
     }
 }

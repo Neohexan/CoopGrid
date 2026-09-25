@@ -1,7 +1,5 @@
 package com.example.coopgrid.worker.registration.presentation.steps.step0.screen
 
-import com.example.coopgrid.ui.theme.AppLanguage
-import com.example.coopgrid.ui.theme.CoopGridTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,6 +9,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -19,28 +18,59 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.ui.platform.LocalLocale
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.coopgrid.common.LanguageViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.coopgrid.common.language.LanguageViewModel
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.worker.registration.presentation.steps.step0.WorkerAuthViewModelStepZero
-import com.example.coopgrid.worker.registration.presentation.steps.step0.string.getOtpStrings
+import com.example.coopgrid.worker.registration.presentation.steps.step0.string.WorkerOtpStrings
 
+// =================================================================
+// 1. STATEFUL ROUTE (NavHost & ViewModel Injection)
+// =================================================================
 @Composable
-fun OtpScreen(
-    phoneNumber: String = "+91 9876543210",
-    onVerifyClick: () -> Unit = {},
-    viewModel : WorkerAuthViewModelStepZero = hiltViewModel(),
-    onResendClick: () -> Unit = {},
-    languageViewModel: LanguageViewModel = hiltViewModel(),
+fun OtpRoute(
+    phoneNumber: String,
+    onVerifySuccess: () -> Unit,
+    viewModel: WorkerAuthViewModelStepZero = hiltViewModel(),
+    languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
-    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
-    val strings = getOtpStrings(selectedLanguage)
-    val state by viewModel.uiState.collectAsState()
+    val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    OtpContent(
+        phoneNumber = phoneNumber,
+        otpCode = uiState.otpCode,
+        canResendOtp = uiState.canResendOtp,
+        resendTimerSeconds = uiState.resendTimerSeconds,
+        isOtpValid = uiState.isOtpValid,
+        isLoading = uiState.isLoading,
+        strings = appStrings.workerFlow.workerOtp, // 👈 Directly from localized JSON
+        onOtpCodeChange = viewModel::onOtpCodeChange,
+        onResendClick = viewModel::resendOtp,
+        onVerifyClick = { viewModel.verifyOtp(onVerifySuccess) }
+    )
+}
+
+// =================================================================
+// 2. STATELESS CONTENT (Pure Render & Events)
+// =================================================================
+@Composable
+fun OtpContent(
+    phoneNumber: String,
+    otpCode: String,
+    canResendOtp: Boolean,
+    resendTimerSeconds: Int,
+    isOtpValid: Boolean,
+    isLoading: Boolean,
+    strings: WorkerOtpStrings,
+    onOtpCodeChange: (String) -> Unit,
+    onResendClick: () -> Unit,
+    onVerifyClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(24.dp),
@@ -64,7 +94,7 @@ fun OtpScreen(
 
             // Subtitle with Phone Number
             Text(
-                text = "${strings.subtitle}$phoneNumber",
+                text = "${strings.subtitle} $phoneNumber",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                 lineHeight = 20.sp
@@ -74,8 +104,8 @@ fun OtpScreen(
 
             // 6-DIGIT OTP BOXES
             BasicTextField(
-                value = state.otpCode,
-                onValueChange = viewModel::onOtpCodeChange,
+                value = otpCode,
+                onValueChange = { if (it.length <= 6) onOtpCodeChange(it) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                 decorationBox = {
                     Row(
@@ -84,10 +114,10 @@ fun OtpScreen(
                     ) {
                         repeat(6) { index ->
                             val char = when {
-                                index < state.otpCode.length -> state.otpCode[index].toString()
+                                index < otpCode.length -> otpCode[index].toString()
                                 else -> ""
                             }
-                            val isFocused = state.otpCode.length == index
+                            val isFocused = otpCode.length == index
 
                             Box(
                                 modifier = Modifier
@@ -130,24 +160,19 @@ fun OtpScreen(
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                 )
 
-                if (state.canResendOtp) {
-                    // Jab Timer khatam ho jaye (Clickable Resend Button)
+                if (canResendOtp) {
                     Text(
                         text = strings.resendButton,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.Bold
                         ),
                         color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.clickable {
-                            viewModel.resendOtp()
-                            onResendClick()
-                        }
+                        modifier = Modifier.clickable { onResendClick() }
                     )
                 } else {
-                    // Jab Timer chal raha ho (Formatted MM:SS Countdown)
-                    val minutes = state.resendTimerSeconds / 60
-                    val seconds = state.resendTimerSeconds % 60
-                    val formattedTime = String.format(LocalLocale.current.platformLocale, "%02d:%02d", minutes, seconds)
+                    val minutes = resendTimerSeconds / 60
+                    val seconds = resendTimerSeconds % 60
+                    val formattedTime = String.format("%02d:%02d", minutes, seconds)
 
                     Text(
                         text = "($formattedTime)",
@@ -167,8 +192,8 @@ fun OtpScreen(
         ) {
             AppPrimaryButton(
                 text = strings.verifyButton,
-                onClick = { viewModel.verifyOtp(onVerifyClick) },
-                enabled = state.isOtpValid && !state.isLoading
+                onClick = onVerifyClick,
+                enabled = isOtpValid && !isLoading
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -176,21 +201,33 @@ fun OtpScreen(
     }
 }
 
+
 // ==========================================
 // PREVIEWS
 // ==========================================
-@Preview(showBackground = true, name = "OTP Screen Light Mode")
+@Preview(showBackground = true, name = "OTP Screen Preview")
 @Composable
-fun OtpScreenLightPreview() {
-    CoopGridTheme(darkTheme = false) {
-        OtpScreen()
-    }
-}
+fun OtpContentPreview() {
+    val dummyStrings = WorkerOtpStrings(
+        title = "OTP Verify Karein",
+        subtitle = "Humne ek OTP bheja hai is number par:",
+        resendPrompt = "OTP nahi mila?",
+        resendButton = "Phir se bhejen",
+        verifyButton = "Aage Badhein"
+    )
 
-@Preview(showBackground = true, name = "OTP Screen Dark Mode", backgroundColor = 0xFF121212)
-@Composable
-fun OtpScreenDarkPreview() {
-    CoopGridTheme(darkTheme = true) {
-        OtpScreen()
+    MaterialTheme {
+        OtpContent(
+            phoneNumber = "+91 9876543210",
+            otpCode = "123",
+            canResendOtp = false,
+            resendTimerSeconds = 45,
+            isOtpValid = false,
+            isLoading = false,
+            strings = dummyStrings,
+            onOtpCodeChange = {},
+            onResendClick = {},
+            onVerifyClick = {}
+        )
     }
 }
