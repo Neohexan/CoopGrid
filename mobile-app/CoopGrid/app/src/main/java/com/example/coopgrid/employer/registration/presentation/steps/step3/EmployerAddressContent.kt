@@ -16,13 +16,10 @@ import com.example.coopgrid.employer.registration.presentation.steps.step3.model
 import com.example.coopgrid.employer.registration.presentation.steps.step3.models.BlockLocationData
 import com.example.coopgrid.employer.registration.presentation.steps.step3.models.EmpDistrictLocationData
 import com.example.coopgrid.employer.registration.presentation.steps.step3.models.StateOption
-import com.example.coopgrid.employer.registration.presentation.steps.step3.strings.getAddressStrings
 import com.example.coopgrid.employer.data.utils.LocationDataLoader
-import com.example.coopgrid.ui.theme.AppLanguage
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.input.KeyboardType
-
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -40,10 +37,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextOverflow
+import com.example.coopgrid.employer.registration.presentation.steps.step3.strings.EmpAddress
 
 @Composable
 fun EmployerAddressContent(
-    selectedLanguage: AppLanguage,
+    strings: EmpAddress,
     category: EmployerCategory,
     onSubmitAddress: (AddressFormState) -> Unit,
     modifier: Modifier = Modifier
@@ -51,11 +49,6 @@ fun EmployerAddressContent(
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val fontScale = configuration.fontScale
-
-    // Language Strings Loader
-    val strings = remember(selectedLanguage, category) {
-        getAddressStrings(selectedLanguage, category)
-    }
 
     var formState by remember { mutableStateOf(AddressFormState()) }
     var validationError by remember { mutableStateOf<String?>(null) }

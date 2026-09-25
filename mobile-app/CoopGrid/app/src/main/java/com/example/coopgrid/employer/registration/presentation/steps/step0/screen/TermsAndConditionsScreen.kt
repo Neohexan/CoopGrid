@@ -21,21 +21,40 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.coopgrid.employer.registration.presentation.steps.step0.string.getTermsStrings
-import com.example.coopgrid.ui.theme.AppLanguage
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.coopgrid.common.language.LanguageViewModel
+import com.example.coopgrid.employer.registration.presentation.steps.step0.string.EmpTerms
+
+
+
+@Composable
+fun TermsAndConditionsRoute(
+    onBackClick: () -> Unit,
+    languageViewModel: LanguageViewModel = hiltViewModel()
+) {
+    val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
+
+    TermsAndConditionsScreen(
+        strings = appStrings.employerFlow.terms,
+        onBackClick = onBackClick
+    )
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TermsAndConditionsScreen(
-    currentLanguage: AppLanguage,
-    onBackClick: () -> Unit
+    strings: EmpTerms,
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val strings = getTermsStrings(currentLanguage)
-
     Scaffold(
+        modifier = modifier,
         topBar = {
             TopAppBar(
                 title = {
@@ -105,18 +124,21 @@ fun TermsAndConditionsScreen(
 @Composable
 private fun TermsSection(
     title: String,
-    body: String
+    body: String,
+    modifier: Modifier = Modifier
 ) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-        color = MaterialTheme.colorScheme.onBackground
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-        text = body,
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-    )
+    Column(modifier = modifier) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = body,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+        )
+    }
     Spacer(modifier = Modifier.height(20.dp))
 }

@@ -1,23 +1,20 @@
 package com.example.coopgrid.employer.registration.presentation.steps.step1
 
 import com.example.coopgrid.ui.theme.AppLanguage
-import com.example.coopgrid.ui.theme.CoopGridTheme
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -25,10 +22,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.coopgrid.common.language.LanguageViewModel
 import com.example.coopgrid.employer.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.employer.registration.presentation.components.AppTextField
 import com.example.coopgrid.employer.registration.viewmodel.EmployerFormState
@@ -38,15 +36,15 @@ import com.example.coopgrid.worker.registration.presentation.steps.step1.model.S
 // 1. MAIN STATEFUL COMPOSABLE (ViewModel Integration & Routing)
 @Composable
 fun EmployerPersonalScreen(
-    currentLanguage: AppLanguage,
     onNextClick: () -> Unit,
-    viewModel: EmployerFormViewModel = hiltViewModel()
+    viewModel: EmployerFormViewModel = hiltViewModel(),
+    languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
-
+    val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
     EmployerPersonalScreenContent(
         state = state,
-        currentLanguage = currentLanguage,
+        strings = appStrings.employerFlow.employerPersonal,
         onFullNameChange = viewModel::onFullNameChange,
         onGenderChange = viewModel::onGenderChange,
         onDobChange = viewModel::onDobChange,
@@ -60,15 +58,13 @@ fun EmployerPersonalScreen(
 @Composable
 internal fun EmployerPersonalScreenContent(
     state: EmployerFormState,
-    currentLanguage: AppLanguage,
+    strings: EmployerPersonal,
     onFullNameChange: (String) -> Unit,
     onGenderChange: (String) -> Unit,
     onDobChange: (Long?) -> Unit,
     onEmailChange: (String) -> Unit,
     onNextClick: () -> Unit
 ) {
-    val strings = remember(currentLanguage) { getEmployerPersonalStrings(currentLanguage) }
-
     // DatePicker Dialog UI Visibility State (Local UI state)
     var showDatePicker by remember { mutableStateOf(false) }
 
@@ -287,22 +283,3 @@ internal fun EmployerPersonalScreenContent(
 // ==========================================
 // PREVIEWS
 // ==========================================
-@Preview(showBackground = true)
-@Composable
-private fun EmployerPersonalScreenPreview() {
-    MaterialTheme {
-        EmployerPersonalScreenContent(
-            state = EmployerFormState(
-                fullName = "Ramesh Kumar",
-                selectedGender = "Male",
-                email = "ramesh@example.com"
-            ),
-            currentLanguage = AppLanguage.ENGLISH,
-            onFullNameChange = {},
-            onGenderChange = {},
-            onDobChange = {},
-            onEmailChange = {},
-            onNextClick = {}
-        )
-    }
-}

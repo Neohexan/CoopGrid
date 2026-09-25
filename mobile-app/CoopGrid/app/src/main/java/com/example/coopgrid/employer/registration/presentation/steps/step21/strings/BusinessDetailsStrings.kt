@@ -27,29 +27,7 @@ data class BusinessDetails(
     val gstPlaceholder: String = "",
     val continueButton: String = "",
     val fieldRequiredError: String = ""
-) {
-    /**
-     * Selected category (COMPANY vs WHOLESALER/BUSINESS) ke basis par
-     * correct Screen Title return karne ke liye helper method.
-     */
-    fun getScreenTitle(isCompany: Boolean): String {
-        return if (isCompany) screenTitleCompany else screenTitleBusiness
-    }
-
-    /**
-     * Selected category ke basis par dynamic input label return karega.
-     */
-    fun getOfficialNameLabel(isCompany: Boolean): String {
-        return if (isCompany) officialNameLabelCompany else officialNameLabelBusiness
-    }
-
-    /**
-     * Selected category ke basis par dynamic input placeholder return karega.
-     */
-    fun getOfficialNamePlaceholder(isCompany: Boolean): String {
-        return if (isCompany) officialNamePlaceholderCompany else officialNamePlaceholderBusiness
-    }
-}
+)
 
 data class BusinessDetailsStrings(
     val screenTitle: String,

@@ -9,13 +9,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.example.coopgrid.employer.registration.presentation.steps.step0.EmpAuthViewModel
-import com.example.coopgrid.employer.registration.presentation.steps.step0.screen.OtpScreen
-import com.example.coopgrid.employer.registration.presentation.steps.step0.screen.PhoneNumberScreen
-import com.example.coopgrid.employer.registration.presentation.steps.step0.screen.TermsAndConditionsScreen
+import com.example.coopgrid.employer.registration.presentation.steps.step0.screen.EmployerOtpRoute
+import com.example.coopgrid.employer.registration.presentation.steps.step0.screen.EmployerPhoneRoute
+import com.example.coopgrid.employer.registration.presentation.steps.step0.screen.TermsAndConditionsRoute
 import com.example.coopgrid.employer.registration.presentation.steps.step1.EmployerPersonalScreen
 import com.example.coopgrid.employer.registration.presentation.steps.step2.EmployerCategoryScreen
 import com.example.coopgrid.employer.registration.presentation.steps.step2.model.EmployerCategory
-import com.example.coopgrid.employer.registration.presentation.steps.step21.EmployerBusinessDetailsContent
+import com.example.coopgrid.employer.registration.presentation.steps.step21.EmployerBusinessDetailsRoute
 import com.example.coopgrid.employer.registration.presentation.steps.step3.EmployerAddressScreen
 import com.example.coopgrid.employer.registration.viewmodel.EmployerFormViewModel
 import com.example.coopgrid.ui.theme.AppLanguage
@@ -43,8 +43,8 @@ fun NavGraphBuilder.employerNavGraph(
             }
             val authViewModel: EmpAuthViewModel = viewModel(viewModelStoreOwner = parentEntry)
 
-            PhoneNumberScreen(
-                viewModel = authViewModel,
+            EmployerPhoneRoute(
+                authViewModel = authViewModel,
                 onNavigateToOtp = {
                     // 🔹 UiState se phone number value read karke pass kar rahe hain
                     val currentPhone = authViewModel.uiState.value.phoneNumber
@@ -58,8 +58,7 @@ fun NavGraphBuilder.employerNavGraph(
 
         // Terms and Conditions Screen
         composable<EmployerRoute.TermsAndConditions> {
-            TermsAndConditionsScreen(
-                currentLanguage = currentLanguage,
+            TermsAndConditionsRoute(
                 onBackClick = { navController.popBackStack() }
             )
         }
@@ -72,9 +71,8 @@ fun NavGraphBuilder.employerNavGraph(
             }
             val authViewModel: EmpAuthViewModel = viewModel(viewModelStoreOwner = parentEntry)
 
-            OtpScreen(
-                currentLanguage = currentLanguage,
-                viewModel = authViewModel,
+            EmployerOtpRoute(
+                authViewModel = authViewModel,
                 onVerifyClick = {
                     // Navigate to Personal Details screen and clear Auth screens from backstack
                     navController.navigate(EmployerRoute.PersonalDetails) {
@@ -96,7 +94,6 @@ fun NavGraphBuilder.employerNavGraph(
             val formViewModel: EmployerFormViewModel = viewModel(viewModelStoreOwner = parentEntry)
 
             EmployerPersonalScreen(
-                currentLanguage = currentLanguage,
                 viewModel = formViewModel,
                 onNextClick = {
                     navController.navigate(EmployerRoute.CategorySelection)
@@ -138,8 +135,7 @@ fun NavGraphBuilder.employerNavGraph(
             val routeData = backStackEntry.toRoute<EmployerRoute.BusinessDetails>()
             val selectedCategory = routeData.category
 
-            EmployerBusinessDetailsContent(
-                selectedLanguage = currentLanguage,
+            EmployerBusinessDetailsRoute(
                 category = selectedCategory,
                 onChangeCategoryClick = {
                     navController.popBackStack()

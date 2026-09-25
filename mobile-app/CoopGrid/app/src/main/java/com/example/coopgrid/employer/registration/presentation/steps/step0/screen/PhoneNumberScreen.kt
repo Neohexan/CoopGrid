@@ -12,40 +12,61 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.coopgrid.common.LanguageViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.coopgrid.common.language.LanguageViewModel
 import com.example.coopgrid.employer.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.employer.registration.presentation.components.AppTextField
 import com.example.coopgrid.employer.registration.presentation.steps.step0.EmpAuthViewModel
-import com.example.coopgrid.employer.registration.presentation.steps.step0.string.getPhoneNumStrings
-import com.example.coopgrid.ui.theme.AppLanguage
-import com.example.coopgrid.ui.theme.CoopGridTheme
+import com.example.coopgrid.employer.registration.presentation.steps.step0.string.EmpPhoneNumStrings
 import com.example.coopgrid.ui.theme.GridGreenAccent
 
-@Composable
-fun PhoneNumberScreen(
-    viewModel : EmpAuthViewModel = viewModel(),
-    onNavigateToOtp: () -> Unit = {},
-    onNavigateToTerms: () -> Unit = {},
-    languageViewModel: LanguageViewModel = hiltViewModel(),
-) {
-    val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
-    val strings = getPhoneNumStrings(selectedLanguage)
-    val state by viewModel.uiState.collectAsState()
 
+// 1. Route Container (ViewModel & Navigation State handling)
+@Composable
+fun EmployerPhoneRoute(
+    onNavigateToOtp: () -> Unit,
+    onNavigateToTerms: () -> Unit,
+    authViewModel: EmpAuthViewModel = hiltViewModel(),
+    languageViewModel: LanguageViewModel = hiltViewModel()
+) {
+    val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
+    val authState by authViewModel.uiState.collectAsStateWithLifecycle()
+
+    EmployerPhoneScreen(
+        strings = appStrings.employerFlow.employerPhone,
+        phoneNumber = authState.phoneNumber,
+        isValid = authState.isPhoneValid,
+        isLoading = authState.isLoading,
+        onPhoneNumberChange = authViewModel::onPhoneNumberChange,
+        onSendOtp = { authViewModel.sendOtp(onNavigateToOtp) },
+        onNavigateToTerms = onNavigateToTerms
+    )
+}
+
+// 2. Pure Stateless Screen Component
+@Composable
+fun EmployerPhoneScreen(
+    strings: EmpPhoneNumStrings,
+    phoneNumber: String,
+    isValid: Boolean,
+    isLoading: Boolean,
+    onPhoneNumberChange: (String) -> Unit,
+    onSendOtp: () -> Unit,
+    onNavigateToTerms: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
+            .systemBarsPadding()
             .background(MaterialTheme.colorScheme.background)
             .padding(24.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // TOP SECTION: Header & Text Fields
+        // TOP SECTION: Header & Input Fields
         Column(modifier = Modifier.fillMaxWidth()) {
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -71,7 +92,7 @@ fun PhoneNumberScreen(
 
             Spacer(modifier = Modifier.height(36.dp))
 
-            // Input Row: Country Code Box + Phone Number Field
+            // Input Row: Country Code Box + Phone Field
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -101,11 +122,11 @@ fun PhoneNumberScreen(
 
                 // Phone Input Field
                 AppTextField(
-                    value = state.phoneNumber,
-                    onValueChange = viewModel::onPhoneNumberChange,
-                    placeholderText = "Phone Number",
+                    value = phoneNumber,
+                    onValueChange = onPhoneNumberChange,
+                    placeholderText = strings.phoneHint,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.weight(1f) // Phone number row mein fit hoga
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
@@ -117,20 +138,18 @@ fun PhoneNumberScreen(
         ) {
             AppPrimaryButton(
                 text = strings.continueButton,
-                onClick = { viewModel.sendOtp(onNavigateToOtp) },
-                enabled = state.isPhoneValid && !state.isLoading
+                onClick = onSendOtp,
+                enabled = isValid && !isLoading
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Clickable Terms & Privacy Policy Text
+            // Clickable Terms & Privacy Text
             TermsAndPrivacyText(
                 fullText = strings.termsAgreementFull,
                 highlightText = strings.termsHighlightText,
-                highlightColor = GridGreenAccent, // Aapka Custom Accent Color
-                onTermsClick = {
-                    onNavigateToTerms() // Navigation Callback
-                },
+                highlightColor = GridGreenAccent,
+                onTermsClick = onNavigateToTerms,
                 modifier = Modifier.padding(horizontal = 12.dp)
             )
 
@@ -138,22 +157,6 @@ fun PhoneNumberScreen(
         }
     }
 }
-
 // ==========================================
 // PREVIEWS
 // ==========================================
-@Preview(showBackground = true, name = "English Light Mode")
-@Composable
-fun PhoneNumberScreenEnglishLightPreview() {
-    CoopGridTheme(darkTheme = false) {
-        PhoneNumberScreen()
-    }
-}
-
-@Preview(showBackground = true, name = "Hinglish Dark Mode", backgroundColor = 0xFF121212)
-@Composable
-fun PhoneNumberScreenHinglishDarkPreview() {
-    CoopGridTheme(darkTheme = true) {
-        PhoneNumberScreen()
-    }
-}

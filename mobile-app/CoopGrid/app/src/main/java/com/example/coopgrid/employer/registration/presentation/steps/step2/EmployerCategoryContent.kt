@@ -14,16 +14,14 @@ import androidx.compose.ui.unit.dp
 import com.example.coopgrid.employer.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.employer.registration.presentation.steps.step2.components.EmployerCategoryOptionCard
 import com.example.coopgrid.employer.registration.presentation.steps.step2.model.EmployerCategory
-import com.example.coopgrid.employer.registration.presentation.steps.step2.strings.getCategoryStrings
-import com.example.coopgrid.ui.theme.AppLanguage
+import com.example.coopgrid.employer.registration.presentation.steps.step2.strings.EmployerOnboarding
 
 @Composable
 fun EmployerCategoryContent(
-    selectedLanguage: AppLanguage,
+    strings: EmployerOnboarding,
     onCategorySubmitted: (EmployerCategory) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val strings = remember(selectedLanguage) { getCategoryStrings(selectedLanguage) }
 
     var selectedCategory by remember { mutableStateOf<EmployerCategory?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -63,7 +61,7 @@ fun EmployerCategoryContent(
 
                 // 1. Household Option
                 EmployerCategoryOptionCard(
-                    option = strings.householdOption,
+                    option = strings.getOptionForCategory(EmployerCategory.HOUSEHOLD),
                     isSelected = selectedCategory == EmployerCategory.HOUSEHOLD,
                     onSelect = {
                         errorMessage = null
@@ -75,7 +73,7 @@ fun EmployerCategoryContent(
 
                 // 2. Farmer Option
                 EmployerCategoryOptionCard(
-                    option = strings.farmerOption,
+                    option = strings.getOptionForCategory(EmployerCategory.FARMER),
                     isSelected = selectedCategory == EmployerCategory.FARMER,
                     onSelect = {
                         errorMessage = null
@@ -87,7 +85,7 @@ fun EmployerCategoryContent(
 
                 // 3. Company Option
                 EmployerCategoryOptionCard(
-                    option = strings.companyOption,
+                    option = strings.getOptionForCategory(EmployerCategory.COMPANY),
                     isSelected = selectedCategory == EmployerCategory.COMPANY,
                     onSelect = {
                         errorMessage = null
@@ -99,7 +97,7 @@ fun EmployerCategoryContent(
 
                 // 4. Wholesaler Option
                 EmployerCategoryOptionCard(
-                    option = strings.wholesalerOption,
+                    option = strings.getOptionForCategory(EmployerCategory.WHOLESALER),
                     isSelected = selectedCategory == EmployerCategory.WHOLESALER,
                     onSelect = {
                         errorMessage = null
@@ -131,15 +129,5 @@ fun EmployerCategoryContent(
                 modifier = Modifier.fillMaxWidth()
             )
         }
-    }
-}
-@Preview(showBackground = true, showSystemUi = true, name = "Hinglish Preview")
-@Composable
-private fun EmployerCategoryHinglishPreview() {
-    MaterialTheme {
-        EmployerCategoryContent(
-            selectedLanguage = AppLanguage.ENGLISH,
-            onCategorySubmitted = {}
-        )
     }
 }

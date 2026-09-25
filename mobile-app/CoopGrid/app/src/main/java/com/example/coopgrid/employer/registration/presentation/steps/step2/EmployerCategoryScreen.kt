@@ -6,7 +6,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.coopgrid.common.LanguageViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.coopgrid.common.language.LanguageViewModel
 import com.example.coopgrid.employer.registration.presentation.steps.step2.model.EmployerCategory
 import com.example.coopgrid.ui.theme.AppLanguage
 
@@ -16,21 +17,12 @@ fun EmployerCategoryScreen(
     onNextClick: (EmployerCategory) -> Unit,
     languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
-    val currentLanguage by languageViewModel.currentLanguage.collectAsState()
+    val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
+
 
     EmployerCategoryContent(
-        selectedLanguage = currentLanguage,
+        strings = appStrings.employerFlow.employerOnboarding,
         onCategorySubmitted = onNextClick
     )
 }
 
-@Preview(showBackground = true, showSystemUi = true, name = "English Preview")
-@Composable
-private fun EmployerCategoryEnglishPreview() {
-    MaterialTheme {
-        EmployerCategoryContent(
-            selectedLanguage = AppLanguage.HINGLISH,
-            onCategorySubmitted = {}
-        )
-    }
-}

@@ -1,5 +1,7 @@
 package com.example.coopgrid.employer.registration.presentation.steps.step21
 
+
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,7 +14,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,34 +30,60 @@ import com.example.coopgrid.employer.registration.presentation.steps.step2.model
 import com.example.coopgrid.employer.registration.presentation.steps.step21.components.SelectedCategoryCard
 import com.example.coopgrid.employer.registration.presentation.steps.step21.model.BusinessCategoryItem
 import com.example.coopgrid.employer.registration.presentation.steps.step21.model.BusinessSubCategoryItem
-import com.example.coopgrid.employer.registration.presentation.steps.step21.model.EmployerBusinessFormState
 import com.example.coopgrid.employer.registration.presentation.steps.step21.strings.getBusinessDetailsStrings
 import com.example.coopgrid.employer.data.utils.BusinessDataLoader
-import com.example.coopgrid.ui.theme.AppLanguage
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.coopgrid.common.language.LanguageViewModel
+import com.example.coopgrid.data.lanlocal.model.AppLanguage
+import com.example.coopgrid.employer.registration.presentation.steps.step2.strings.EmployerOnboarding
+import com.example.coopgrid.employer.registration.presentation.steps.step21.model.EmployerBusinessFormState
+import com.example.coopgrid.employer.registration.presentation.steps.step21.strings.BusinessDetails
 
 @Composable
-fun EmployerBusinessDetailsContent(
-    selectedLanguage: AppLanguage,
+fun EmployerBusinessDetailsRoute(
     category: EmployerCategory,
+    onSubmitBusinessDetails: (EmployerBusinessFormState) -> Unit,
+    onChangeCategoryClick: (() -> Unit)? = null,
+    viewModel: BusinessDetailsViewModel = hiltViewModel(),
+    languageViewModel: LanguageViewModel = hiltViewModel()
+) {
+    val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
+    val selectedLanguage by languageViewModel.currentLanguage.collectAsStateWithLifecycle()
+    val formState by viewModel.formState.collectAsStateWithLifecycle()
+
+    EmployerBusinessDetailsScreen(
+        selectedLanguage = selectedLanguage,
+        strings = appStrings.employerFlow.businessDetails,
+        category = category,
+        formState = formState,
+        onFormStateChange = viewModel::updateFormState,
+        onSubmitBusinessDetails = onSubmitBusinessDetails,
+        onChangeCategoryClick = onChangeCategoryClick
+    )
+}
+
+// 2. Pure Stateless Screen Component
+@Composable
+fun EmployerBusinessDetailsScreen(
+    selectedLanguage: AppLanguage,
+    strings: BusinessDetails,
+    category: EmployerCategory,
+    formState: EmployerBusinessFormState,
+    onFormStateChange: (EmployerBusinessFormState) -> Unit,
     onSubmitBusinessDetails: (EmployerBusinessFormState) -> Unit,
     onChangeCategoryClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
 
-    // Language Strings Loader
-    val strings = remember(selectedLanguage, category) {
-        getBusinessDetailsStrings(selectedLanguage, category)
-    }
-
-    var formState by remember { mutableStateOf(EmployerBusinessFormState()) }
-
-    // Crash-Safe JSON Category Data Loading
+    // JSON Category Loading logic
     val allCategoryGroups = remember(context) {
         BusinessDataLoader.loadBusinessData(context)
     }
 
-    // Match ECC Code (3 = COMPANY, 4 = WHOLESALER)
     val targetEcc = if (category == EmployerCategory.COMPANY) 3 else 4
     val currentCategoryGroup = remember(allCategoryGroups, targetEcc) {
         allCategoryGroups.find { it.ecc == targetEcc }
@@ -64,35 +91,44 @@ fun EmployerBusinessDetailsContent(
 
     val availableCategories = currentCategoryGroup?.categoryList ?: emptyList()
 
-    // Filter Sub-Categories dynamically based on selected BCC
     val availableSubCategories = remember(formState.selectedBcc, availableCategories) {
         val matchedCategory = availableCategories.find { it.bcc == formState.selectedBcc }
         matchedCategory?.subCategories ?: emptyList()
     }
 
-    // Main Outer Screen Layout
+    fun BusinessDetails.getScreenTitle(category: EmployerCategory): String {
+        return if (category == EmployerCategory.COMPANY) screenTitleCompany else screenTitleBusiness
+    }
+
+    fun BusinessDetails.getOfficialNameLabel(category: EmployerCategory): String {
+        return if (category == EmployerCategory.COMPANY) officialNameLabelCompany else officialNameLabelBusiness
+    }
+
+    fun BusinessDetails.getOfficialNamePlaceholder(category: EmployerCategory): String {
+        return if (category == EmployerCategory.COMPANY) officialNamePlaceholderCompany else officialNamePlaceholderBusiness
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .systemBarsPadding()
             .padding(16.dp)
     ) {
-        // 🔹 Scrollable Form Area
+        // Scrollable Form Section
         Column(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Screen Title
+            // Dynamic Title using extension method
             Text(
-                text = strings.screenTitle,
+                text = strings.getScreenTitle(category),
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Screen Subtitle
             Text(
                 text = strings.screenSubtitle,
                 style = MaterialTheme.typography.bodyMedium,
@@ -101,7 +137,6 @@ fun EmployerBusinessDetailsContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔹 1. Selected Category Header Card
             SelectedCategoryCard(
                 category = category,
                 strings = strings,
@@ -110,9 +145,9 @@ fun EmployerBusinessDetailsContent(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // 2. Official Business / Shop Name Input
+            // Dynamic Official Name Label & Input
             Text(
-                text = strings.officialNameLabel,
+                text = strings.getOfficialNameLabel(category),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -120,15 +155,15 @@ fun EmployerBusinessDetailsContent(
             AppTextField(
                 value = formState.officialName,
                 onValueChange = { input ->
-                    formState = formState.copy(officialName = input, officialNameError = null)
+                    onFormStateChange(formState.copy(officialName = input, officialNameError = null))
                 },
-                placeholderText = strings.officialNamePlaceholder,
+                placeholderText = strings.getOfficialNamePlaceholder(category),
                 errorMessage = formState.officialNameError
             )
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // 3. Industry Category Dropdown (BCC)
+            // Industry Category Dropdown (BCC)
             Text(
                 text = strings.categoryLabel,
                 style = MaterialTheme.typography.labelMedium,
@@ -141,21 +176,22 @@ fun EmployerBusinessDetailsContent(
                 itemLabel = { if (selectedLanguage == AppLanguage.HINGLISH) it.nameHi else it.nameEn },
                 selectedItem = availableCategories.find { it.bcc == formState.selectedBcc },
                 onItemSelected = { selected ->
-                    formState = formState.copy(
-                        selectedBcc = selected.bcc,
-                        selectedCategoryName = selected.nameEn,
-                        selectedScc = null,
-                        selectedSubCategoryName = "",
-                        categoryError = null
+                    onFormStateChange(
+                        formState.copy(
+                            selectedBcc = selected.bcc,
+                            selectedCategoryName = selected.nameEn,
+                            selectedScc = null,
+                            selectedSubCategoryName = "",
+                            categoryError = null
+                        )
                     )
                 },
-//                errorMessage = formState.categoryError,
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // 4. Industry Sub-Category Dropdown (SCC)
+            // Sub-Category Dropdown (SCC)
             Text(
                 text = strings.subCategoryLabel,
                 style = MaterialTheme.typography.labelMedium,
@@ -169,19 +205,20 @@ fun EmployerBusinessDetailsContent(
                 selectedItem = availableSubCategories.find { it.scc == formState.selectedScc },
                 enabled = formState.selectedBcc != null,
                 onItemSelected = { selected ->
-                    formState = formState.copy(
-                        selectedScc = selected.scc,
-                        selectedSubCategoryName = selected.nameEn,
-                        subCategoryError = null
+                    onFormStateChange(
+                        formState.copy(
+                            selectedScc = selected.scc,
+                            selectedSubCategoryName = selected.nameEn,
+                            subCategoryError = null
+                        )
                     )
                 },
-//                errorMessage = formState.subCategoryError,
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // 5. GST Number Input (Optional)
+            // GST Input Field
             Text(
                 text = strings.gstLabel,
                 style = MaterialTheme.typography.labelMedium,
@@ -192,7 +229,7 @@ fun EmployerBusinessDetailsContent(
                 value = formState.gstNumber,
                 onValueChange = { input ->
                     if (input.length <= 15) {
-                        formState = formState.copy(gstNumber = input.uppercase())
+                        onFormStateChange(formState.copy(gstNumber = input.uppercase()))
                     }
                 },
                 placeholderText = strings.gstPlaceholder
@@ -201,9 +238,8 @@ fun EmployerBusinessDetailsContent(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // 🔹 Fixed Bottom Action Button
+        // Action Button
         Spacer(modifier = Modifier.height(8.dp))
-
         AppPrimaryButton(
             text = strings.continueButton,
             onClick = {
@@ -214,48 +250,16 @@ fun EmployerBusinessDetailsContent(
                 if (isNameValid && isCategoryValid && isSubCategoryValid) {
                     onSubmitBusinessDetails(formState)
                 } else {
-                    formState = formState.copy(
-                        officialNameError = if (!isNameValid) strings.fieldRequiredError else null,
-                        categoryError = if (!isCategoryValid) strings.fieldRequiredError else null,
-                        subCategoryError = if (!isSubCategoryValid) strings.fieldRequiredError else null
+                    onFormStateChange(
+                        formState.copy(
+                            officialNameError = if (!isNameValid) strings.fieldRequiredError else null,
+                            categoryError = if (!isCategoryValid) strings.fieldRequiredError else null,
+                            subCategoryError = if (!isSubCategoryValid) strings.fieldRequiredError else null
+                        )
                     )
                 }
             },
             modifier = Modifier.fillMaxWidth()
         )
-    }
-}
-
-// -----------------------------------------------------------------------------
-// 🔹 Jetpack Compose Previews
-// -----------------------------------------------------------------------------
-
-@Preview(name = "Step 21 - Company Mode (English)", showBackground = true)
-@Composable
-private fun EmployerBusinessDetailsContentCompanyPreview() {
-    MaterialTheme {
-        Surface {
-            EmployerBusinessDetailsContent(
-                selectedLanguage = AppLanguage.ENGLISH,
-                category = EmployerCategory.COMPANY,
-                onSubmitBusinessDetails = {},
-                onChangeCategoryClick = {}
-            )
-        }
-    }
-}
-
-@Preview(name = "Step 21 - Wholesaler Mode (Hinglish)", showBackground = true)
-@Composable
-private fun EmployerBusinessDetailsContentWholesalerPreview() {
-    MaterialTheme {
-        Surface {
-            EmployerBusinessDetailsContent(
-                selectedLanguage = AppLanguage.HINGLISH,
-                category = EmployerCategory.WHOLESALER,
-                onSubmitBusinessDetails = {},
-                onChangeCategoryClick = {}
-            )
-        }
     }
 }
