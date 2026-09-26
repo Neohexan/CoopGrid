@@ -112,7 +112,19 @@
             "removeButton": "Hatava",
             "nextButton": "Save Kara Aur Aage Badha",
             "radiusLabel": "Kaam Khatir Travel Radius",
-            "availabilityLabel": "Uplabdhata / Work Preference"
+            "availabilityLabel": "Uplabdhata / Work Preference",
+            "experienceOptions": [
+                { "code": "FRESHER", "label": "Naya / Fresher" },
+                { "code": "1_3_YRS", "label": "1-3 Baras" },
+                { "code": "3_5_YRS", "label": "3-5 Baras" },
+                { "code": "5_PLUS_YRS", "label": "5 Baras Se Jyada" }
+            ],
+            "availabilityOptions": [
+                { "code": "FULL_TIME", "label": "Pura Din (Full Time)" },
+                { "code": "PART_TIME", "label": "Aadha Din (Part Time)" },
+                { "code": "CONTRACT", "label": "Theka / Contract Par" },
+                { "code": "WEEKEND", "label": "Keval Shani-Ravi (Weekend)" }
+            ]
         },
         "machineryRental": {
             "screenCode": "SCR_WRK_107",

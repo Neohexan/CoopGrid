@@ -37,48 +37,30 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextOverflow
+import com.example.coopgrid.employer.registration.presentation.steps.step3.strings.AddressCategoryStrings
 import com.example.coopgrid.employer.registration.presentation.steps.step3.strings.EmpAddress
 
 @Composable
 fun EmployerAddressContent(
+    allLocation: List<EmpDistrictLocationData>,
+    stateOption: List<StateOption>,
     strings: EmpAddress,
-    category: EmployerCategory,
+    categoryStrings: AddressCategoryStrings,
     onSubmitAddress: (AddressFormState) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val fontScale = configuration.fontScale
 
     var formState by remember { mutableStateOf(AddressFormState()) }
     var validationError by remember { mutableStateOf<String?>(null) }
 
-    // Crash-Safe Local Data Loading for Previews and Production
-    val allLocations = remember(context) {
-        try {
-            LocationDataLoader.loadLocationsFromRaw(context)
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }
-
-    // Dynamic Options Mapping
-    val stateOptions = remember(allLocations) {
-        allLocations.distinctBy { it.stateCode }.map {
-            StateOption(
-                stateCode = it.stateCode,
-                stateNameEn = it.stateNameEn,
-                stateNameHi = it.stateNameEn
-            )
-        }
-    }
-
-    val availableDistricts = remember(formState.selectedStateCode, allLocations) {
+    val availableDistricts = remember(formState.selectedStateCode, allLocation) {
         if (formState.selectedStateCode.isBlank()) emptyList()
-        else allLocations.filter { it.stateCode == formState.selectedStateCode }
+        else allLocation.filter { it.stateCode == formState.selectedStateCode }
     }
 
-    val availableBlocks = remember(formState.selectedDistrictCode, allLocations) {
+    val availableBlocks = remember(formState.selectedDistrictCode, allLocation) {
         val matchedDistrict = availableDistricts.find { it.districtCode == formState.selectedDistrictCode }
         matchedDistrict?.blockList ?: emptyList()
     }
@@ -98,7 +80,7 @@ fun EmployerAddressContent(
         ) {
             // Screen Title
             Text(
-                text = strings.screenTitle,
+                text = categoryStrings.screenTitle,
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -122,10 +104,10 @@ fun EmployerAddressContent(
             )
             Spacer(modifier = Modifier.height(6.dp))
             AppDropdown<StateOption>(
-                items = stateOptions,
+                items = stateOption,
                 placeholder = strings.statePlaceholder,
                 itemLabel = { it.stateNameEn },
-                selectedItem = stateOptions.find { it.stateCode == formState.selectedStateCode },
+                selectedItem = stateOption.find { it.stateCode == formState.selectedStateCode },
                 onItemSelected = { state ->
                     formState = formState.copy(
                         selectedStateCode = state.stateCode,
@@ -280,7 +262,7 @@ fun EmployerAddressContent(
 
             // 4. Dynamic Area / Village Name Field
             Text(
-                text = strings.areaLabel,
+                text = categoryStrings.areaLabel,
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -290,7 +272,7 @@ fun EmployerAddressContent(
                 onValueChange = {
                     formState = formState.copy(areaOrVillageName = it, areaError = null)
                 },
-                placeholderText = strings.areaPlaceholder,
+                placeholderText = categoryStrings.areaPlaceholder,
                 errorMessage = formState.areaError
             )
 

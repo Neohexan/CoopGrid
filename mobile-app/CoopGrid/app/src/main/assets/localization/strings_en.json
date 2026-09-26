@@ -112,7 +112,19 @@
             "removeButton": "Remove",
             "nextButton": "Save & Continue",
             "radiusLabel": "Work Travel Radius",
-            "availabilityLabel": "Availability / Work Preference"
+            "availabilityLabel": "Availability / Work Preference",
+            "experienceOptions": [
+                { "code": "FRESHER", "label": "Fresher / No Experience" },
+                { "code": "1_3_YRS", "label": "1-3 Years" },
+                { "code": "3_5_YRS", "label": "3-5 Years" },
+                { "code": "5_PLUS_YRS", "label": "5+ Years" }
+            ],
+            "availabilityOptions": [
+                { "code": "FULL_TIME", "label": "Full Time" },
+                { "code": "PART_TIME", "label": "Part Time" },
+                { "code": "CONTRACT", "label": "Contract / Project Based" },
+                { "code": "WEEKEND", "label": "Weekend Only" }
+            ]
         },
         "machineryRental": {
             "screenCode": "SCR_WRK_107",

@@ -27,7 +27,6 @@ import com.example.coopgrid.worker.registration.presentation.steps.step3.model.B
 import com.example.coopgrid.worker.registration.presentation.steps.step3.model.DistrictLocationData
 import com.example.coopgrid.worker.registration.presentation.steps.step3.model.StateOption
 import com.example.coopgrid.worker.registration.presentation.steps.step3.model.WorkerAddress
-import com.example.coopgrid.worker.registration.presentation.steps.step3.strings.getAddressStrings
 import com.example.coopgrid.worker.data.util.LocationDataLoader
 import com.example.coopgrid.worker.registration.presentation.steps.step3.strings.WorkerAddressStrings
 import kotlin.collections.distinctBy

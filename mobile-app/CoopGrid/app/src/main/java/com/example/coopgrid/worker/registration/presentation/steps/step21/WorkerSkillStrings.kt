@@ -20,4 +20,12 @@ data class WorkerSkill(
     val nextButton: String = "",
     val radiusLabel: String = "",      // NEW
     val availabilityLabel: String  = "", // NEW
+    val experienceOptions: List<OptionModel> = emptyList(),
+    val availabilityOptions: List<OptionModel> = emptyList()
+)
+
+@Serializable
+data class OptionModel(
+    val code: String = "",   // e.g., "FULL_TIME", "PART_TIME" or "FRESHER", "1_3_YRS"
+    val label: String = ""   // Localized text based on active JSON language
 )

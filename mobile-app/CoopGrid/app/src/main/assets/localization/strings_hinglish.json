@@ -112,7 +112,19 @@
             "removeButton": "Hatayein",
             "nextButton": "Save Karein Aur Aage Badhein",
             "radiusLabel": "Kaam Ke Liye Travel Radius",
-            "availabilityLabel": "Uplabdhata / Work Preference"
+            "availabilityLabel": "Uplabdhata / Work Preference",
+            "experienceOptions": [
+                { "code": "FRESHER", "label": "Naya / Fresher" },
+                { "code": "1_3_YRS", "label": "1-3 Saal" },
+                { "code": "3_5_YRS", "label": "3-5 Saal" },
+                { "code": "5_PLUS_YRS", "label": "5 Saal Se Zyada" }
+            ],
+            "availabilityOptions": [
+                { "code": "FULL_TIME", "label": "Pura Samay (Full Time)" },
+                { "code": "PART_TIME", "label": "Aadha Samay (Part Time)" },
+                { "code": "CONTRACT", "label": "Theka / Contract Par" },
+                { "code": "WEEKEND", "label": "Keval Shani-Ravi (Weekend)" }
+            ]
         },
         "machineryRental": {
             "screenCode": "SCR_WRK_107",

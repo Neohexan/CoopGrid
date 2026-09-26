@@ -14,7 +14,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.coopgrid.employer.registration.presentation.steps.step3.strings.EmpAddress
-import com.example.coopgrid.worker.registration.presentation.steps.step3.strings.AddressStrings
 
 @Composable
 fun EmpGpsLocationCard(

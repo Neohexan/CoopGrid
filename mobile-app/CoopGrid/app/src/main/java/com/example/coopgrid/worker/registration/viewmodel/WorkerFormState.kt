@@ -17,22 +17,6 @@ enum class AvailabilityType(val labelEnglish: String, val labelHinglish: String)
     WEEKEND("Weekend Only", "Sirf Weekend")
 }
 
-//data class WorkerSkillItem(
-//    val id: String = UUID.randomUUID().toString(),
-//    val selectedCategoryCode: String? = null,
-//    val selectedTradeCode: String? = null,
-//    val selectedSkillCodes: List<String> = emptyList(), // Multi-select support
-//    val primaryCategory: String = "",
-//    val specificSkill: String = "",
-//    val subSkill: String = "",
-//    val selectedSubSkills: List<String> = emptyList(),
-//    val experienceYears: String = "1-3 Years",
-//    val expectedWage: String = "",
-//    val wageType: WageType = WageType.PER_DAY,
-//    val workRadiusKm: Float = 10f, // Default 10 KM
-//    val availabilityType: AvailabilityType = AvailabilityType.FULL_TIME
-//)
-
 data class WorkerFormState(
     // Step 1: Personal Details
     val fullName: String = "",

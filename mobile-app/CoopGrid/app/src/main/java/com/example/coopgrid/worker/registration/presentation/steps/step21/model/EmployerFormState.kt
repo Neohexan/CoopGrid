@@ -17,5 +17,5 @@ data class WorkerSkillItem(
     val expectedWage: String = "",
     val wageType: WageType = WageType.PER_DAY,
     val workRadiusKm: Float = 10f, // Default 10 KM
-    val availabilityType: AvailabilityType = AvailabilityType.FULL_TIME
+    val availabilityType: String = ""
 )

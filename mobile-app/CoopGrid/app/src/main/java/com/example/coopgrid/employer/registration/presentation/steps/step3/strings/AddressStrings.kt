@@ -24,11 +24,8 @@ data class AddressCategories(
 @Serializable
 data class EmpAddress(
     val screenCode: String = "",
-    val screenTitle: String = "",
     val screenSubtitle: String = "",
     val stateLabel: String = "",
-    val areaLabel: String = "Json me likhana hai ",
-    val areaPlaceholder: String = "Json me likhana hai",
     val statePlaceholder: String = "",
     val districtLabel: String = "",
     val districtPlaceholder: String = "",

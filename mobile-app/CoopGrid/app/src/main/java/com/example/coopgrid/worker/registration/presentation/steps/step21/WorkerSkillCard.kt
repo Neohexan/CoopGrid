@@ -35,22 +35,19 @@ fun WorkerSkillCard(
     index: Int,
     skillItem: WorkerSkillItem, // Expected to hold categoryCode, tradeCode, skillCode
     strings: WorkerSkill,
+    skillsCategories: List<JobCategory>,
     showDelete: Boolean,
     onUpdate: (WorkerSkillItem) -> Unit,
     onDelete: () -> Unit,
+
     languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
 
-    // 🔹 Direct local load using remember (Executes only once)
-    val categories = remember {
-        WorkerJsonReader.loadWorkerSkillsCategoriesFromAssets(context)
-    }
-
     // 1. Find Selected Category from categoryCode
-    val selectedCategory = remember(skillItem.primaryCategory, categories) {
-        categories.find { it.categoryCode == skillItem.primaryCategory }
+    val selectedCategory = remember(skillItem.primaryCategory, skillsCategories) {
+        skillsCategories.find { it.categoryCode == skillItem.primaryCategory }
     }
 
     // 2. Available Trades under selected category
@@ -117,7 +114,7 @@ fun WorkerSkillCard(
             )
             Spacer(modifier = Modifier.height(6.dp))
             AppDropdown(
-                items = categories,
+                items = skillsCategories,
                 selectedItem = selectedCategory,
                 itemLabel = { category -> category.categoryName },
                 placeholder = "Select Category",
@@ -186,11 +183,11 @@ fun WorkerSkillCard(
             )
             Spacer(modifier = Modifier.height(6.dp))
             TypeSelector(
-                items = listOf("Fresh", "1-3 Yrs", "3-5 Yrs", "5+ Yrs"),
-                selectedItem = skillItem.experienceYears,
-                itemLabel = { exp -> exp },
-                onItemSelected = { selectedExp ->
-                    onUpdate(skillItem.copy(experienceYears = selectedExp))
+                items = strings.experienceOptions,
+                selectedItem = strings.experienceOptions.find { it.code == skillItem.experienceYears },
+                itemLabel = { option -> option.label },
+                onItemSelected = { selectedOption ->
+                    onUpdate(skillItem.copy(experienceYears = selectedOption.code))
                 }
             )
 
@@ -203,13 +200,11 @@ fun WorkerSkillCard(
             )
             Spacer(modifier = Modifier.height(6.dp))
             TypeSelector(
-                items = AvailabilityType.entries,
-                selectedItem = skillItem.availabilityType,
-                itemLabel = { avail ->
-                    if (selectedLanguage == AppLanguage.HINGLISH) avail.labelHinglish else avail.labelEnglish
-                },
-                onItemSelected = { selectedAvail ->
-                    onUpdate(skillItem.copy(availabilityType = selectedAvail))
+                items = strings.availabilityOptions,
+                selectedItem = strings.availabilityOptions.find { it.code == skillItem.availabilityType },
+                itemLabel = { option -> option.label },
+                onItemSelected = { selectedOption ->
+                    onUpdate(skillItem.copy(availabilityType = selectedOption.code))
                 }
             )
 

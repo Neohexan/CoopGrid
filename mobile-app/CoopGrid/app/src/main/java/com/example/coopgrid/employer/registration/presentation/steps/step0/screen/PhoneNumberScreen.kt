@@ -61,9 +61,7 @@ fun EmployerPhoneScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .systemBarsPadding()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(24.dp),
+            .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         // TOP SECTION: Header & Input Fields

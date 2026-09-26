@@ -18,6 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.coopgrid.common.language.LanguageViewModel
 import com.example.coopgrid.ui.theme.CoopGridTheme
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
+import com.example.coopgrid.worker.registration.presentation.steps.step21.model.JobCategory
 import com.example.coopgrid.worker.registration.viewmodel.WorkerFormState
 import com.example.coopgrid.worker.registration.viewmodel.WorkerFormViewModel
 import com.example.coopgrid.worker.registration.presentation.steps.step21.model.WorkerSkillItem
@@ -26,15 +27,17 @@ import com.example.coopgrid.worker.registration.presentation.steps.step21.model.
 fun WorkerSkillScreen(
     onNextClick: () -> Unit,
     viewModel: WorkerFormViewModel = hiltViewModel(),
+    skillViewModel: WorkerSkillViewModel = hiltViewModel(),
     languageViewModel: LanguageViewModel = hiltViewModel(),
 ) {
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
-
+    val skillsCategories by skillViewModel.categories.collectAsStateWithLifecycle()
     val state by viewModel.uiState.collectAsState()
 
     WorkerSkillContent(
         state = state,
         strings = appStrings.workerFlow.workerSkill,
+        skillsCategories = skillsCategories,
         onAddSkill = viewModel::addSkill,
         onRemoveSkill = viewModel::removeSkill,
         onUpdateSkill = viewModel::updateSkillItem,
@@ -45,6 +48,7 @@ fun WorkerSkillScreen(
 @Composable
 fun WorkerSkillContent(
     strings: WorkerSkill,
+    skillsCategories : List<JobCategory>,
     state: WorkerFormState,
     onAddSkill: () -> Unit,
     onRemoveSkill: (String) -> Unit,
@@ -56,7 +60,7 @@ fun WorkerSkillContent(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(24.dp),
+            .padding(12.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column(
@@ -91,6 +95,7 @@ fun WorkerSkillContent(
                     index = index,
                     skillItem = skillItem,
                     strings = strings,
+                    skillsCategories = skillsCategories,
                     showDelete = state.skillsList.size > 1, // Minimum 1 card mandatory
                     onUpdate = onUpdateSkill,
                     onDelete = { onRemoveSkill(skillItem.id) }

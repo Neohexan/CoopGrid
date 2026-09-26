@@ -19,18 +19,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.delay
-import java.util.Locale
-import kotlin.time.Duration.Companion.milliseconds
-import androidx.compose.ui.platform.LocalLocale
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.coopgrid.common.language.LanguageViewModel
 import com.example.coopgrid.employer.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.employer.registration.presentation.steps.step0.EmpAuthViewModel
 import com.example.coopgrid.employer.registration.presentation.steps.step0.string.EmpOtpStrings
-import com.example.coopgrid.employer.registration.presentation.steps.step0.string.getOtpStrings
 
 // 1. Route Container (Handles Hilt ViewModels & Navigation state)
 @Composable
@@ -75,9 +69,7 @@ fun EmployerOtpScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .systemBarsPadding()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(24.dp),
+            .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         // TOP SECTION

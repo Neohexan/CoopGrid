@@ -30,15 +30,12 @@ import com.example.coopgrid.employer.registration.presentation.steps.step2.model
 import com.example.coopgrid.employer.registration.presentation.steps.step21.components.SelectedCategoryCard
 import com.example.coopgrid.employer.registration.presentation.steps.step21.model.BusinessCategoryItem
 import com.example.coopgrid.employer.registration.presentation.steps.step21.model.BusinessSubCategoryItem
-import com.example.coopgrid.employer.registration.presentation.steps.step21.strings.getBusinessDetailsStrings
 import com.example.coopgrid.employer.data.utils.BusinessDataLoader
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.coopgrid.common.language.LanguageViewModel
 import com.example.coopgrid.data.lanlocal.model.AppLanguage
-import com.example.coopgrid.employer.registration.presentation.steps.step2.strings.EmployerOnboarding
 import com.example.coopgrid.employer.registration.presentation.steps.step21.model.EmployerBusinessFormState
 import com.example.coopgrid.employer.registration.presentation.steps.step21.strings.BusinessDetails
 
