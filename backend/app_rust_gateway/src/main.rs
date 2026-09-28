@@ -1,11 +1,4 @@
-use axum::{
-    body::Body,
-    extract::State,
-    http::Request,
-    middleware,
-    routing::{any, get},
-    Router,
-};
+use axum::{routing::get, Router};
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
 use tracing::{error, info};
@@ -20,8 +13,7 @@ mod utils;
 
 use config::AppConfig;
 use health::heartbeat::health_check_handler;
-use middlewares::auth_interceptor::verify_jwt_middleware;
-use proxy::forwarder::proxy_handler;
+use proxy::routes::build_gateway_routes;
 // use utils::errors::GatewayError;
 
 #[tokio::main]
@@ -41,26 +33,16 @@ async fn main() {
     // 2. LOAD APPLICATION CONFIGURATION
     let config = AppConfig::load();
 
-    // 3. ROUTER DEFINITION & STATE BINDING
+    // 1. Health check base route
+    let health_router = Router::new().route("/health", get(health_check_handler));
+
+    // 2. Build All Proxy Routes from proxy/routes.rs
+    let proxy_router = build_gateway_routes(config.clone());
+
+    // 3. Combine Router and Inject AppConfig State
     let app = Router::new()
-        // Gateway Health Check Endpoint
-        .route("/health", get(health_check_handler))
-        // Dynamic Auth Routes Handling (/auth/send-otp, /auth/verify-otp, etc.)
-        // Any HTTP Method (GET, POST, PUT, DELETE) matches here
-        .route(
-            "/auth/*path",
-            any(
-                |State(cfg): State<AppConfig>, req: Request<Body>| async move {
-                    proxy_handler(&cfg.auth_service_url, "/auth", req).await
-                },
-            ),
-        )
-        // Global Auth Interceptor Middleware layer
-        .layer(middleware::from_fn_with_state(
-            config.clone(),
-            verify_jwt_middleware,
-        ))
-        // Shared State injectable across handlers
+        .merge(health_router)
+        .merge(proxy_router)
         .with_state(config.clone());
 
     // 4. BIND TCP LISTENER & LAUNCH SERVER
@@ -92,10 +74,16 @@ async fn main() {
 
     // Terminal me clear visual message
     println!("\n=======================================================");
-    println!("🚀 API Gateway is live at: http://localhost:{}", config.gateway_port);
-    println!("🔒 Public IP Binding: http://0.0.0.0:{}", config.gateway_port);
+    println!(
+        "🚀 API Gateway is live at: http://localhost:{}",
+        config.gateway_port
+    );
+    println!(
+        "🔒 Public IP Binding: http://0.0.0.0:{}",
+        config.gateway_port
+    );
     println!("=======================================================\n");
-    
+
     // Run Axum Server with graceful error handling
     if let Err(err) = axum::serve(listener, app).await {
         error!(

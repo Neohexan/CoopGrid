@@ -16,6 +16,7 @@ pub struct ErrorResponseBody {
 }
 
 /// Gateway ke saare custom errors ka Central Enum.
+#[allow(dead_code)]
 #[derive(Debug)]
 pub enum GatewayError {
     /// 401: Authorization header missing ya Bearer keyword missing hai
@@ -35,6 +36,7 @@ pub enum GatewayError {
 
     /// 500: Gateway ke internal logic ya body extraction me error aaya hai
     InternalServerError(String),
+    NotFound(String),
 }
 
 /// Axum ka `IntoResponse` trait implement kar rahe hain.
@@ -46,7 +48,8 @@ impl IntoResponse for GatewayError {
             GatewayError::MissingAuthHeader => (
                 StatusCode::UNAUTHORIZED,
                 "MISSING_AUTHORIZATION_HEADER",
-                "Authorization header is missing or malformed. Expected format: 'Bearer <token>'".to_string(),
+                "Authorization header is missing or malformed. Expected format: 'Bearer <token>'"
+                    .to_string(),
             ),
             GatewayError::InvalidToken => (
                 StatusCode::UNAUTHORIZED,
@@ -73,7 +76,10 @@ impl IntoResponse for GatewayError {
                 (
                     StatusCode::BAD_GATEWAY,
                     "SERVICE_UNAVAILABLE",
-                    format!("Downstream service at '{}' is currently unreachable", service_url),
+                    format!(
+                        "Downstream service at '{}' is currently unreachable",
+                        service_url
+                    ),
                 )
             }
             GatewayError::InternalServerError(err_msg) => {
@@ -88,6 +94,15 @@ impl IntoResponse for GatewayError {
                     "INTERNAL_SERVER_ERROR",
                     "An internal server error occurred within the gateway".to_string(),
                 )
+            }
+            GatewayError::NotFound(msg) => {
+                // Not found error ko log karein
+                error!(
+                    target: "gateway_errors",
+                    error = %msg,
+                    "404 Not Found"
+                );
+                (StatusCode::NOT_FOUND, "NOT_FOUND", msg.clone())
             }
         };
 
