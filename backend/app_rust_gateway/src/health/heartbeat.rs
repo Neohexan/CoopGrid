@@ -1,10 +1,10 @@
+use crate::config::AppConfig;
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
 use reqwest::Client;
 use serde::Serialize;
 use std::time::Duration;
+use tokio::time::sleep;
 use tracing::{error, info, warn};
-
-use crate::config::AppConfig;
 
 /// Single service ki health info format
 #[derive(Debug, Serialize)]
@@ -25,7 +25,7 @@ pub struct GatewayHealthResponse {
 
 /// Specific service ka health check endpoint hit karta hai aur latency measure karta hai
 async fn check_downstream_health(client: &Client, name: &str, url: &str) -> ServiceHealth {
-    let health_endpoint = format!("{}/health", url);
+    let health_endpoint = format!("{}/health", url.trim_end_matches('/'));
     let start_time = std::time::Instant::now();
 
     // 2 Seconds ka timeout lagayein taaki target service down hone par request hang na ho
@@ -117,4 +117,36 @@ pub async fn health_check_handler(State(config): State<AppConfig>) -> impl IntoR
     };
 
     (StatusCode::OK, Json(response_body))
+}
+
+/// Background Worker Loop: Har 5 seconds me terminal log par live status print karne ke liye
+pub async fn spawn_background_health_watcher(config: AppConfig) {
+    let client = Client::new();
+
+    tokio::spawn(async move {
+        info!(
+            target: "gateway_health_watcher",
+            "Starting automated background health monitor ticker (Interval: 5s)..."
+        );
+
+        loop {
+            sleep(Duration::from_secs(5)).await;
+
+            let auth_health =
+                check_downstream_health(&client, "Auth-Service", &config.auth_service_url).await;
+
+            if auth_health.status == "UP" {
+                info!(
+                    target: "gateway_health_watcher",
+                    latency = ?auth_health.latency_ms,
+                    "🟢 Auth Microservice (Port 8002) is LIVE & HEALTHY"
+                );
+            } else {
+                error!(
+                    target: "gateway_health_watcher",
+                    "🔴 CRITICAL: Auth Microservice (Port 8002) is DOWN or UNREACHABLE"
+                );
+            }
+        }
+    });
 }

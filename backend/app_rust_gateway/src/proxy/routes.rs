@@ -12,10 +12,18 @@ use axum::{
 use tracing::info;
 
 /// Public Microservices Router (Bypass Token Interceptor)
-/// App se aa rahe OTP/Phone Login wale endpoints
+/// Helper macro ya closure reusable routing logic ke liye
 fn public_services_router() -> Router<AppConfig> {
     Router::new()
-        // Auth Microservice (/auth/*)
+        // Auth Microservice Base & Wildcard (/auth and /auth/*)
+        .route(
+            "/auth",
+            any(
+                |State(cfg): State<AppConfig>, req: Request<Body>| async move {
+                    proxy_handler(&cfg.auth_service_url, "/auth", req).await
+                },
+            ),
+        )
         .route(
             "/auth/*path",
             any(
@@ -31,7 +39,15 @@ fn public_services_router() -> Router<AppConfig> {
                 },
             ),
         )
-        // Alias Route (/uvw/*)
+        // Alias Route (/uvw and /uvw/*)
+        .route(
+            "/uvw",
+            any(
+                |State(cfg): State<AppConfig>, req: Request<Body>| async move {
+                    proxy_handler(&cfg.auth_service_url, "/uvw", req).await
+                },
+            ),
+        )
         .route(
             "/uvw/*path",
             any(
@@ -43,7 +59,6 @@ fn public_services_router() -> Router<AppConfig> {
                         target_service = "Auth-Service (Port 8002)",
                         "Routing PUBLIC request via ALIAS (/uvw) to Auth Microservice"
                     );
-
                     proxy_handler(&cfg.auth_service_url, "/uvw", req).await
                 },
             ),
@@ -55,6 +70,14 @@ fn protected_services_router(config: AppConfig) -> Router<AppConfig> {
     Router::new()
         // Other / Profile Microservice
         .route(
+            "/other",
+            any(
+                |State(cfg): State<AppConfig>, req: Request<Body>| async move {
+                    proxy_handler(&cfg.other_service_url, "/other", req).await
+                },
+            ),
+        )
+        .route(
             "/other/*path",
             any(
                 |State(cfg): State<AppConfig>, req: Request<Body>| async move {
@@ -65,12 +88,11 @@ fn protected_services_router(config: AppConfig) -> Router<AppConfig> {
                         target_service = "Other-Service (Port 8003/8004)",
                         "Routing PROTECTED request to Downstream Service"
                     );
-
                     proxy_handler(&cfg.other_service_url, "/other", req).await
                 },
             ),
         )
-        // Middleware layer ONLY applied on protected routes
+        // Middleware strictly layer-wise applied on protected routes only
         .layer(middleware::from_fn_with_state(
             config,
             verify_jwt_middleware,
@@ -81,10 +103,10 @@ fn protected_services_router(config: AppConfig) -> Router<AppConfig> {
 pub fn build_gateway_routes(config: AppConfig) -> Router<AppConfig> {
     Router::new()
         .merge(public_services_router())
-        .merge(protected_services_router(config).fallback(any(|| async {
+        .merge(protected_services_router(config))
+        .fallback(any(|| async {
             Err::<(), GatewayError>(GatewayError::NotFound(
                 "Requested route does not exist on Gateway".to_string(),
             ))
         }))
-    )
 }

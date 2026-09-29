@@ -12,14 +12,13 @@ mod proxy;
 mod utils;
 
 use config::AppConfig;
-use health::heartbeat::health_check_handler;
+use health::heartbeat::{health_check_handler, spawn_background_health_watcher};
 use proxy::routes::build_gateway_routes;
 // use utils::errors::GatewayError;
 
 #[tokio::main]
 async fn main() {
     // 1. TRACING & LOGGING INITIALIZATION
-    // Structured JSON / Console Logs format initialize karein
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
@@ -33,19 +32,19 @@ async fn main() {
     // 2. LOAD APPLICATION CONFIGURATION
     let config = AppConfig::load();
 
-    // 1. Health check base route
-    let health_router = Router::new().route("/health", get(health_check_handler));
+    // 3. BACKGROUND HEALTH WATCHER
+    spawn_background_health_watcher(config.clone()).await;
 
-    // 2. Build All Proxy Routes from proxy/routes.rs
+    // 4. COMBINE ROUTERS & INJECT GLOBAL STATE
+    let health_router = Router::new().route("/health", get(health_check_handler));
     let proxy_router = build_gateway_routes(config.clone());
 
-    // 3. Combine Router and Inject AppConfig State
     let app = Router::new()
         .merge(health_router)
         .merge(proxy_router)
         .with_state(config.clone());
 
-    // 4. BIND TCP LISTENER & LAUNCH SERVER
+    // 5. BIND TCP LISTENER & START AXUM SERVER
     let addr = SocketAddr::from(([0, 0, 0, 0], config.gateway_port));
 
     info!(
@@ -66,13 +65,6 @@ async fn main() {
         }
     };
 
-    info!(
-        target: "gateway_main",
-        port = config.gateway_port,
-        "🚀 API Gateway is running and ready to accept connections!"
-    );
-
-    // Terminal me clear visual message
     println!("\n=======================================================");
     println!(
         "🚀 API Gateway is live at: http://localhost:{}",
@@ -84,7 +76,6 @@ async fn main() {
     );
     println!("=======================================================\n");
 
-    // Run Axum Server with graceful error handling
     if let Err(err) = axum::serve(listener, app).await {
         error!(
             target: "gateway_main",

@@ -69,10 +69,20 @@ pub async fn proxy_handler(
         &target_uri_str,
     );
 
-    // FIX HERE: Header Name aur Value ko `as_str()` karke String format me reqwest ko dete hain
+    // FIX: Filter out Host, Content-Length and Hop-by-Hop headers!
     for (name, value) in headers.iter() {
+        let name_str = name.as_str();
+        
+        // Host aur Content-Length ko forward NAHI karenge (reqwest khud correct set karega)
+        if name_str.eq_ignore_ascii_case("host") 
+            || name_str.eq_ignore_ascii_case("content-length")
+            || name_str.eq_ignore_ascii_case("connection")
+        {
+            continue;
+        }
+
         if let Ok(val_str) = value.to_str() {
-            downstream_request = downstream_request.header(name.as_str(), val_str);
+            downstream_request = downstream_request.header(name_str, val_str);
         }
     }
 

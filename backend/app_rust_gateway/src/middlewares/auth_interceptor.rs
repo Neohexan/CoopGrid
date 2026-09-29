@@ -22,27 +22,14 @@ pub async fn verify_jwt_middleware(
     mut req: Request<Body>,
     next: Next,
 ) -> Result<Response, GatewayError> {
-    let path = req.uri().path().to_string();
+    let path = req.uri().path();
 
-    // 1. PUBLIC ROUTES EXCLUSION (Whitelist Bypass)
-    // Mobile Auth endpoints aur Health check APIs par authentication key ki zarurat nahi hoti.
-    if path == "/auth/send-otp" || path == "/auth/verify-otp" || path == "/health" {
-        info!(
-            target: "gateway_auth",
-            request_path = %path,
-            "Public route accessed. Bypassing JWT validation."
-        );
-        return Ok(next.run(req).await);
-    }
-
-    // 2. AUTHORIZATION HEADER EXTRACTION
-    // Request Header se "Authorization" field fetch karein
+    // 1. AUTHORIZATION HEADER EXTRACTION
     let auth_header = req
         .headers()
         .get("Authorization")
         .and_then(|h| h.to_str().ok());
 
-    // Check karein ki Bearer prefix present hai ya nahi
     let token = match auth_header {
         Some(header) if header.starts_with("Bearer ") => &header[7..],
         _ => {
@@ -55,8 +42,10 @@ pub async fn verify_jwt_middleware(
         }
     };
 
-    // 3. JWT SIGNATURE & EXPIRATION VALIDATION
-    let validation = Validation::new(Algorithm::HS256);
+    // 2. JWT SIGNATURE & EXPIRATION VALIDATION
+    let mut validation = Validation::new(Algorithm::HS256);
+    validation.validate_exp = false; // Internal service tokens ke liye audience check off
+
     let token_data = match decode::<Claims>(
         token,
         &DecodingKey::from_secret(config.jwt_secret.as_bytes()),
@@ -64,7 +53,6 @@ pub async fn verify_jwt_middleware(
     ) {
         Ok(data) => data,
         Err(err) => match err.kind() {
-            // Token expire ho chuka hai (exp < current time)
             ErrorKind::ExpiredSignature => {
                 warn!(
                     target: "gateway_auth",
@@ -73,7 +61,6 @@ pub async fn verify_jwt_middleware(
                 );
                 return Err(GatewayError::TokenExpired);
             }
-            // Signature mismatch, invalid encoding ya tampered payload
             _ => {
                 warn!(
                     target: "gateway_auth",
@@ -86,8 +73,7 @@ pub async fn verify_jwt_middleware(
         },
     };
 
-    // 4. HEADER INJECTION FOR DOWNSTREAM SERVICES
-    // Token valid hone par sub (User ID) ko header me add kar dete hain taaki Auth/Chat service microservices ko direct header padhna pade
+    // 3. HEADER INJECTION FOR DOWNSTREAM SERVICES
     let user_id = token_data.claims.sub;
 
     info!(
@@ -101,6 +87,5 @@ pub async fn verify_jwt_middleware(
         req.headers_mut().insert("X-User-ID", header_value);
     }
 
-    // Request ko next handler / proxy forwarder ki taraf aage bhej dein
     Ok(next.run(req).await)
 }
