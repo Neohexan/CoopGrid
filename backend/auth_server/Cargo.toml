@@ -1,5 +1,5 @@
 [package]
-name = "auth_server" 
+name = "auth_server"
 version = "0.1.0"
 edition = "2021"
 
@@ -14,7 +14,7 @@ edition = "2021"
 
 
 [dependencies]
-axum = "0.8"
+axum = { version = "0.8", features = ["macros"] }
 tokio = { version = "1.0", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -31,7 +31,9 @@ jsonwebtoken = "11.0"
 dotenvy = "0.15"
 bincode = "1.3.3"
 dashmap = "6.0"
- # test funtion ke liye 
+uuid = { version = "1.3", features = ["v4"] }
+rand = "0.8"
+# test funtion ke liye 
 
 
 # [dev-dependencies]

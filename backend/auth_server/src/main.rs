@@ -1,21 +1,26 @@
+use axum::Router;
+use std::net::SocketAddr;
+use tracing::info;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+// Local Modules
 pub mod config;
+pub mod dtos;
+pub mod handlers;
 pub mod health;
+pub mod routes;
 pub mod storage;
 pub mod utils;
 
-use axum::{routing::get, Router};
 use config::Config;
-use health::heartbeat::health_handler;
-use std::net::SocketAddr;
-use storage::storage::StorageEngine;
-use tracing::info;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use routes::build_auth_routes;
+use storage::AuthStorageManager;
 
 /// Global Shared Application State
 #[derive(Clone)]
 pub struct AppState {
     pub config: Config,
-    pub storage: StorageEngine,
+    pub storage: AuthStorageManager,
 }
 
 #[tokio::main]
@@ -37,22 +42,27 @@ async fn main() {
     // 2. Load Environment Configuration
     let config = Config::from_env();
 
-    // 3. Initialize In-Memory Storage with Bincode Binary Persistence
-    let storage = StorageEngine::init("auth_store.bin");
+    // 2. Persistent Storage Manager Boot & Memory Rehydration
+    // Pehle se stored `.bin` file ko memory me reload karega
+    let storage_manager = AuthStorageManager::init().await;
 
-    // 4. Construct Shared AppState
+    // 3. Application Shared State Create Karna
     let app_state = AppState {
+        storage: storage_manager,
         config: config.clone(),
-        storage,
     };
 
-    // 5. Build Axum Router and attach AppState
-    let app = Router::new()
-        .route("/health", get(health_handler))
-        .with_state(app_state);
+    // 4. Role-Based Scalable Router Build Karna
+    let app: Router = build_auth_routes(app_state);
 
     // 6. Bind TCP Listener and launch Server
     let addr = SocketAddr::from(([0, 0, 0, 0], config.server_port));
+    info!(
+        target: "auth_service::main",
+        address = %addr,
+        "Auth Microservice is listening on http://{}", addr
+    );
+
     let listener = tokio::net::TcpListener::bind(addr)
         .await
         .expect("Failed to bind TCP listener for Auth Microservice");

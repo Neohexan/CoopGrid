@@ -18,26 +18,30 @@ pub struct HealthStatusResponse {
 
 /// Auth Microservice Heartbeat Endpoint Handler
 /// Path: GET /health
-///
-/// Gateway is endpoint ko ping karke downstream health verify karega.
 pub async fn health_handler(State(state): State<AppState>) -> impl IntoResponse {
     info!(
         target: "auth_service::health",
         "Gateway heartbeat ping received at /health"
     );
 
+    // Naye Storage Manager se count fetch kar rahe hain asynchronously
+    let users_count = state.storage.get_users_count().await;
+
+    // Agar revoked tokens ka count store me alag function se mil raha hai
+    // toh wo function call karenge, filhal zero ya current status ka count link kar sakte hain
+    let revoked_count = 0;
+
     let response = HealthStatusResponse {
         name: "Auth-Service".to_string(),
         service: "auth-microservice".to_string(),
         status: "UP".to_string(),
-        active_users_in_ram: state.storage.users.len(),
-        revoked_tokens_in_ram: state.storage.revoked_tokens.len(),
+        active_users_in_ram: users_count,
+        revoked_tokens_in_ram: revoked_count,
         timestamp_utc: chrono::Utc::now().to_rfc3339(),
     };
 
     Json(response)
 }
-
 /// Outbound Ping Utility (Used by API Gateway or Inter-service clients)
 /// Auth microservice ko ping karke verify karta hai ki service responsive hai ya nahi.
 pub async fn ping_auth_service(client: &reqwest::Client, auth_service_url: &str) -> bool {
