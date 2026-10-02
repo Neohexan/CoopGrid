@@ -165,6 +165,58 @@ impl AuthStorageManager {
         let users_guard = self.users.read().await;
         users_guard.len()
     }
+
+    /// Phone number ke base par existing user dhundhta hai,
+    /// agar nahi milta to naya StoredUser create karke disk me sync/save karta hai.
+    pub async fn get_or_create_user(
+        &self,
+        phone_number: &str,
+        role: &str,
+    ) -> Result<StoredUser, String> {
+        // 1. Check karein ki user pehle se HashMap/Storage me exist karta hai ya nahi
+        if let Some(existing_user) = self.find_user_by_phone(phone_number).await {
+            info!(
+                target: "auth_storage::user",
+                phone_number = %phone_number,
+                user_id = %existing_user.user_id,
+                "👤 Existing user found in storage snapshot"
+            );
+            return Ok(existing_user);
+        }
+
+        // 2. Agar user nahi mila, to naya user construct karein
+        let user_id = format!("usr_{}", uuid::Uuid::new_v4().simple());
+        let now = chrono::Utc::now().to_rfc3339();
+
+        let new_user = StoredUser {
+            user_id: user_id.clone(),
+            phone_number: phone_number.to_string(),
+            role: role.to_string(),
+            is_profile_complete: false, // New registration par false rahega
+            created_at_utc: now.clone(),
+            updated_at_utc: now,
+        };
+
+        // 3. User ko RAM & Disk dono me save karein (save_user khud internally sync_to_disk call karta hai)
+        if let Err(err) = self.save_user(new_user.clone()).await {
+            error!(
+                target: "auth_storage::user",
+                phone_number = %phone_number,
+                error = %err,
+                "❌ Failed to persist new user to RAM and Disk"
+            );
+            return Err(format!("Failed to save user: {}", err));
+        }
+
+        info!(
+            target: "auth_storage::user",
+            phone_number = %phone_number,
+            user_id = %new_user.user_id,
+            "🎉 New user created and successfully persisted to disk"
+        );
+
+        Ok(new_user)
+    }
 }
 
 impl AuthStorageManager {
@@ -175,6 +227,7 @@ impl AuthStorageManager {
         otp_code: String,
         role: String,
     ) -> String {
+        // Request ID generate karte hain (Debugging aur Audit tracking ke liye)
         let request_id = format!("req_{}", uuid::Uuid::new_v4().simple());
         let now = chrono::Utc::now().timestamp();
         let expires_at = now + OTP_EXPIRY_DURATION_SECS;
@@ -183,11 +236,12 @@ impl AuthStorageManager {
             phone_number: phone_number.clone(),
             otp_code,
             request_id: request_id.clone(),
-            role,
+            role: role.clone(),
             created_at_timestamp: now,
             expires_at_timestamp: expires_at,
         };
 
+        // Write Lock acquire karke in-memory session update karein
         {
             let mut otp_guard = self.otp_sessions.write().await;
             otp_guard.insert(phone_number.clone(), session);
@@ -197,63 +251,95 @@ impl AuthStorageManager {
             target: "auth_storage::otp",
             phone_number = %phone_number,
             request_id = %request_id,
-            "OTP Session created and cached in memory (Expires in 5m)"
+            role = %role,
+            expires_in_secs = %OTP_EXPIRY_DURATION_SECS,
+            "✅ [CREATE] OTP Session created and cached in memory"
         );
 
         request_id
     }
 
     /// 2. Verify and Consume (Delete) OTP Session
-    /// Direct 1-time verification to prevent Replay Attacks
+    /// Guarantees Single-Use via Request-ID + Expiry + Code Validation
     pub async fn verify_and_consume_otp(
         &self,
         phone_number: &str,
+        request_id: &str,
         input_otp: &str,
     ) -> Result<OtpSession, String> {
+        info!(
+            target: "auth_storage::otp",
+            phone_number = %phone_number,
+            request_id = %request_id,
+            "🔍 [VERIFY START] Initiating OTP verification process"
+        );
+
         let mut otp_guard = self.otp_sessions.write().await;
 
+        // STEP 1: Active Session Lookup
         let session = match otp_guard.get(phone_number) {
             Some(s) => s.clone(),
             None => {
                 warn!(
                     target: "auth_storage::otp",
                     phone_number = %phone_number,
-                    "OTP Verification failed: No active session found"
+                    request_id = %request_id,
+                    "❌ [VERIFY FAILED] No active OTP session found for phone number"
                 );
                 return Err("No active OTP session found for this phone number".to_string());
             }
         };
 
-        // Check 1: Expiry Validation
-        if session.is_expired() {
-            otp_guard.remove(phone_number); // Clean up expired token
+        let session_copy = session.clone();
+
+        // STEP 2: Request ID Match Validation (Prevents session hijack/cross-request conflicts)
+        if session.request_id != request_id {
             warn!(
                 target: "auth_storage::otp",
                 phone_number = %phone_number,
-                "OTP Verification failed: Session expired"
+                expected_request_id = %session.request_id,
+                received_request_id = %request_id,
+                "❌ [VERIFY FAILED] Request ID mismatch detected"
+            );
+            return Err("Invalid request ID. Please try sending OTP again.".to_string());
+        }
+
+        // STEP 3: Expiry Check Validation
+        if session.is_expired() {
+            // Memory cleanup for stale session
+            otp_guard.remove(phone_number);
+            warn!(
+                target: "auth_storage::otp",
+                phone_number = %phone_number,
+                request_id = %request_id,
+                expires_at = %session.expires_at_timestamp,
+                "❌ [VERIFY FAILED] OTP session has expired"
             );
             return Err("OTP code has expired. Please request a new one.".to_string());
         }
 
-        // Check 2: OTP Match Validation
+        // STEP 4: OTP Code Exact Match Check
         if session.otp_code != input_otp {
             warn!(
                 target: "auth_storage::otp",
                 phone_number = %phone_number,
-                "OTP Verification failed: Invalid OTP code provided"
+                request_id = %request_id,
+                "❌ [VERIFY FAILED] Incorrect OTP code provided"
             );
-            return Err("Invalid OTP code".to_string());
+            return Err("Invalid OTP code provided".to_string());
         }
 
-        // Single-Use Guarantee: Verification success par session consume (delete)
+        // STEP 5: Single-Use Guarantee (Consume & Delete Session)
         otp_guard.remove(phone_number);
 
         info!(
             target: "auth_storage::otp",
             phone_number = %phone_number,
-            "OTP verified successfully and session consumed"
+            request_id = %request_id,
+            role = %session.role,
+            "🎉 [VERIFY SUCCESS] OTP verified successfully. Active session consumed and deleted."
         );
 
-        Ok(session)
+        Ok(session_copy)
     }
 }

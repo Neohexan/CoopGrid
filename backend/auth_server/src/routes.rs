@@ -5,7 +5,8 @@ use axum::{
 };
 
 use crate::{
-    handlers::employer_handler::send_employer_otp_handler, health::heartbeat::health_handler,
+    handlers::employer_handler::send_employer_otp_handler,
+    handlers::employer_handler::verify_employer_otp_handler, health::heartbeat::health_handler,
 };
 
 pub fn build_auth_routes(state: AppState) -> Router {
@@ -15,6 +16,7 @@ pub fn build_auth_routes(state: AppState) -> Router {
         // Role-Based Scalable Auth Routes
         // Employer Endpoints
         .route("/employer/send-otp", post(send_employer_otp_handler))
+        .route("/employer/verify-otp", post(verify_employer_otp_handler))
         // Future Worker & Admin Endpoints yahan direct line add hongi:
         // .route("/worker/send-otp", post(send_worker_otp_handler))
         // .route("/admin/send-otp", post(send_admin_otp_handler))

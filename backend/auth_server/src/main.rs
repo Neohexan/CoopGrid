@@ -9,19 +9,15 @@ pub mod dtos;
 pub mod handlers;
 pub mod health;
 pub mod routes;
+pub mod services;
+pub mod state;
 pub mod storage;
 pub mod utils;
 
 use config::Config;
 use routes::build_auth_routes;
+use state::AppState;
 use storage::AuthStorageManager;
-
-/// Global Shared Application State
-#[derive(Clone)]
-pub struct AppState {
-    pub config: Config,
-    pub storage: AuthStorageManager,
-}
 
 #[tokio::main]
 async fn main() {
@@ -47,10 +43,7 @@ async fn main() {
     let storage_manager = AuthStorageManager::init().await;
 
     // 3. Application Shared State Create Karna
-    let app_state = AppState {
-        storage: storage_manager,
-        config: config.clone(),
-    };
+    let app_state = AppState::new(config.clone(), storage_manager);
 
     // 4. Role-Based Scalable Router Build Karna
     let app: Router = build_auth_routes(app_state);
