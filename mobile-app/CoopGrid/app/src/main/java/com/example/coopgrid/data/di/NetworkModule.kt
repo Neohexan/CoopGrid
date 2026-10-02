@@ -28,6 +28,7 @@ object NetworkModule {
     fun provideJson(): Json = Json {
         ignoreUnknownKeys = true  // Server se koi extra field aaye toh crash na ho
         coerceInputValues = true   // Unknown enum/values par default handle kare
+        encodeDefaults = true
         isLenient = true           // Loose JSON syntax parsing allow kare
     }
 

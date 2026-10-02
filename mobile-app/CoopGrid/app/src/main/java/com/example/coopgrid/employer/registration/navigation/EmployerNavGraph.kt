@@ -1,7 +1,10 @@
 package com.example.coopgrid.employer.registration.navigation
 
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -36,19 +39,22 @@ fun NavGraphBuilder.employerNavGraph(
         // -------------------------------------------------------------
 
         // 1. Phone Number Screen
-        // 1. Phone Number Screen
         composable<EmployerRoute.PhoneNumber> { backStackEntry ->
             val parentEntry = remember(backStackEntry) {
                 navController.getBackStackEntry<EmployerRoute.Graph>()
             }
-            val authViewModel: EmpAuthViewModel = viewModel(viewModelStoreOwner = parentEntry)
+            val authViewModel: EmpAuthViewModel = hiltViewModel(parentEntry)
+
+            // Form state se phone number read karein
+            val formState by authViewModel.formState.collectAsStateWithLifecycle()
 
             EmployerPhoneRoute(
                 authViewModel = authViewModel,
                 onNavigateToOtp = {
-                    // 🔹 UiState se phone number value read karke pass kar rahe hain
-                    val currentPhone = authViewModel.uiState.value.phoneNumber
-                    navController.navigate(EmployerRoute.OtpVerification(phoneNumber = currentPhone))
+                    // PARAMETER PASS KAREIN
+                    navController.navigate(
+                        EmployerRoute.OtpVerification(phoneNumber = formState.phoneNumber)
+                    )
                 },
                 onNavigateToTerms = {
                     navController.navigate(EmployerRoute.TermsAndConditions)
@@ -65,16 +71,21 @@ fun NavGraphBuilder.employerNavGraph(
 
         // 2. OTP Verification Screen
         composable<EmployerRoute.OtpVerification> { backStackEntry ->
-            // Extract route arguments if needed: val routeData = backStackEntry.toRoute<EmployerRoute.OtpVerification>()
+            // Shared ViewModel across the Auth Navigation Graph
             val parentEntry = remember(backStackEntry) {
                 navController.getBackStackEntry<EmployerRoute.Graph>()
             }
-            val authViewModel: EmpAuthViewModel = viewModel(viewModelStoreOwner = parentEntry)
+            val authViewModel: EmpAuthViewModel = hiltViewModel(parentEntry)
 
             EmployerOtpRoute(
                 authViewModel = authViewModel,
-                onVerifyClick = {
-                    // Navigate to Personal Details screen and clear Auth screens from backstack
+                onNavigateToHome = {
+                    // Profile setup pehle se complete hai -> Direct Employer Home Screen
+                    // Onboarding poori ho chuki hai, main App screen par navigate karne ke liye callback trigger karein
+                    onOnboardingComplete()
+                },
+                onNavigateToProfileSetup = {
+                    // Profile incomplete hai -> Registration Details screen
                     navController.navigate(EmployerRoute.PersonalDetails) {
                         popUpTo<EmployerRoute.PhoneNumber> { inclusive = true }
                     }
