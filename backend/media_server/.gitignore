@@ -1,0 +1,22 @@
+# Rust Build Artifacts
+/target/
+**/*.rs.bk
+# Keep Cargo.lock committed for reproducible application builds.
+
+# Data Vault Directory (Ignore database and media binary files, keep folder via .gitkeep)
+/data_vault/*
+!/data_vault/.gitkeep
+
+# Environment & Config Local Overrides
+.env
+*.env
+*.env.*
+!.env.example
+*.log
+
+# IDE & Editor specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
