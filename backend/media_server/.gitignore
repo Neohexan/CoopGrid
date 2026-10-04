@@ -6,6 +6,11 @@
 # Data Vault Directory (Ignore database and media binary files, keep folder via .gitkeep)
 /data_vault/*
 !/data_vault/.gitkeep
+/data_vault/media_store/*
+*.db
+*.db-shm
+*.db-wal
+
 
 # Environment & Config Local Overrides
 .env
