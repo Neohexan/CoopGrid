@@ -40,17 +40,3 @@ data class BusinessSubCategoryItem(
     @SerialName("nameHi")
     val nameHi: String
 )
-
-// Form State for Step 21 (Holds IDs as Numbers)
-data class EmployerBusinessFormState(
-    val officialName: String = "",
-    val officialNameError: String? = null,
-    val selectedBcc: Int? = null,
-    val selectedCategoryName: String = "",
-    val categoryError: String? = null,
-    val selectedScc: Int? = null,
-    val selectedSubCategoryName: String = "",
-    val subCategoryError: String? = null,
-    val gstNumber: String = "",
-    val websiteOrSocialLink: String = ""
-)

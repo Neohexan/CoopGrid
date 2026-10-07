@@ -10,9 +10,7 @@ import androidx.compose.ui.unit.dp
 import com.example.coopgrid.employer.registration.presentation.components.AppDropdown
 import com.example.coopgrid.employer.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.employer.registration.presentation.components.AppTextField
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.EmployerCategory
 import com.example.coopgrid.employer.registration.presentation.steps.step3.components.EmpGpsLocationCard
-import com.example.coopgrid.employer.registration.presentation.steps.step3.models.AddressFormState
 import com.example.coopgrid.employer.registration.presentation.steps.step3.models.BlockLocationData
 import com.example.coopgrid.employer.registration.presentation.steps.step3.models.EmpDistrictLocationData
 import com.example.coopgrid.employer.registration.presentation.steps.step3.models.StateOption
@@ -39,20 +37,22 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.coopgrid.employer.registration.presentation.steps.step3.strings.AddressCategoryStrings
 import com.example.coopgrid.employer.registration.presentation.steps.step3.strings.EmpAddress
+import com.example.coopgrid.employer.registration.viewmodel.EmployerFormState
 
 @Composable
 fun EmployerAddressContent(
     allLocation: List<EmpDistrictLocationData>,
     stateOption: List<StateOption>,
     strings: EmpAddress,
+    isSubmitEnabled: Boolean = true,
     categoryStrings: AddressCategoryStrings,
-    onSubmitAddress: (AddressFormState) -> Unit,
+    onSubmitAddress: (EmployerFormState) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val configuration = LocalConfiguration.current
     val fontScale = configuration.fontScale
 
-    var formState by remember { mutableStateOf(AddressFormState()) }
+    var formState by remember { mutableStateOf(EmployerFormState()) }
     var validationError by remember { mutableStateOf<String?>(null) }
 
     val availableDistricts = remember(formState.selectedStateCode, allLocation) {
@@ -321,24 +321,10 @@ fun EmployerAddressContent(
 
         AppPrimaryButton(
             text = strings.continueButton,
+            enabled = isSubmitEnabled,
             onClick = {
-                val isStateValid = formState.selectedStateName.isNotEmpty()
-                val isDistrictValid = formState.selectedDistrictName.isNotEmpty()
-                val isBlockValid = formState.selectedBlockName.isNotEmpty()
-                val isPincodeValid = formState.pincode.length == 6
-                val isAreaValid = formState.areaOrVillageName.trim().isNotEmpty()
-
-                if (isStateValid && isDistrictValid && isBlockValid && isPincodeValid && isAreaValid) {
-                    onSubmitAddress(formState)
-                } else {
-                    formState = formState.copy(
-                        stateError = if (!isStateValid) strings.fieldRequiredError else null,
-                        districtError = if (!isDistrictValid) strings.fieldRequiredError else null,
-                        blockError = if (!isBlockValid) strings.fieldRequiredError else null,
-                        pincodeError = if (!isPincodeValid) strings.pincodeErrorText else null,
-                        areaError = if (!isAreaValid) strings.fieldRequiredError else null
-                    )
-                }
+                // Direct event pass karein, validation ViewModel handle karega
+                onSubmitAddress(formState)
             },
             modifier = Modifier.fillMaxWidth()
         )

@@ -17,10 +17,10 @@ import com.example.coopgrid.employer.registration.presentation.steps.step0.scree
 import com.example.coopgrid.employer.registration.presentation.steps.step0.screen.TermsAndConditionsRoute
 import com.example.coopgrid.employer.registration.presentation.steps.step1.EmployerPersonalScreen
 import com.example.coopgrid.employer.registration.presentation.steps.step2.EmployerCategoryScreen
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.EmployerCategory
 import com.example.coopgrid.employer.registration.presentation.steps.step21.EmployerBusinessDetailsRoute
 import com.example.coopgrid.employer.registration.presentation.steps.step3.EmployerAddressScreen
-import com.example.coopgrid.employer.registration.viewmodel.EmployerFormViewModel
+import com.example.coopgrid.employer.registration.viewmodel.EmployerCategory
+import com.example.coopgrid.employer.registration.viewmodel.RegistrationViewModel
 import com.example.coopgrid.ui.theme.AppLanguage
 
 
@@ -102,7 +102,7 @@ fun NavGraphBuilder.employerNavGraph(
             val parentEntry = remember(backStackEntry) {
                 navController.getBackStackEntry<EmployerRoute.Graph>()
             }
-            val formViewModel: EmployerFormViewModel = viewModel(viewModelStoreOwner = parentEntry)
+            val formViewModel: RegistrationViewModel = viewModel(viewModelStoreOwner = parentEntry)
 
             EmployerPersonalScreen(
                 viewModel = formViewModel,
@@ -117,24 +117,21 @@ fun NavGraphBuilder.employerNavGraph(
             val parentEntry = remember(backStackEntry) {
                 navController.getBackStackEntry<EmployerRoute.Graph>()
             }
-            val formViewModel: EmployerFormViewModel = viewModel(viewModelStoreOwner = parentEntry)
+            val registrationViewModel: RegistrationViewModel = hiltViewModel(parentEntry)
 
             EmployerCategoryScreen(
+                viewModel = registrationViewModel,
                 onNextClick = { selectedCategory ->
-                    formViewModel.onCategoryChange(selectedCategory)
-
                     when (selectedCategory) {
                         EmployerCategory.HOUSEHOLD,
                         EmployerCategory.FARMER -> {
                             // Direct Step 3 (Address) par category pass karke navigate karein
-                            navController.navigate(EmployerRoute.Address(category = selectedCategory))
+                            navController.navigate(EmployerRoute.Address)
                         }
                         EmployerCategory.COMPANY,
                         EmployerCategory.WHOLESALER -> {
                             // Step 21 (Business Details) par navigate karein
-                            navController.navigate(
-                                EmployerRoute.BusinessDetails(category = selectedCategory)
-                            )
+                            navController.navigate(EmployerRoute.BusinessDetails)
                         }
                     }
                 }
@@ -143,29 +140,34 @@ fun NavGraphBuilder.employerNavGraph(
 
         // 5. Business Details Screen (Step 21 - Only for Company & Wholesaler)
         composable<EmployerRoute.BusinessDetails> { backStackEntry ->
-            val routeData = backStackEntry.toRoute<EmployerRoute.BusinessDetails>()
-            val selectedCategory = routeData.category
+            // Shared Parent Graph ViewModel
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry<EmployerRoute.Graph>()
+            }
+            val registrationViewModel: RegistrationViewModel = hiltViewModel(parentEntry)
 
             EmployerBusinessDetailsRoute(
-                category = selectedCategory,
-                onChangeCategoryClick = {
-                    navController.popBackStack()
+                viewModel = registrationViewModel,
+                onNextClick = {
+                    // Step 21 complete hone ke baad Step 03 (Address) par navigate karein
+                    navController.navigate(EmployerRoute.Address)
                 },
-                onSubmitBusinessDetails = { formState ->
-                    // Business details submit hone par Address screen par bhej do
-                    navController.navigate(EmployerRoute.Address(category = selectedCategory))
+                onChangeCategoryClick = {
+                    // Piche Category Selection par Jane ke liye
+                    navController.popBackStack()
                 }
             )
         }
 
         // 6. Address Screen (Step 3 - Final Onboarding Step)
         composable<EmployerRoute.Address> { backStackEntry ->
-            val routeData = backStackEntry.toRoute<EmployerRoute.Address>()
-            val selectedCategory = routeData.category
-
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry<EmployerRoute.Graph>()
+            }
+            val registrationViewModel: RegistrationViewModel = hiltViewModel(parentEntry)
             EmployerAddressScreen(
-                category = selectedCategory,
-                onAddressSubmitted = { addressState ->
+                registrationViewModel = registrationViewModel,
+                onAddressSubmitted = {
                     // Onboarding poori ho chuki hai, main App screen par navigate karne ke liye callback trigger karein
                     onOnboardingComplete()
                 }

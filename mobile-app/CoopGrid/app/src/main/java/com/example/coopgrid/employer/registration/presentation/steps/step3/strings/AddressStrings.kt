@@ -1,6 +1,6 @@
 package com.example.coopgrid.employer.registration.presentation.steps.step3.strings
 
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.EmployerCategory
+import com.example.coopgrid.employer.registration.viewmodel.EmployerCategory
 import com.example.coopgrid.ui.theme.AppLanguage
 import kotlinx.serialization.Serializable
 

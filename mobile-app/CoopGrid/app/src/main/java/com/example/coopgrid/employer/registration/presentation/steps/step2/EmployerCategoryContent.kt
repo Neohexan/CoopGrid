@@ -13,8 +13,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.coopgrid.employer.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.employer.registration.presentation.steps.step2.components.EmployerCategoryOptionCard
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.EmployerCategory
 import com.example.coopgrid.employer.registration.presentation.steps.step2.strings.EmployerOnboarding
+import com.example.coopgrid.employer.registration.viewmodel.EmployerCategory
 
 @Composable
 fun EmployerCategoryContent(

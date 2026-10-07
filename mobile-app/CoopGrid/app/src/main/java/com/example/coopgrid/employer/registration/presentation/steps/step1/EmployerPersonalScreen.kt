@@ -31,25 +31,34 @@ import com.example.coopgrid.common.language.LanguageViewModel
 import com.example.coopgrid.employer.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.employer.registration.presentation.components.AppTextField
 import com.example.coopgrid.employer.registration.viewmodel.EmployerFormState
-import com.example.coopgrid.employer.registration.viewmodel.EmployerFormViewModel
+import com.example.coopgrid.employer.registration.viewmodel.RegistrationEvent
+import com.example.coopgrid.employer.registration.viewmodel.RegistrationViewModel
 import com.example.coopgrid.worker.registration.presentation.steps.step1.model.ScreenValidation
 
 // 1. MAIN STATEFUL COMPOSABLE (ViewModel Integration & Routing)
 @Composable
 fun EmployerPersonalScreen(
     onNextClick: () -> Unit,
-    viewModel: EmployerFormViewModel = hiltViewModel(),
+    viewModel: RegistrationViewModel = hiltViewModel(),
     languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val formState by viewModel.formState.collectAsStateWithLifecycle()
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
     EmployerPersonalScreenContent(
-        state = state,
+        state = formState,
         strings = appStrings.employerFlow.employerPersonal,
-        onFullNameChange = viewModel::onFullNameChange,
-        onGenderChange = viewModel::onGenderChange,
-        onDobChange = viewModel::onDobChange,
-        onEmailChange = viewModel::onEmailChange,
+        onFullNameChange = { name ->
+            viewModel.onEvent(RegistrationEvent.UpdateFullName(name))
+        },
+        onGenderChange = { gender ->
+            viewModel.onEvent(RegistrationEvent.UpdateGender(gender))
+        },
+        onDobChange = { dob ->
+            viewModel.onEvent(RegistrationEvent.UpdateDob(dob))
+        },
+        onEmailChange = { email ->
+            viewModel.onEvent(RegistrationEvent.UpdateEmail(email))
+        },
         onNextClick = onNextClick
     )
 }

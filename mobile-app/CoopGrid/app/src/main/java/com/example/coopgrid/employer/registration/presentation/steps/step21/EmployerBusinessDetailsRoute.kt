@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import com.example.coopgrid.employer.registration.presentation.components.AppDropdown
 import com.example.coopgrid.employer.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.employer.registration.presentation.components.AppTextField
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.EmployerCategory
 import com.example.coopgrid.employer.registration.presentation.steps.step21.components.SelectedCategoryCard
 import com.example.coopgrid.employer.registration.presentation.steps.step21.model.BusinessCategoryItem
 import com.example.coopgrid.employer.registration.presentation.steps.step21.model.BusinessSubCategoryItem
@@ -36,28 +35,32 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.coopgrid.common.language.LanguageViewModel
 import com.example.coopgrid.data.lanlocal.model.AppLanguage
-import com.example.coopgrid.employer.registration.presentation.steps.step21.model.EmployerBusinessFormState
 import com.example.coopgrid.employer.registration.presentation.steps.step21.strings.BusinessDetails
+import com.example.coopgrid.employer.registration.viewmodel.EmployerCategory
+import com.example.coopgrid.employer.registration.viewmodel.EmployerFormState
+import com.example.coopgrid.employer.registration.viewmodel.RegistrationEvent
+import com.example.coopgrid.employer.registration.viewmodel.RegistrationViewModel
 
 @Composable
 fun EmployerBusinessDetailsRoute(
-    category: EmployerCategory,
-    onSubmitBusinessDetails: (EmployerBusinessFormState) -> Unit,
+    onNextClick: () -> Unit,
     onChangeCategoryClick: (() -> Unit)? = null,
-    viewModel: BusinessDetailsViewModel = hiltViewModel(),
+    viewModel: RegistrationViewModel, // Shared Graph-scoped ViewModel
     languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
     val selectedLanguage by languageViewModel.currentLanguage.collectAsStateWithLifecycle()
+
+    // Form state single source of truth se aayega
     val formState by viewModel.formState.collectAsStateWithLifecycle()
 
     EmployerBusinessDetailsScreen(
         selectedLanguage = selectedLanguage,
         strings = appStrings.employerFlow.businessDetails,
-        category = category,
+        category = formState.selectedCategory ?: EmployerCategory.COMPANY,
         formState = formState,
-        onFormStateChange = viewModel::updateFormState,
-        onSubmitBusinessDetails = onSubmitBusinessDetails,
+        onEvent = viewModel::onEvent, // Direct ViewModel function pass ho jayega
+        onSubmitBusinessDetails = onNextClick,
         onChangeCategoryClick = onChangeCategoryClick
     )
 }
@@ -68,9 +71,9 @@ fun EmployerBusinessDetailsScreen(
     selectedLanguage: AppLanguage,
     strings: BusinessDetails,
     category: EmployerCategory,
-    formState: EmployerBusinessFormState,
-    onFormStateChange: (EmployerBusinessFormState) -> Unit,
-    onSubmitBusinessDetails: (EmployerBusinessFormState) -> Unit,
+    formState: EmployerFormState,
+    onEvent: (RegistrationEvent) -> Unit,
+    onSubmitBusinessDetails: () -> Unit,
     onChangeCategoryClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
@@ -152,7 +155,14 @@ fun EmployerBusinessDetailsScreen(
             AppTextField(
                 value = formState.officialName,
                 onValueChange = { input ->
-                    onFormStateChange(formState.copy(officialName = input, officialNameError = null))
+                    onEvent(
+                        RegistrationEvent.UpdateBusinessInfo(
+                            officialName = input,
+                            bccId = formState.selectedBcc,
+                            sccId = formState.selectedScc,
+                            gst = formState.gstNumber
+                        )
+                    )
                 },
                 placeholderText = strings.getOfficialNamePlaceholder(category),
                 errorMessage = formState.officialNameError
@@ -173,13 +183,12 @@ fun EmployerBusinessDetailsScreen(
                 itemLabel = { if (selectedLanguage == AppLanguage.HINGLISH) it.nameHi else it.nameEn },
                 selectedItem = availableCategories.find { it.bcc == formState.selectedBcc },
                 onItemSelected = { selected ->
-                    onFormStateChange(
-                        formState.copy(
-                            selectedBcc = selected.bcc,
-                            selectedCategoryName = selected.nameEn,
-                            selectedScc = null,
-                            selectedSubCategoryName = "",
-                            categoryError = null
+                    onEvent(
+                        RegistrationEvent.UpdateBusinessInfo(
+                            officialName = formState.officialName,
+                            bccId = selected.bcc,
+                            sccId = null, // Reset SCC when BCC changes
+                            gst = formState.gstNumber
                         )
                     )
                 },
@@ -202,11 +211,12 @@ fun EmployerBusinessDetailsScreen(
                 selectedItem = availableSubCategories.find { it.scc == formState.selectedScc },
                 enabled = formState.selectedBcc != null,
                 onItemSelected = { selected ->
-                    onFormStateChange(
-                        formState.copy(
-                            selectedScc = selected.scc,
-                            selectedSubCategoryName = selected.nameEn,
-                            subCategoryError = null
+                    onEvent(
+                        RegistrationEvent.UpdateBusinessInfo(
+                            officialName = formState.officialName,
+                            bccId = formState.selectedBcc,
+                            sccId = selected.scc,
+                            gst = formState.gstNumber
                         )
                     )
                 },
@@ -226,7 +236,14 @@ fun EmployerBusinessDetailsScreen(
                 value = formState.gstNumber,
                 onValueChange = { input ->
                     if (input.length <= 15) {
-                        onFormStateChange(formState.copy(gstNumber = input.uppercase()))
+                        onEvent(
+                            RegistrationEvent.UpdateBusinessInfo(
+                                officialName = formState.officialName,
+                                bccId = formState.selectedBcc,
+                                sccId = formState.selectedScc,
+                                gst = input.uppercase()
+                            )
+                        )
                     }
                 },
                 placeholderText = strings.gstPlaceholder
@@ -245,15 +262,7 @@ fun EmployerBusinessDetailsScreen(
                 val isSubCategoryValid = formState.selectedScc != null
 
                 if (isNameValid && isCategoryValid && isSubCategoryValid) {
-                    onSubmitBusinessDetails(formState)
-                } else {
-                    onFormStateChange(
-                        formState.copy(
-                            officialNameError = if (!isNameValid) strings.fieldRequiredError else null,
-                            categoryError = if (!isCategoryValid) strings.fieldRequiredError else null,
-                            subCategoryError = if (!isSubCategoryValid) strings.fieldRequiredError else null
-                        )
-                    )
+                    onSubmitBusinessDetails()
                 }
             },
             modifier = Modifier.fillMaxWidth()

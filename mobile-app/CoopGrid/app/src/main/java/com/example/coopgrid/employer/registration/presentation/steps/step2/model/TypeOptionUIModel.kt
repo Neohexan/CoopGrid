@@ -3,9 +3,9 @@ package com.example.coopgrid.employer.registration.presentation.steps.step2.mode
 
 
 // Employer Categories
-enum class EmployerCategory {
-    HOUSEHOLD,
-    FARMER,
-    COMPANY,
-    WHOLESALER
-}
+//enum class EmployerCategory {
+//    HOUSEHOLD,
+//    FARMER,
+//    COMPANY,
+//    WHOLESALER
+//}

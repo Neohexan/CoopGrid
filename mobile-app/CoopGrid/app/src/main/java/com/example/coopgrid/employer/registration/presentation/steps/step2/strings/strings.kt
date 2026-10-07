@@ -1,6 +1,6 @@
 package com.example.coopgrid.employer.registration.presentation.steps.step2.strings
 
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.EmployerCategory
+import com.example.coopgrid.employer.registration.viewmodel.EmployerCategory
 import kotlinx.serialization.Serializable
 // 1. Title aur Description handle karne wala nested class
 @Serializable

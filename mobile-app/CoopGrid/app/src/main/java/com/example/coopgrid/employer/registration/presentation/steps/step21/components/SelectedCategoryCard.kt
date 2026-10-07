@@ -21,8 +21,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.EmployerCategory
 import com.example.coopgrid.employer.registration.presentation.steps.step21.strings.BusinessDetails
+import com.example.coopgrid.employer.registration.viewmodel.EmployerCategory
 
 @Composable
 fun SelectedCategoryCard(
