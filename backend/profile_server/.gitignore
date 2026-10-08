@@ -17,7 +17,11 @@ __pycache__/
 .env.*.local
 
 # SQLite Database Files (Multi-DB files)
+# Ignore all database files and temporary WAL/SHM files
+data/
 *.db
+*.db-wal
+*.db-shm
 *.sqlite
 *.sqlite3
 data/*.db
