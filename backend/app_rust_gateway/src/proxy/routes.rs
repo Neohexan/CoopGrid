@@ -73,7 +73,7 @@ fn protected_services_router(config: AppConfig) -> Router<AppConfig> {
             "/other",
             any(
                 |State(cfg): State<AppConfig>, req: Request<Body>| async move {
-                    proxy_handler(&cfg.other_service_url, "/other", req).await
+                    proxy_handler(&cfg.profile_service_url, "/other", req).await
                 },
             ),
         )
@@ -85,10 +85,10 @@ fn protected_services_router(config: AppConfig) -> Router<AppConfig> {
                         target: "gateway::routes",
                         method = %req.method(),
                         uri = %req.uri(),
-                        target_service = "Other-Service (Port 8003/8004)",
+                        target_service = "Profile-Service (Port 8004)",
                         "Routing PROTECTED request to Downstream Service"
                     );
-                    proxy_handler(&cfg.other_service_url, "/other", req).await
+                    proxy_handler(&cfg.profile_service_url, "/other", req).await
                 },
             ),
         )

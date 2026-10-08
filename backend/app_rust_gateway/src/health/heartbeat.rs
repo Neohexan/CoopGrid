@@ -3,7 +3,7 @@ use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
 use reqwest::Client;
 use serde::Serialize;
 use std::time::Duration;
-use tokio::time::sleep;
+// use tokio::time::sleep;
 use tracing::{error, info, warn};
 
 /// Single service ki health info format
@@ -93,16 +93,21 @@ pub async fn health_check_handler(State(config): State<AppConfig>) -> impl IntoR
 
     // 2. Future/Other Service ka placeholder health check
     // Future me jab naya server setup hoga tab yahan sirf Service Name replace karna hoga
-    let other_health =
-        check_downstream_health(&client, "Other-Service", &config.other_service_url).await;
+    let profile_health =
+        check_downstream_health(&client, "Profile-Service", &config.profile_service_url).await;
+
+    // 3. Media Service ki health check
+    let media_health =
+        check_downstream_health(&client, "Media-Service", &config.media_service_url).await;
 
     // Direct status evaluation
     let is_auth_up = auth_health.status == "UP";
-    let is_other_up = other_health.status == "UP";
+    let is_media_up = media_health.status == "UP";
+    let is_profile_up = profile_health.status == "UP";
 
     // Overall Gateway Status Decision logic:
     // Abhi ke liye Auth Service critical hai, isliye agar Auth UP hai toh status "HEALTHY" ya "PARTIAL_DEGRADED" rahega.
-    let gateway_status = if is_auth_up && is_other_up {
+    let gateway_status = if is_auth_up && is_media_up && is_profile_up {
         "HEALTHY".to_string()
     } else if is_auth_up {
         "PARTIAL_DEGRADED".to_string()
@@ -113,40 +118,8 @@ pub async fn health_check_handler(State(config): State<AppConfig>) -> impl IntoR
     let response_body = GatewayHealthResponse {
         gateway_status,
         timestamp: chrono::Utc::now().to_rfc3339(),
-        downstream_services: vec![auth_health, other_health],
+        downstream_services: vec![auth_health, media_health, profile_health],
     };
 
     (StatusCode::OK, Json(response_body))
-}
-
-/// Background Worker Loop: Har 5 seconds me terminal log par live status print karne ke liye
-pub async fn spawn_background_health_watcher(config: AppConfig) {
-    let client = Client::new();
-
-    tokio::spawn(async move {
-        info!(
-            target: "gateway_health_watcher",
-            "Starting automated background health monitor ticker (Interval: 5s)..."
-        );
-
-        loop {
-            sleep(Duration::from_secs(5)).await;
-
-            let auth_health =
-                check_downstream_health(&client, "Auth-Service", &config.auth_service_url).await;
-
-            if auth_health.status == "UP" {
-                info!(
-                    target: "gateway_health_watcher",
-                    latency = ?auth_health.latency_ms,
-                    "🟢 Auth Microservice (Port 8002) is LIVE & HEALTHY"
-                );
-            } else {
-                error!(
-                    target: "gateway_health_watcher",
-                    "🔴 CRITICAL: Auth Microservice (Port 8002) is DOWN or UNREACHABLE"
-                );
-            }
-        }
-    });
 }

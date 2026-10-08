@@ -12,7 +12,8 @@ mod proxy;
 mod utils;
 
 use config::AppConfig;
-use health::heartbeat::{health_check_handler, spawn_background_health_watcher};
+use health::heartbeat::health_check_handler;
+use health::watcher::spawn_background_health_watcher;
 use proxy::routes::build_gateway_routes;
 // use utils::errors::GatewayError;
 
