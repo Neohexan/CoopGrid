@@ -16,6 +16,11 @@
 # Logs
 *.log
 
+# Manual test artifacts documented in TESTING.md
+/test.txt
+/downloaded_file.txt
+/output_chunk.bin
+
 # IDE and editor files
 .vscode/
 .idea/
