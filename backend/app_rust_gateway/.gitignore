@@ -30,6 +30,11 @@ benchmarks/*.html
 .DS_Store
 Thumbs.db
 
+# Ignore RSA Key Certificates
+*.pem
+certs/*.pem
+!certs/.gitkeep
+
 # ==========================================
 # IDE & System Files
 # ==========================================

@@ -1,56 +1,74 @@
-use axum::{body::Body, extract::State, http::Request, middleware::Next, response::Response};
-use jsonwebtoken::{decode, errors::ErrorKind, Algorithm, DecodingKey, Validation};
+use axum::{
+    body::Body,
+    extract::State,
+    http::{header, HeaderValue, Request},
+    middleware::Next,
+    response::Response,
+};
+use jsonwebtoken::{decode, errors::ErrorKind, Algorithm, Validation};
 use serde::{Deserialize, Serialize};
 use tracing::{info, warn};
 
 use crate::config::AppConfig;
 use crate::utils::errors::GatewayError;
 
-/// JWT Payload (Claims) ki structure representation.
-/// Standard claims: `sub` (Subject/User ID) aur `exp` (Expiration Timestamp in epoch seconds).
-#[derive(Debug, Serialize, Deserialize)]
+/// JWT Payload (Claims) Data Structure.
+///
+/// RS256 token se decode honing wale standard aur custom fields:
+/// - `sub`: Subject / Primary User Identifier (e.g. "usr_998877")
+/// - `exp`: Expiry timestamp in UNIX epoch seconds
+/// - `token_type`: Token capability guard ("access" vs "refresh")
+/// - `role`: Optional RBAC role string (e.g. "admin", "employer", "candidate")
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
     pub sub: String,
     pub exp: usize,
+    pub token_type: String,
+    pub role: Option<String>,
 }
 
-/// Incoming Requests ke JWT Token ko inspect aur validate karne wala Interceptor/Middleware.
+/// Incoming HTTP Requests ke JWT Access Tokens ko extract, verify aur downstream enrich karne wala Middleware Interceptor.
 ///
-/// System State me se `AppConfig` ko pull karta hai taaki dynamic `jwt_secret` read kiya ja sake.
+/// **Execution Pipeline:**
+/// 1. Extract `Authorization: Bearer <token>` header.
+/// 2. Validate RS256 signature using pre-loaded RSA Public Key (`AppConfig`).
+/// 3. Assert expiration (`exp`) and token scope (`token_type == "access"`).
+/// 4. Inject `X-User-ID` and `X-User-Role` headers before forwarding request to downstream microservices.
 pub async fn verify_jwt_middleware(
     State(config): State<AppConfig>,
     mut req: Request<Body>,
     next: Next,
 ) -> Result<Response, GatewayError> {
-    let path = req.uri().path();
+    let path = req.uri().path().to_string();
 
-    // 1. AUTHORIZATION HEADER EXTRACTION
+    // =========================================================================
+    // 1. AUTHORIZATION HEADER EXTRACTION & FORMAT CHECK
+    // =========================================================================
     let auth_header = req
         .headers()
-        .get("Authorization")
+        .get(header::AUTHORIZATION)
         .and_then(|h| h.to_str().ok());
 
     let token = match auth_header {
-        Some(header) if header.starts_with("Bearer ") => &header[7..],
+        Some(header_val) if header_val.starts_with("Bearer ") => &header_val[7..],
         _ => {
             warn!(
                 target: "gateway_auth",
                 request_path = %path,
-                "Authentication attempt failed: Missing or malformed Authorization header"
+                "Authentication failed: Missing or malformed Authorization header (Expected 'Bearer <token>')"
             );
             return Err(GatewayError::MissingAuthHeader);
         }
     };
 
-    // 2. JWT SIGNATURE & EXPIRATION VALIDATION
-    let mut validation = Validation::new(Algorithm::HS256);
-    validation.validate_exp = false; // Internal service tokens ke liye audience check off
+    // =========================================================================
+    // 2. RS256 JWT SIGNATURE & EXPIRATION VALIDATION
+    // =========================================================================
+    let mut validation = Validation::new(Algorithm::RS256);
+    validation.validate_exp = true; // Expiry timestamp enforcement (Default: true)
 
-    let token_data = match decode::<Claims>(
-        token,
-        &DecodingKey::from_secret(config.jwt_secret.as_bytes()),
-        &validation,
-    ) {
+    // Global AppConfig me se Pre-loaded Public DecodingKey ka upayog karte hue signature decode karein
+    let token_data = match decode::<Claims>(token, &config.jwt_decoding_key, &validation) {
         Ok(data) => data,
         Err(err) => match err.kind() {
             ErrorKind::ExpiredSignature => {
@@ -66,26 +84,53 @@ pub async fn verify_jwt_middleware(
                     target: "gateway_auth",
                     request_path = %path,
                     error_details = %err,
-                    "Authentication failed: Invalid JWT token signature"
+                    "Authentication failed: Invalid JWT signature or corrupted token payload"
                 );
                 return Err(GatewayError::InvalidToken);
             }
         },
     };
 
-    // 3. HEADER INJECTION FOR DOWNSTREAM SERVICES
+    // =========================================================================
+    // 3. TOKEN TYPE VALIDATION (Refresh Token misuse guard)
+    // =========================================================================
+    // Verify karein ki request me access token hi bheja gaya hai, refresh token nahi
+    if token_data.claims.token_type != "access" {
+        warn!(
+            target: "gateway_auth",
+            request_path = %path,
+            user_id = %token_data.claims.sub,
+            token_type = %token_data.claims.token_type,
+            "Authentication failed: Attempted to use non-access token for API route access"
+        );
+        return Err(GatewayError::InvalidToken);
+    }
+
+    // =========================================================================
+    // 4. DOWNSTREAM HEADER ENRICHMENT
+    // =========================================================================
     let user_id = token_data.claims.sub;
+    let role = token_data.claims.role;
 
     info!(
         target: "gateway_auth",
         user_id = %user_id,
+        role = ?role,
         request_path = %path,
-        "JWT Verification successful"
+        "🔑 [RS256 VERIFIED] JWT authentication successful"
     );
 
-    if let Ok(header_value) = user_id.parse() {
-        req.headers_mut().insert("X-User-ID", header_value);
+    // Downstream Microservices (Python Profile, Media, etc.) ke liye headers enrich karein
+    if let Ok(user_id_header) = HeaderValue::from_str(&user_id) {
+        req.headers_mut().insert("X-User-ID", user_id_header);
     }
 
+    if let Some(ref role_val) = role {
+        if let Ok(role_header) = HeaderValue::from_str(role_val) {
+            req.headers_mut().insert("X-User-Role", role_header);
+        }
+    }
+
+    // Pass enriched request down to downstream proxy handler
     Ok(next.run(req).await)
 }

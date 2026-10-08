@@ -14,6 +14,12 @@ Cargo.lock
 jwt_private.pem
 jwt_public.pem
 
+
+# Ignore RSA Key Certificates
+*.pem
+certs/*.pem
+!certs/.gitkeep
+
 # Operating System & IDE Files
 .DS_Store
 Thumbs.db

@@ -1,8 +1,8 @@
-use jsonwebtoken::{encode, EncodingKey, Header};
-use serde::{Deserialize, Serialize};
-use std::time::{SystemTime, UNIX_EPOCH};
-
 use crate::utils::errors::AuthError;
+use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
+use serde::{Deserialize, Serialize};
+use std::fs;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -26,7 +26,7 @@ impl TokenService {
         user_id: &str,
         phone_number: &str,
         role: &str,
-        jwt_secret: &str,
+        private_key_path: &str,
     ) -> Result<TokenPair, AuthError> {
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
@@ -53,18 +53,26 @@ impl TokenService {
             exp: now + (7 * 24 * 60 * 60),
         };
 
-        let encoding_key = EncodingKey::from_secret(jwt_secret.as_bytes());
+        // Private PEM File Read Karein
+        let pem_bytes = fs::read(private_key_path).map_err(|e| {
+            AuthError::InternalServerError(format!("Failed to read private key: {}", e))
+        })?;
 
-        // map_err se jsonwebtoken error ko custom AuthError me wrap kiya gaya hai
-        let access_token =
-            encode(&Header::default(), &access_claims, &encoding_key).map_err(|e| {
-                AuthError::InternalServerError(format!("Access Token Generation Failed: {}", e))
-            })?;
+        let encoding_key = EncodingKey::from_rsa_pem(&pem_bytes).map_err(|e| {
+            AuthError::InternalServerError(format!("Invalid RSA Private Key: {}", e))
+        })?;
 
-        let refresh_token =
-            encode(&Header::default(), &refresh_claims, &encoding_key).map_err(|e| {
-                AuthError::InternalServerError(format!("Refresh Token Generation Failed: {}", e))
-            })?;
+        // RS256 Algorithm Specification Header
+        let header = Header::new(Algorithm::RS256);
+
+        let access_token = encode(&header, &access_claims, &encoding_key).map_err(|e| {
+            AuthError::InternalServerError(format!("Access Token Signing Failed: {}", e))
+        })?;
+
+        let refresh_token = encode(&header, &refresh_claims, &encoding_key).map_err(|e| {
+            AuthError::InternalServerError(format!("Refresh Token Signing Failed: {}", e))
+        })?;
+
         Ok(TokenPair {
             access_token,
             refresh_token,
