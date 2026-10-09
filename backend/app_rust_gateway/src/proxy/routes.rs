@@ -66,33 +66,37 @@ fn public_services_router() -> Router<AppConfig> {
 }
 
 /// Protected Microservices Router (JWT Interceptor Applied)
-fn protected_services_router(config: AppConfig) -> Router<AppConfig> {
+pub fn protected_services_router(config: AppConfig) -> Router<AppConfig> {
     Router::new()
-        // Other / Profile Microservice
+        // Base route: /profile -> Downstream /profile ya /
         .route(
             "/profile",
-            any(
-                |State(cfg): State<AppConfig>, req: Request<Body>| async move {
-                    proxy_handler(&cfg.profile_service_url, "/other", req).await
-                },
-            ),
+            any(|State(cfg): State<AppConfig>, req: Request<Body>| async move {
+                proxy_handler(&cfg.profile_service_url, "/profile", req).await
+            }),
         )
+        // Sub-routes: /profile/me, /profile/settings, etc.
         .route(
             "/profile/*path",
-            any(
-                |State(cfg): State<AppConfig>, req: Request<Body>| async move {
-                    info!(
-                        target: "gateway::routes",
-                        method = %req.method(),
-                        uri = %req.uri(),
-                        target_service = "Profile-Service (Port 8004)",
-                        "Routing PROTECTED request to Downstream Service"
-                    );
-                    proxy_handler(&cfg.profile_service_url, "/other", req).await
-                },
-            ),
+            any(|State(cfg): State<AppConfig>, req: Request<Body>| async move {
+                info!(
+                    target: "gateway::routes",
+                    method = %req.method(),
+                    uri = %req.uri(),
+                    target_service = "Profile-Service (Python Port 8004)",
+                    "🔑 [JWT PASSED] Forwarding enriched request to Profile Microservice"
+                );
+                proxy_handler(&cfg.profile_service_url, "/profile", req).await
+            }),
         )
-        // Middleware strictly layer-wise applied on protected routes only
+        // Media Microservice Protected Routes (Audio/Video Streaming & Storage)
+        .route(
+            "/media/*path",
+            any(|State(cfg): State<AppConfig>, req: Request<Body>| async move {
+                proxy_handler(&cfg.media_service_url, "/media", req).await
+            }),
+        )
+        // Layer enforcement: Sirf is Router tree par JWT Interceptor run hoga
         .layer(middleware::from_fn_with_state(
             config,
             verify_jwt_middleware,

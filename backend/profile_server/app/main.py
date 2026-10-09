@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from app.config import settings
 from app.database import init_databases
 from app.routers import health
-
+from app.domains.employer.router import router as employer_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -20,6 +20,8 @@ app = FastAPI(
     version=settings.SERVICE_VERSION,
     lifespan=lifespan,
 )
+# Include the Employer Router
+app.include_router(employer_router)
 
 # Include Heartbeat / Health Router
 app.include_router(health.router)
