@@ -217,7 +217,7 @@ pub async fn verify_employer_otp_handler(
         &user.user_id,
         &user.phone_number,
         &user.role,
-        &state.config.jwt_secret,
+        &state.config.jwt_encoding_key,
     ) {
         Ok(tokens) => tokens,
         Err(err) => {

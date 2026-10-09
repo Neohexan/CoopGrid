@@ -70,7 +70,7 @@ fn protected_services_router(config: AppConfig) -> Router<AppConfig> {
     Router::new()
         // Other / Profile Microservice
         .route(
-            "/other",
+            "/profile",
             any(
                 |State(cfg): State<AppConfig>, req: Request<Body>| async move {
                     proxy_handler(&cfg.profile_service_url, "/other", req).await
@@ -78,7 +78,7 @@ fn protected_services_router(config: AppConfig) -> Router<AppConfig> {
             ),
         )
         .route(
-            "/other/*path",
+            "/profile/*path",
             any(
                 |State(cfg): State<AppConfig>, req: Request<Body>| async move {
                     info!(

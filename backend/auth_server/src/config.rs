@@ -1,20 +1,18 @@
+use jsonwebtoken::EncodingKey;
 use std::env;
+use std::fs;
 use tracing::info;
 
-/// Application Level Environment Configuration
-/// System environment variables ya `.env` file se parameters read karta hai.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Config {
     pub server_port: u16,
     pub gateway_url: String,
-    pub jwt_secret: String,
+    pub jwt_encoding_key: EncodingKey, // 👈 Pre-parsed RSA EncodingKey in RAM
     pub jwt_expiration_hours: i64,
 }
 
 impl Config {
-    /// Environment variables load aur validate karta hai
     pub fn from_env() -> Self {
-        // Optional: Load .env file if present
         dotenvy::dotenv().ok();
 
         let server_port = env::var("PORT")
@@ -25,8 +23,25 @@ impl Config {
         let gateway_url = env::var("GATEWAY_URL")
             .unwrap_or_else(|_| "http://127.0.0.1:8001".to_string());
 
-        let jwt_secret = env::var("JWT_SECRET")
-            .unwrap_or_else(|_| "super_secret_auth_key_default_change_in_prod".to_string());
+        // 1. .env se path padhein
+        let private_key_path = env::var("JWT_PRIVATE_KEY_PATH")
+            .unwrap_or_else(|_| "./certs/jwt_private.pem".to_string());
+
+        // 2. Startup par disk se PEM file read karein
+        let pem_bytes = fs::read(&private_key_path).unwrap_or_else(|err| {
+            panic!(
+                "❌ Failed to read RSA Private Key from '{}': {}",
+                private_key_path, err
+            );
+        });
+
+        // 3. RS256 EncodingKey parse karke RAM me save karein
+        let jwt_encoding_key = EncodingKey::from_rsa_pem(&pem_bytes).unwrap_or_else(|err| {
+            panic!(
+                "❌ Invalid RSA Private Key format in '{}': {}",
+                private_key_path, err
+            );
+        });
 
         let jwt_expiration_hours = env::var("JWT_EXPIRATION_HOURS")
             .unwrap_or_else(|_| "24".to_string())
@@ -36,7 +51,7 @@ impl Config {
         let config = Self {
             server_port,
             gateway_url,
-            jwt_secret,
+            jwt_encoding_key,
             jwt_expiration_hours,
         };
 
@@ -44,7 +59,8 @@ impl Config {
             target: "auth_service::config",
             port = config.server_port,
             gateway = %config.gateway_url,
-            "Configuration successfully initialized"
+            key_path = %private_key_path,
+            "🔑 Config & RSA Private Key successfully loaded into memory"
         );
 
         config
