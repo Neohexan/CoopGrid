@@ -45,7 +45,7 @@ import com.example.coopgrid.employer.registration.viewmodel.RegistrationViewMode
 fun EmployerBusinessDetailsRoute(
     onNextClick: () -> Unit,
     onChangeCategoryClick: (() -> Unit)? = null,
-    viewModel: RegistrationViewModel, // Shared Graph-scoped ViewModel
+    viewModel: RegistrationViewModel = hiltViewModel() , // Shared Graph-scoped ViewModel
     languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()

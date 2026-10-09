@@ -20,7 +20,7 @@ import com.example.coopgrid.employer.registration.viewmodel.RegistrationViewMode
 @Composable
 fun EmployerAddressScreen(
     onAddressSubmitted: () -> Unit,
-    registrationViewModel: RegistrationViewModel,
+    registrationViewModel: RegistrationViewModel = hiltViewModel() ,
     addressViewModel: WorkerAddressViewModel = hiltViewModel(),
     languageViewModel: LanguageViewModel = hiltViewModel()
 ) {

@@ -17,7 +17,7 @@ import com.example.coopgrid.ui.theme.AppLanguage
 @Composable
 fun EmployerCategoryScreen(
     onNextClick: (EmployerCategory) -> Unit,
-    viewModel: RegistrationViewModel, // Shared Graph-scoped ViewModel
+    viewModel: RegistrationViewModel = hiltViewModel() , // Shared Graph-scoped ViewModel
     languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()

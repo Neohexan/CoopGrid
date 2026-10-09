@@ -102,7 +102,7 @@ fun NavGraphBuilder.employerNavGraph(
             val parentEntry = remember(backStackEntry) {
                 navController.getBackStackEntry<EmployerRoute.Graph>()
             }
-            val formViewModel: RegistrationViewModel = viewModel(viewModelStoreOwner = parentEntry)
+            val formViewModel: RegistrationViewModel = hiltViewModel(viewModelStoreOwner = parentEntry)
 
             EmployerPersonalScreen(
                 viewModel = formViewModel,
