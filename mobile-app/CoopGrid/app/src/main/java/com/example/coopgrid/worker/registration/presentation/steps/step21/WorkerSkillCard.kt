@@ -2,16 +2,32 @@ package com.example.coopgrid.worker.registration.presentation.steps.step21
 
 
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -19,13 +35,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.coopgrid.common.LanguageViewModel
 import com.example.coopgrid.ui.theme.AppLanguage
-import com.example.coopgrid.worker.data.util.WorkerJsonReader
 import com.example.coopgrid.worker.registration.presentation.components.AppDropdown
 import com.example.coopgrid.worker.registration.presentation.components.AppTextField
 import com.example.coopgrid.worker.registration.presentation.steps.step21.componets.TypeSelector
 import com.example.coopgrid.worker.registration.presentation.steps.step21.model.JobCategory
 import com.example.coopgrid.worker.registration.presentation.steps.step21.model.WorkerSkillItem
-import com.example.coopgrid.worker.registration.viewmodel.AvailabilityType
 import com.example.coopgrid.worker.registration.viewmodel.WageType
 import kotlin.math.roundToInt
 
@@ -42,7 +56,6 @@ fun WorkerSkillCard(
 
     languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
     val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
 
     // 1. Find Selected Category from categoryCode

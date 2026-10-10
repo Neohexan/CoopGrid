@@ -10,7 +10,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.coopgrid.common.LanguageViewModel
 import com.example.coopgrid.common.auth.screen.LoginScreen
 import com.example.coopgrid.common.auth.screen.OtpScreen
 import com.example.coopgrid.common.roleselection.AuthSelectionRoute
@@ -27,7 +26,6 @@ import com.example.coopgrid.worker.registration.navigation.workerNavGraph
 @Composable
 fun AppNavGraph(
     splashViewModel: SplashViewModel = hiltViewModel(),
-    languageViewModel: LanguageViewModel= hiltViewModel(),
 ) {
     val navController = rememberNavController()
     // Global App Language State
