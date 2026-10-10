@@ -1,5 +1,10 @@
 package com.example.coopgrid.employer.registration.presentation.steps.step3
 
+import android.Manifest
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -35,6 +40,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.coopgrid.employer.data.utils.LocationViewModel
 import com.example.coopgrid.employer.registration.presentation.steps.step3.strings.AddressCategoryStrings
 import com.example.coopgrid.employer.registration.presentation.steps.step3.strings.EmpAddress
 import com.example.coopgrid.employer.registration.viewmodel.EmployerFormState
@@ -47,8 +54,10 @@ fun EmployerAddressContent(
     isSubmitEnabled: Boolean = true,
     categoryStrings: AddressCategoryStrings,
     onSubmitAddress: (EmployerFormState) -> Unit,
+    locationViewModel: LocationViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val fontScale = configuration.fontScale
 
@@ -65,6 +74,33 @@ fun EmployerAddressContent(
         matchedDistrict?.blockList ?: emptyList()
     }
 
+    // 1. Permission Launcher
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val isGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+
+        Log.d("EmployerAddressScreen", "Location permission granted: $isGranted")
+
+        if (isGranted) {
+            locationViewModel.getUserLocation { lat, lng ->
+                Log.d("EmployerAddressScreen", "Location received -> Lat: $lat, Lng: $lng")
+                if (lat != 0.0 && lng != 0.0) {
+                    formState = formState.copy(
+                        latitude = lat,
+                        longitude = lng,
+                        isGpsCaptured = true
+                    )
+                } else {
+                    Log.e("EmployerAddressScreen", "Received location is null or 0.0")
+                    Toast.makeText(context, "Unable to get current location. Make sure GPS is enabled.", Toast.LENGTH_LONG).show()
+                }
+            }
+        } else {
+            Toast.makeText(context, "Location permission is required", Toast.LENGTH_SHORT).show()
+        }
+    }
     // Main Outer Screen Layout
     Column(
         modifier = modifier
@@ -299,8 +335,14 @@ fun EmployerAddressContent(
                 latitude = formState.latitude,
                 longitude = formState.longitude,
                 strings = strings,
-                onDetectLocation = { lat, lng ->
-                    formState = formState.copy(latitude = lat, longitude = lng, isGpsCaptured = true)
+                onDetectLocation = { _, _ ->
+                    // Button click par permission check trigger karo
+                    locationPermissionLauncher.launch(
+                        arrayOf(
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        )
+                    )
                 }
             )
 

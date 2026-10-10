@@ -27,6 +27,11 @@ class RegistrationViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<RegistrationUiState>(RegistrationUiState.Idle)
     val uiState: StateFlow<RegistrationUiState> = _uiState.asStateFlow()
 
+    // ✅ Yeh function add karein
+    fun updateFormState(newState: EmployerFormState) {
+        _formState.value = newState
+    }
+
 
     fun onEvent(event: RegistrationEvent) {
         when (event) {
