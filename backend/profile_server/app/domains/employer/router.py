@@ -55,7 +55,7 @@ async def register_employer(
     return await crud.create_employer_profile(db, x_user_id, payload)
 
 @router.get(
-    "/profiles/me",
+    "/employer/me",
     response_model=dict,
     status_code=status.HTTP_200_OK,
     summary="Get Logged-in Employer Profile",
@@ -82,7 +82,7 @@ async def get_my_employer_profile(
 
 
 @router.get(
-    "/profiles/{user_id}",
+    "/employer/{user_id}",
     response_model=dict,
     status_code=status.HTTP_200_OK,
     summary="Get Employer Profile By User ID",
