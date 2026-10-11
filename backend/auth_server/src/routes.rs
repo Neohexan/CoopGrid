@@ -6,7 +6,9 @@ use axum::{
 
 use crate::{
     handlers::employer_handler::send_employer_otp_handler,
-    handlers::employer_handler::verify_employer_otp_handler, health::heartbeat::health_handler,
+    handlers::employer_handler::verify_employer_otp_handler,
+    handlers::worker_handler::send_worker_otp_handler,
+    handlers::worker_handler::verify_worker_otp_handler, health::heartbeat::health_handler,
 };
 
 pub fn build_auth_routes(state: AppState) -> Router {
@@ -18,7 +20,8 @@ pub fn build_auth_routes(state: AppState) -> Router {
         .route("/employer/send-otp", post(send_employer_otp_handler))
         .route("/employer/verify-otp", post(verify_employer_otp_handler))
         // Future Worker & Admin Endpoints yahan direct line add hongi:
-        // .route("/worker/send-otp", post(send_worker_otp_handler))
+        .route("/worker/send-otp", post(send_worker_otp_handler))
+        .route("/worker/verify-otp", post(verify_worker_otp_handler))
         // .route("/admin/send-otp", post(send_admin_otp_handler))
         .with_state(state)
 }
