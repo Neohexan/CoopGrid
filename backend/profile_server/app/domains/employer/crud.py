@@ -46,12 +46,12 @@ async def create_employer_profile(
         db.add(profile)
 
         # 2. Business Details Object (Agr Business Fields present hain)
-        if any([request.official_name, request.business_category, request.sub_category, request.gst_number]):
+        if any([request.official_name, request.category_name, request.sub_categories, request.gst_number]):
             business = EmployerBusinessDetails(
                 user_id=user_id,
                 official_name=request.official_name,
-                business_category=request.business_category,
-                sub_category=request.sub_category,
+                business_category=request.category_name,
+                sub_category=request.sub_categories,
                 gst_number=request.gst_number,
             )
             db.add(business)

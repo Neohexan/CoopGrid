@@ -45,8 +45,8 @@ class EmpRegistrationRequest(BaseModel):
 
     # Conditional Business Fields (Farmer/Household ke case me JSON me null rahenge)
     official_name: Optional[str] = Field(None, description="Registered business official name")
-    business_category: Optional[str] = Field(None, description="Business Category Name")
-    sub_category: Optional[str] = Field(None, description="Sub Category Name")
+    category_name: Optional[str] = Field(None, description="Business Category Name")
+    sub_categories: Optional[str] = Field(None, description="Sub Category Name")
     gst_number: Optional[str] = Field(None, description="GST registration number")
 
     # Nested Address Payload

