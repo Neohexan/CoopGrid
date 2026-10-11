@@ -5,6 +5,7 @@ import com.example.coopgrid.employer.registration.viewmodel.EmployerFormState
 import javax.inject.Inject
 import javax.inject.Singleton
 import android.util.Log
+import kotlinx.serialization.json.Json
 
 
 private const val TAG = "REG_FLOW_REPO"
@@ -12,6 +13,11 @@ private const val TAG = "REG_FLOW_REPO"
 class EmpRegistrationRepository @Inject constructor(
     private val apiService: EmpApiRgtService
 ) {
+
+    private val prettyJson = Json {
+        prettyPrint = true
+        ignoreUnknownKeys = true // Agar koi extra field ho toh crash na ho
+    }
     /**
      * Executes Employer Onboarding API Call via Rust API Gateway.
      * Mappings are applied automatically to handle category-specific business fields.
@@ -21,6 +27,10 @@ class EmpRegistrationRepository @Inject constructor(
             Log.d(TAG, "==> [START] Mapping EmployerFormState to DTO...")
             // 1. Form State ko Mapper ke dwara DTO me translate karein
             val requestDto = formState.toRegistrationRequestDto()
+
+            // 🔥 Yahan poore payload ko JSON string me convert karke print kar rahe hain
+            val jsonPayload = prettyJson.encodeToString(requestDto)
+            Log.i(TAG, "==> [FINAL PAYLOAD JSON START] <<<\n$jsonPayload\n==> [FINAL PAYLOAD JSON END] <<<")
 
             Log.i(TAG, "Payload Prepared Successfully:")
             Log.i(TAG, " -> Category: ${requestDto.category}")

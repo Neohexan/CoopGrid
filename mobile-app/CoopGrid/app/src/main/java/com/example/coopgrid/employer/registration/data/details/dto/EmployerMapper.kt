@@ -21,7 +21,9 @@ fun EmployerFormState.toRegistrationRequestDto(): EmpRegistrationRequest {
         // Farmer/Household ke case me business fields strictly null jayenge
         officialName = if (isBusinessCategory) officialName.trim().ifEmpty { null } else null,
         bccId = if (isBusinessCategory) selectedBcc else null,
+        categoryName = if (isBusinessCategory) selectedCategoryName else null,
         sccId = if (isBusinessCategory) selectedScc else null,
+        subCategories = if(isBusinessCategory) selectedSubCategoryName else null,
         gstNumber = if (isBusinessCategory) gstNumber.trim().ifEmpty { null } else null,
 
         address = EmployerAddressDto(

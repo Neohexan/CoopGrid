@@ -27,11 +27,6 @@ class RegistrationViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<RegistrationUiState>(RegistrationUiState.Idle)
     val uiState: StateFlow<RegistrationUiState> = _uiState.asStateFlow()
 
-    // ✅ Yeh function add karein
-    fun updateFormState(newState: EmployerFormState) {
-        _formState.value = newState
-    }
-
 
     fun onEvent(event: RegistrationEvent) {
         when (event) {
@@ -80,14 +75,18 @@ class RegistrationViewModel @Inject constructor(
                 Log.d(TAG, "[EVENT] Step 21 -> Business Info Updated:")
                 Log.d(TAG, " -> Official Name : ${event.officialName}")
                 Log.d(TAG, " -> BCC ID        : ${event.bccId}")
+                Log.d(TAG, " -> BCC NAME      : ${event.categoryName}")
                 Log.d(TAG, " -> SCC ID        : ${event.sccId}")
+                Log.d(TAG, " -> SCC NAME      : ${event.subCategoryName}")
                 Log.d(TAG, " -> GST Number    : ${event.gst.ifEmpty { "N/A" }}")
 
                 _formState.update {
                     it.copy(
                         officialName = event.officialName,
                         selectedBcc = event.bccId,
+                        selectedCategoryName = event.categoryName,
                         selectedScc = event.sccId,
+                        selectedSubCategoryName = event.subCategoryName,
                         gstNumber = event.gst
                     )
                 }

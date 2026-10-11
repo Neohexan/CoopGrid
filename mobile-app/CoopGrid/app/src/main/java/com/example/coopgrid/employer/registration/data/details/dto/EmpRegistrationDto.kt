@@ -31,8 +31,14 @@ data class EmpRegistrationRequest(
     @SerialName("bcc_id")
     val bccId: Int? = null,
 
+    @SerialName("category_name")
+    val categoryName: String?  = null,
+
     @SerialName("scc_id")
     val sccId: Int? = null,
+
+    @SerialName("sub_categories")
+    val subCategories: String?  = null,
 
     @SerialName("gst_number")
     val gstNumber: String? = null,

@@ -2,9 +2,8 @@ package com.example.coopgrid.employer.data.utils
 
 import android.content.Context
 import android.util.Log
-import com.example.coopgrid.R
-import com.example.coopgrid.employer.registration.presentation.steps.step21.model.BusinessCategoryRoot
-import com.example.coopgrid.employer.registration.presentation.steps.step21.model.CategoryGroup
+import com.example.coopgrid.employer.registration.presentation.steps.step21.model.CategoryResponse
+import com.example.coopgrid.employer.registration.presentation.steps.step21.model.EmployerCategoryItem
 import kotlinx.serialization.json.Json
 
 object BusinessDataLoader {
@@ -26,12 +25,11 @@ object BusinessDataLoader {
         }
     }
 
-
     // ------------------------------------------------------------------
     // EMPLOYER MODULE LOADERS
     // ------------------------------------------------------------------
-    fun loadBusinessData(context: Context): List<CategoryGroup> {
-        val rootData = loadFromAssets<BusinessCategoryRoot>(
+    fun loadBusinessData(context: Context): List<EmployerCategoryItem> {
+        val rootData = loadFromAssets<CategoryResponse>(
             context = context,
             filePath = "employer/business_categories.json"
         )

@@ -4,23 +4,23 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class BusinessCategoryRoot(
+data class CategoryResponse(
     @SerialName("categories")
-    val categories: List<CategoryGroup>
+    val categories: List<EmployerCategoryItem>
 )
 
 @Serializable
-data class CategoryGroup(
+data class EmployerCategoryItem(
     @SerialName("ecc")
     val ecc: Int,
     @SerialName("categoryName")
     val categoryName: String,
     @SerialName("categoryList")
-    val categoryList: List<BusinessCategoryItem>
+    val categoryList: List<BusinessCategory>
 )
 
 @Serializable
-data class BusinessCategoryItem(
+data class BusinessCategory(
     @SerialName("bcc")
     val bcc: Int,
     @SerialName("nameEn")
@@ -28,11 +28,11 @@ data class BusinessCategoryItem(
     @SerialName("nameHi")
     val nameHi: String,
     @SerialName("subCategories")
-    val subCategories: List<BusinessSubCategoryItem>
+    val subCategories: List<SubCategory>
 )
 
 @Serializable
-data class BusinessSubCategoryItem(
+data class SubCategory(
     @SerialName("scc")
     val scc: Int,
     @SerialName("nameEn")

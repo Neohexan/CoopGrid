@@ -75,7 +75,9 @@ sealed interface RegistrationEvent {
     data class UpdateBusinessInfo(
         val officialName: String,
         val bccId: Int?,
+        val categoryName: String,
         val sccId: Int?,
+        val subCategoryName: String,
         val gst: String
     ) : RegistrationEvent
 
