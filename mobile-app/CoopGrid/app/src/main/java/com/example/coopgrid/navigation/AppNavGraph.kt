@@ -100,7 +100,6 @@ fun AppNavGraph(
         // 2. Naya Employer Flow (Graph Registration)
         employerNavGraph(
             navController = navController,
-            currentLanguage = currentLanguage, // Jo aapka current app language hai
             onOnboardingComplete = {
                 // Employer Registration complete hone par Home / Dashboard Screen par bhejein
                 navController.navigate(Screen.EmployerHome.route) {

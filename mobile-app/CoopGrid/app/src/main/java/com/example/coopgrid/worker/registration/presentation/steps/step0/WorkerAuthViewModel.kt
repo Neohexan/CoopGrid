@@ -1,8 +1,11 @@
 package com.example.coopgrid.worker.registration.presentation.steps.step0
 
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.coopgrid.employer.registration.presentation.steps.step0.EmpAuthNetworkState
+import com.example.coopgrid.worker.registration.data.auth.WorkerAuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -14,94 +17,117 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
+private const val TAG = "WorkerAuthViewModel"
+
 @HiltViewModel
 class WorkerAuthViewModelStepZero @Inject constructor(
-
+    private val repository: WorkerAuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(WorkerAuthUiState())
     val uiState: StateFlow<WorkerAuthUiState> = _uiState.asStateFlow()
+
+    // Network / API execution state
+    private val _networkState = MutableStateFlow<WorkerAuthNetworkState>(WorkerAuthNetworkState.Idle)
+    val networkState: StateFlow<WorkerAuthNetworkState> = _networkState.asStateFlow()
+
 
     private var timerJob: Job? = null
 
     // --- Phone Input Handlers ---
     fun onPhoneNumberChange(phone: String) {
         // Only accept digits and max 10 chars for standard Indian numbers
-        val cleanPhone = phone.filter { it.isDigit() }.take(10)
-        _uiState.update {
-            it.copy(
-                phoneNumber = cleanPhone,
-                isPhoneValid = cleanPhone.length == 10,
-                errorMessage = null
-            )
+        val cleanPhone = phone.filter { it.isDigit() }
+        // 2. Maximum 10 digits ka strict check
+        if (cleanPhone.length <= 10) {
+            val isValid = cleanPhone.length == 10
+
+            _uiState.update {
+                it.copy(
+                    phoneNumber = cleanPhone,
+                    isPhoneValid = isValid
+                )
+            }
         }
     }
 
     // --- OTP Input Handlers ---
     fun onOtpCodeChange(otp: String) {
-        val cleanOtp = otp.filter { it.isDigit() }.take(6) // 4 or 6 digit OTP
-        _uiState.update {
-            it.copy(
-                otpCode = cleanOtp,
-                isOtpValid = cleanOtp.length == 6, // 6 digit verification
-                errorMessage = null
-            )
+        val cleanOtp = otp.filter { it.isDigit() }
+        if (cleanOtp.length <= 6) {
+            val isValid = cleanOtp.length == 6
+
+            _uiState.update {
+                it.copy(
+                    otpCode = cleanOtp,
+                    isOtpValid = isValid
+                )
+            }
         }
     }
 
     // --- Send OTP Simulation ---
-    fun sendOtp(onSuccessNavigateToOtpScreen: () -> Unit) {
+    fun sendOtp() {
+        val phone = _uiState.value.phoneNumber
         if (!_uiState.value.isPhoneValid) return
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            Log.d(TAG, "Initiating sendOtp for: $phone")
+            _networkState.value = WorkerAuthNetworkState.Loading
 
-            // Fake API Delay
-            delay(1000.milliseconds)
+            repository.sendWorkerOtp(phone)
+                .onSuccess { response ->
+                    Log.i(TAG, "OTP Sent successfully: ${response.message}")
 
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    isOtpSent = true
-                )
-            }
+                    // Store Request ID for future verification step
+                    _uiState.update {
+                        it.copy(requestId = response.requestId)
+                    }
 
-            startResendTimer()
-            onSuccessNavigateToOtpScreen()
+                    _networkState.value = WorkerAuthNetworkState.OtpSent(response.message)
+                    startResendTimer()
+                }
+                .onFailure { exception ->
+                    Log.e(TAG, "Failed to send OTP", exception)
+                    _networkState.value = WorkerAuthNetworkState.Error(
+                        exception.localizedMessage ?: "OTP bhejane me viphal ho gaya"
+                    )
+                }
         }
     }
 
     // --- Verify OTP Simulation ---
-    fun verifyOtp(onSuccessNavigateNext: () -> Unit) {
-        if (!_uiState.value.isOtpValid) return
+    fun verifyOtp() {
+        val state = _uiState.value
 
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-
-            // Fake API Delay
-            delay(1200.milliseconds)
-
-            // Dummy Check (e.g. 123456 or any 6 digit input is valid for testing UI)
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    isAuthSuccess = true
-                )
-            }
-
-            onSuccessNavigateNext()
+        // Guard check: Validate OTP length and ensure Request ID is present
+        if (!state.isOtpValid || state.requestId.isBlank()) {
+            Log.w(TAG, "Verify OTP aborted: Invalid OTP or Missing Request ID")
+            _networkState.value = WorkerAuthNetworkState.Error("Invalid OTP or Request ID missing")
+            return
         }
-    }
-
-    // --- Resend OTP Logic ---
-    fun resendOtp() {
-        if (!_uiState.value.canResendOtp) return
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            delay(800.milliseconds)
-            _uiState.update { it.copy(isLoading = false, otpCode = "") }
-            startResendTimer()
+
+            Log.d(TAG, "Initiating verifyOtp for ${state.phoneNumber} with Request ID: ${state.requestId}")
+            _networkState.value = WorkerAuthNetworkState.Loading
+
+            repository.verifyWorkerOtp(
+                phoneNumber = state.phoneNumber,
+                otp = state.otpCode,
+                requestId = state.requestId
+            )
+                .onSuccess { response ->
+                    Log.i(TAG, "OTP Verified. Profile Complete: ${response.isProfileComplete}")
+                    // Clear state or trigger success
+                    _networkState.value = WorkerAuthNetworkState.Success(response.isProfileComplete)
+                }
+                .onFailure { exception ->
+                    Log.e(TAG, "OTP Verification Failed", exception)
+                    _networkState.value = WorkerAuthNetworkState.Error(
+                        exception.localizedMessage ?: "Galat OTP, punah prayaas karein"
+                    )
+                }
         }
     }
 
@@ -119,8 +145,7 @@ class WorkerAuthViewModelStepZero @Inject constructor(
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        timerJob?.cancel()
+    fun resetNetworkState() {
+        _networkState.value = WorkerAuthNetworkState.Idle
     }
 }

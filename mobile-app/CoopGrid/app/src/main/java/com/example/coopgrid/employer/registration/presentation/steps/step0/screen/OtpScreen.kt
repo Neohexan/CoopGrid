@@ -63,7 +63,8 @@ fun EmployerOtpRoute(
                     onNavigateToProfileSetup()
                 }
             }
-            EmpAuthNetworkState.Idle, EmpAuthNetworkState.Loading -> {
+            is EmpAuthNetworkState.Idle,
+            is EmpAuthNetworkState.Loading -> {
                 // Do nothing
             }
         }

@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 import javax.inject.Inject
 
-private const val TAG = "EmpAuthViewModel"
+private const val TAG = "EmAuthViewModel"
 
 @HiltViewModel
 class EmpAuthViewModel @Inject constructor(

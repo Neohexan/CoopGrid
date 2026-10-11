@@ -1,6 +1,7 @@
 package com.example.coopgrid.worker.registration.navigation
 
 
+import com.example.coopgrid.employer.registration.navigation.EmployerRoute
 import com.example.coopgrid.worker.registration.presentation.steps.step2.model.ServiceOfferingType
 import kotlinx.serialization.Serializable
 
@@ -10,12 +11,11 @@ sealed interface WorkerRoute {
     @Serializable
     data object OnboardingGraph : WorkerRoute
 
-    // STEP 0: Authentication
     @Serializable
-    data object Step0PhoneNumber : WorkerRoute
+    data object PhoneNumber : WorkerRoute
 
     @Serializable
-    data class Step0OtpVerification(
+    data class OtpVerification(
         val phoneNumber: String
     ) : WorkerRoute
 

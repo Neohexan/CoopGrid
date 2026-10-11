@@ -1,7 +1,9 @@
 package com.example.coopgrid.worker.registration.navigation
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -27,26 +29,27 @@ import com.example.coopgrid.worker.registration.viewmodel.WorkerFormViewModel
 fun NavGraphBuilder.workerNavGraph(
     navController: NavController,
     onOnboardingComplete: () -> Unit
-
 ) {
 
     navigation<WorkerRoute.OnboardingGraph>(
-        startDestination = WorkerRoute.Step0PhoneNumber
+        startDestination = WorkerRoute.PhoneNumber
     ) {
         // -------------------------------------------------------------
         // STEP 0.1: Phone Number Input
         // -------------------------------------------------------------
-        composable<WorkerRoute.Step0PhoneNumber> { backStackEntry ->
+        composable<WorkerRoute.PhoneNumber> { backStackEntry ->
             val parentEntry = remember(backStackEntry) {
                 navController.getBackStackEntry(WorkerRoute.OnboardingGraph)
             }
             val authViewModel: WorkerAuthViewModelStepZero = hiltViewModel(parentEntry)
+            // Form state se phone number read karein
+            val uiState by authViewModel.uiState.collectAsStateWithLifecycle()
 
             WorkerPhoneRoute(
                 authViewModel = authViewModel,
                 onNavigateToOtp = {
                     navController.navigate(
-                        WorkerRoute.Step0OtpVerification(phoneNumber = "9876543210")
+                        WorkerRoute.OtpVerification(phoneNumber = uiState.phoneNumber)
                     )
                 },
                 onNavigateToTerms = {
@@ -68,8 +71,7 @@ fun NavGraphBuilder.workerNavGraph(
         // -------------------------------------------------------------
         // STEP 0.2: OTP Verification
         // -------------------------------------------------------------
-        composable<WorkerRoute.Step0OtpVerification> { backStackEntry ->
-            val args: WorkerRoute.Step0OtpVerification = backStackEntry.toRoute()
+        composable<WorkerRoute.OtpVerification> { backStackEntry ->
 
             val parentEntry = remember(backStackEntry) {
                 navController.getBackStackEntry(WorkerRoute.OnboardingGraph)
@@ -77,10 +79,16 @@ fun NavGraphBuilder.workerNavGraph(
             val authViewModel: WorkerAuthViewModelStepZero = hiltViewModel(parentEntry)
 
             OtpRoute(
-                phoneNumber = args.phoneNumber,
                 viewModel = authViewModel,
-                onVerifySuccess = {
-                    navController.navigate(WorkerRoute.Step1PersonalDetails)
+                onNavigateToHome = {
+                    // Profile setup pehle se complete hai -> Direct Employer Home Screen
+                    // Onboarding poori ho chuki hai, main App screen par navigate karne ke liye callback trigger karein
+                    onOnboardingComplete()
+                },
+                onNavigateToProfileSetup = {
+                    navController.navigate(WorkerRoute.Step1PersonalDetails){
+                        popUpTo<WorkerRoute.PhoneNumber> {inclusive = true}
+                    }
                 }
             )
         }
