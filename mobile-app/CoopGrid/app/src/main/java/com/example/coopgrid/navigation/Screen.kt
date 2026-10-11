@@ -17,18 +17,9 @@ sealed class Screen(val route: String) {
 
     object RegisterWorker : Screen("register_worker_screen")
 
-    // Worker Multi-Step Registration Routes
-    object WorkerStep1 : Screen("worker_step1")
-    object WorkerStep2 : Screen("worker_step2")
     object WorkerStep3 : Screen("worker_step3")
 
     object WorkerHome : Screen("worker_home")
-
-    object WorkerProfile : Screen("worker_profile")
-
-    object JobDetails : Screen("job_details/{jobId}") {
-        fun createRoute(jobId: String) = "job_details/$jobId"
-    }
 
     // Employer 2-Step Registration
     object EmployerStep1 : Screen("employer_step1")
@@ -36,10 +27,5 @@ sealed class Screen(val route: String) {
 
     object EmployerHome : Screen("employer_home")
 
-    object CreateJob : Screen("create_job?category={category}") {
-        fun createRoute(category: String = "Electrician") = "create_job?category=$category"
-    }
-
-    object EmployerProfile : Screen("employer_profile")
 
 }

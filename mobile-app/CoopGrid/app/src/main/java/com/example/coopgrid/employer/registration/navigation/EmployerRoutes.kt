@@ -1,7 +1,7 @@
 package com.example.coopgrid.employer.registration.navigation
 
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.EmployerCategory
 
+import com.example.coopgrid.employer.registration.viewmodel.EmployerCategory
 import kotlinx.serialization.Serializable
 
 sealed interface EmployerRoute {
@@ -34,13 +34,9 @@ sealed interface EmployerRoute {
 
     // 6. Business Details Screen (Step 21 - Only for Company & Wholesaler)
     @Serializable
-    data class BusinessDetails(
-        val category: EmployerCategory
-    ) : EmployerRoute
+    data object BusinessDetails : EmployerRoute
 
     // 7. Address Details Screen (Step 3 - Household/Farmer direct aayenge, Company/Wholesaler Step 21 ke baad)
     @Serializable
-    data class Address(
-        val category: EmployerCategory
-    ) : EmployerRoute
+    data object Address : EmployerRoute
 }

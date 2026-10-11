@@ -1,6 +1,7 @@
 package com.example.coopgrid.employer.registration.presentation.steps.step0.screen
 
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -10,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -19,6 +21,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.coopgrid.common.language.LanguageViewModel
 import com.example.coopgrid.employer.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.employer.registration.presentation.components.AppTextField
+import com.example.coopgrid.employer.registration.presentation.steps.step0.EmpAuthNetworkState
 import com.example.coopgrid.employer.registration.presentation.steps.step0.EmpAuthViewModel
 import com.example.coopgrid.employer.registration.presentation.steps.step0.string.EmpPhoneNumStrings
 import com.example.coopgrid.ui.theme.GridGreenAccent
@@ -32,16 +35,35 @@ fun EmployerPhoneRoute(
     authViewModel: EmpAuthViewModel = hiltViewModel(),
     languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
-    val authState by authViewModel.uiState.collectAsStateWithLifecycle()
+    val formState by authViewModel.formState.collectAsStateWithLifecycle()
+    val networkState by authViewModel.networkState.collectAsStateWithLifecycle()
+
+    // --- ONE-TIME UI SIDE EFFECTS (TOAST & NAVIGATION) ---
+    LaunchedEffect(networkState) {
+        when (val state = networkState) {
+            is EmpAuthNetworkState.OtpSent -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+                authViewModel.resetNetworkState() // Event repeatation block karne ke liye reset
+                onNavigateToOtp() // Successfully OTP send hone par screen navigate hogi
+            }
+            is EmpAuthNetworkState.Error -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
+                authViewModel.resetNetworkState()
+            }
+            else -> Unit // Clean way to represent "Do Nothing"
+        }
+    }
 
     EmployerPhoneScreen(
         strings = appStrings.employerFlow.employerPhone,
-        phoneNumber = authState.phoneNumber,
-        isValid = authState.isPhoneValid,
-        isLoading = authState.isLoading,
+        phoneNumber = formState.phoneNumber,
+        isValid = formState.isPhoneValid,
+        // Sealed state se direct loading indicator map ho gaya
+        isLoading = networkState is EmpAuthNetworkState.Loading,
         onPhoneNumberChange = authViewModel::onPhoneNumberChange,
-        onSendOtp = { authViewModel.sendOtp(onNavigateToOtp) },
+        onSendOtp = { authViewModel.sendOtp() },
         onNavigateToTerms = onNavigateToTerms
     )
 }

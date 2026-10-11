@@ -1,5 +1,6 @@
 package com.example.coopgrid.employer.registration.presentation.steps.step0.screen
 
+import android.widget.Toast
 import com.example.coopgrid.ui.theme.AppLanguage
 import com.example.coopgrid.ui.theme.CoopGridTheme
 import androidx.compose.foundation.background
@@ -13,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -23,30 +25,62 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.coopgrid.common.language.LanguageViewModel
 import com.example.coopgrid.employer.registration.presentation.components.AppPrimaryButton
+import com.example.coopgrid.employer.registration.presentation.steps.step0.EmpAuthNetworkState
 import com.example.coopgrid.employer.registration.presentation.steps.step0.EmpAuthViewModel
 import com.example.coopgrid.employer.registration.presentation.steps.step0.string.EmpOtpStrings
 
 // 1. Route Container (Handles Hilt ViewModels & Navigation state)
 @Composable
 fun EmployerOtpRoute(
-    onVerifyClick: () -> Unit,
+    onNavigateToHome: () -> Unit,
+    onNavigateToProfileSetup: () -> Unit,
     authViewModel: EmpAuthViewModel = hiltViewModel(),
     languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
-    val authState by authViewModel.uiState.collectAsStateWithLifecycle()
+    val formState by authViewModel.formState.collectAsStateWithLifecycle()
+    val networkState by authViewModel.networkState.collectAsStateWithLifecycle()
+
+    // --- LAUNCHED EFFECT FOR ONE-TIME SIDE EFFECTS (TOAST & NAVIGATION) ---
+    LaunchedEffect(networkState) {
+        when (val state = networkState) {
+            is EmpAuthNetworkState.Error -> {
+                // Network ya OTP verification error ka toast show karein
+                Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+                // Event trigger hone ke baad state reset karein taaki Toast repeat na ho
+                authViewModel.resetNetworkState()
+            }
+            is EmpAuthNetworkState.OtpSent -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+                authViewModel.resetNetworkState()
+            }
+            is EmpAuthNetworkState.Success -> {
+                // Conditional Navigation
+                if (state.isProfileComplete) {
+                    onNavigateToHome()
+                } else {
+                    onNavigateToProfileSetup()
+                }
+            }
+            EmpAuthNetworkState.Idle, EmpAuthNetworkState.Loading -> {
+                // Do nothing
+            }
+        }
+    }
 
     EmployerOtpScreen(
         strings = appStrings.employerFlow.employerOtp,
-        phoneNumber = authState.phoneNumber,
-        otpCode = authState.otpCode,
-        canResendOtp = authState.canResendOtp,
-        resendTimerSeconds = authState.resendTimerSeconds,
-        isValid = authState.isOtpValid,
-        isLoading = authState.isLoading,
+        phoneNumber = formState.phoneNumber,
+        otpCode = formState.otpCode,
+        canResendOtp = formState.canResendOtp,
+        resendTimerSeconds = formState.resendTimerSeconds,
+        isValid = formState.isOtpValid,
+        // isLoading ko seedhe Sealed Network State se check kar rahe hain
+        isLoading = networkState is EmpAuthNetworkState.Loading,
         onOtpCodeChange = authViewModel::onOtpCodeChange,
-        onVerifyClick = { authViewModel.verifyOtp(onVerifyClick) },
-        onResendClick = authViewModel::resendOtp
+        onVerifyClick = { authViewModel.verifyOtp() },
+        onResendClick = { authViewModel.sendOtp() }
     )
 }
 

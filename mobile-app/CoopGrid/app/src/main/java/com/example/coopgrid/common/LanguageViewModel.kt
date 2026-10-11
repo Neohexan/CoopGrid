@@ -15,9 +15,6 @@ class LanguageViewModel @Inject constructor(
     private val prefManager: UserPreferences
 ) : ViewModel() {
 
-    // Available Languages ki Master List
-    val availableLanguages: List<AppLanguage> = AppLanguage.entries
-
     private val _currentLanguage = MutableStateFlow(AppLanguage.ENGLISH)
     val currentLanguage: StateFlow<AppLanguage> = _currentLanguage.asStateFlow()
 
@@ -29,10 +26,5 @@ class LanguageViewModel @Inject constructor(
 
         }
     }
-    fun selectLanguage(newLanguage: AppLanguage) {
-        viewModelScope.launch {
-            _currentLanguage.value = newLanguage
-//            prefManager.saveLanguage(newLanguage)
-        }
-    }
+
 }

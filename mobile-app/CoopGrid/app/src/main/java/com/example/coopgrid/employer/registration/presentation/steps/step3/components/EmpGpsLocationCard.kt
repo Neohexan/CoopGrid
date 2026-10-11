@@ -1,5 +1,6 @@
 package com.example.coopgrid.employer.registration.presentation.steps.step3.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -89,16 +90,21 @@ fun EmpGpsLocationCard(
             } else {
                 OutlinedButton(
                     onClick = {
-                        isLoading = true
-                        // Simulation: After GPS hardware trigger, setting mock location
-                        onDetectLocation(25.3176, 82.9739) // Varanasi Mock Coordinates
+                        Log.d("EmpGpsLocationCard", "Detect Location button clicked")
+                        // ✅ Iski jagah direct callback call karein, Parent Screen isko handle karegi
+                        onDetectLocation(0.0, 0.0)
                         isLoading = false
                     },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isLoading
                 ) {
                     if (isLoading) {
-                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = "Detecting location...")
                     } else {
                         Text(text = strings.gpsButtonText)
                     }

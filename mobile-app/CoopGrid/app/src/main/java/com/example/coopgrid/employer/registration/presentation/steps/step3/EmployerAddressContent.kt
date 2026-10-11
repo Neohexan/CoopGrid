@@ -1,5 +1,10 @@
 package com.example.coopgrid.employer.registration.presentation.steps.step3
 
+import android.Manifest
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -10,9 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.example.coopgrid.employer.registration.presentation.components.AppDropdown
 import com.example.coopgrid.employer.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.employer.registration.presentation.components.AppTextField
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.EmployerCategory
 import com.example.coopgrid.employer.registration.presentation.steps.step3.components.EmpGpsLocationCard
-import com.example.coopgrid.employer.registration.presentation.steps.step3.models.AddressFormState
 import com.example.coopgrid.employer.registration.presentation.steps.step3.models.BlockLocationData
 import com.example.coopgrid.employer.registration.presentation.steps.step3.models.EmpDistrictLocationData
 import com.example.coopgrid.employer.registration.presentation.steps.step3.models.StateOption
@@ -37,22 +40,28 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.coopgrid.employer.data.utils.LocationViewModel
 import com.example.coopgrid.employer.registration.presentation.steps.step3.strings.AddressCategoryStrings
 import com.example.coopgrid.employer.registration.presentation.steps.step3.strings.EmpAddress
+import com.example.coopgrid.employer.registration.viewmodel.EmployerFormState
 
 @Composable
 fun EmployerAddressContent(
     allLocation: List<EmpDistrictLocationData>,
     stateOption: List<StateOption>,
     strings: EmpAddress,
+    isSubmitEnabled: Boolean = true,
     categoryStrings: AddressCategoryStrings,
-    onSubmitAddress: (AddressFormState) -> Unit,
+    onSubmitAddress: (EmployerFormState) -> Unit,
+    locationViewModel: LocationViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val fontScale = configuration.fontScale
 
-    var formState by remember { mutableStateOf(AddressFormState()) }
+    var formState by remember { mutableStateOf(EmployerFormState()) }
     var validationError by remember { mutableStateOf<String?>(null) }
 
     val availableDistricts = remember(formState.selectedStateCode, allLocation) {
@@ -65,6 +74,33 @@ fun EmployerAddressContent(
         matchedDistrict?.blockList ?: emptyList()
     }
 
+    // 1. Permission Launcher
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val isGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+
+        Log.d("EmployerAddressScreen", "Location permission granted: $isGranted")
+
+        if (isGranted) {
+            locationViewModel.getUserLocation { lat, lng ->
+                Log.d("EmployerAddressScreen", "Location received -> Lat: $lat, Lng: $lng")
+                if (lat != 0.0 && lng != 0.0) {
+                    formState = formState.copy(
+                        latitude = lat,
+                        longitude = lng,
+                        isGpsCaptured = true
+                    )
+                } else {
+                    Log.e("EmployerAddressScreen", "Received location is null or 0.0")
+                    Toast.makeText(context, "Unable to get current location. Make sure GPS is enabled.", Toast.LENGTH_LONG).show()
+                }
+            }
+        } else {
+            Toast.makeText(context, "Location permission is required", Toast.LENGTH_SHORT).show()
+        }
+    }
     // Main Outer Screen Layout
     Column(
         modifier = modifier
@@ -299,8 +335,14 @@ fun EmployerAddressContent(
                 latitude = formState.latitude,
                 longitude = formState.longitude,
                 strings = strings,
-                onDetectLocation = { lat, lng ->
-                    formState = formState.copy(latitude = lat, longitude = lng, isGpsCaptured = true)
+                onDetectLocation = { _, _ ->
+                    // Button click par permission check trigger karo
+                    locationPermissionLauncher.launch(
+                        arrayOf(
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        )
+                    )
                 }
             )
 
@@ -321,24 +363,10 @@ fun EmployerAddressContent(
 
         AppPrimaryButton(
             text = strings.continueButton,
+            enabled = isSubmitEnabled,
             onClick = {
-                val isStateValid = formState.selectedStateName.isNotEmpty()
-                val isDistrictValid = formState.selectedDistrictName.isNotEmpty()
-                val isBlockValid = formState.selectedBlockName.isNotEmpty()
-                val isPincodeValid = formState.pincode.length == 6
-                val isAreaValid = formState.areaOrVillageName.trim().isNotEmpty()
-
-                if (isStateValid && isDistrictValid && isBlockValid && isPincodeValid && isAreaValid) {
-                    onSubmitAddress(formState)
-                } else {
-                    formState = formState.copy(
-                        stateError = if (!isStateValid) strings.fieldRequiredError else null,
-                        districtError = if (!isDistrictValid) strings.fieldRequiredError else null,
-                        blockError = if (!isBlockValid) strings.fieldRequiredError else null,
-                        pincodeError = if (!isPincodeValid) strings.pincodeErrorText else null,
-                        areaError = if (!isAreaValid) strings.fieldRequiredError else null
-                    )
-                }
+                // Direct event pass karein, validation ViewModel handle karega
+                onSubmitAddress(formState)
             },
             modifier = Modifier.fillMaxWidth()
         )

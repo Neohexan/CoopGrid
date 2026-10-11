@@ -26,38 +26,46 @@ import androidx.compose.ui.unit.dp
 import com.example.coopgrid.employer.registration.presentation.components.AppDropdown
 import com.example.coopgrid.employer.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.employer.registration.presentation.components.AppTextField
-import com.example.coopgrid.employer.registration.presentation.steps.step2.model.EmployerCategory
 import com.example.coopgrid.employer.registration.presentation.steps.step21.components.SelectedCategoryCard
-import com.example.coopgrid.employer.registration.presentation.steps.step21.model.BusinessCategoryItem
-import com.example.coopgrid.employer.registration.presentation.steps.step21.model.BusinessSubCategoryItem
 import com.example.coopgrid.employer.data.utils.BusinessDataLoader
 import androidx.compose.runtime.Composable
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.coopgrid.common.language.LanguageViewModel
 import com.example.coopgrid.data.lanlocal.model.AppLanguage
-import com.example.coopgrid.employer.registration.presentation.steps.step21.model.EmployerBusinessFormState
+import com.example.coopgrid.employer.registration.presentation.steps.step21.model.BusinessCategory
+import com.example.coopgrid.employer.registration.presentation.steps.step21.model.CategoryResponse
+import com.example.coopgrid.employer.registration.presentation.steps.step21.model.EmployerCategoryItem
+import com.example.coopgrid.employer.registration.presentation.steps.step21.model.SubCategory
 import com.example.coopgrid.employer.registration.presentation.steps.step21.strings.BusinessDetails
+import com.example.coopgrid.employer.registration.viewmodel.EmployerCategory
+import com.example.coopgrid.employer.registration.viewmodel.EmployerFormState
+import com.example.coopgrid.employer.registration.viewmodel.RegistrationEvent
+import com.example.coopgrid.employer.registration.viewmodel.RegistrationViewModel
 
 @Composable
 fun EmployerBusinessDetailsRoute(
-    category: EmployerCategory,
-    onSubmitBusinessDetails: (EmployerBusinessFormState) -> Unit,
+    onNextClick: () -> Unit,
     onChangeCategoryClick: (() -> Unit)? = null,
-    viewModel: BusinessDetailsViewModel = hiltViewModel(),
-    languageViewModel: LanguageViewModel = hiltViewModel()
+    viewModel: RegistrationViewModel = hiltViewModel() , // Shared Graph-scoped ViewModel
+    languageViewModel: LanguageViewModel = hiltViewModel(),
+    businessViewModel : BusinessDetailsViewModel = hiltViewModel()
 ) {
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
-    val selectedLanguage by languageViewModel.currentLanguage.collectAsStateWithLifecycle()
+
+    // Form state single source of truth se aayega
     val formState by viewModel.formState.collectAsStateWithLifecycle()
 
+    // ViewModel se categories collect kar rahe hain
+    val allCategoryGroups by businessViewModel.categories.collectAsStateWithLifecycle()
+
     EmployerBusinessDetailsScreen(
-        selectedLanguage = selectedLanguage,
         strings = appStrings.employerFlow.businessDetails,
-        category = category,
+        category = formState.selectedCategory ?: EmployerCategory.COMPANY,
+        onEvent = viewModel::onEvent, // Direct ViewModel function pass ho jayega
+        allCategoryGroups = allCategoryGroups,
         formState = formState,
-        onFormStateChange = viewModel::updateFormState,
-        onSubmitBusinessDetails = onSubmitBusinessDetails,
+        onSubmitBusinessDetails = { onNextClick() },
         onChangeCategoryClick = onChangeCategoryClick
     )
 }
@@ -65,21 +73,15 @@ fun EmployerBusinessDetailsRoute(
 // 2. Pure Stateless Screen Component
 @Composable
 fun EmployerBusinessDetailsScreen(
-    selectedLanguage: AppLanguage,
     strings: BusinessDetails,
     category: EmployerCategory,
-    formState: EmployerBusinessFormState,
-    onFormStateChange: (EmployerBusinessFormState) -> Unit,
-    onSubmitBusinessDetails: (EmployerBusinessFormState) -> Unit,
+    formState: EmployerFormState,
+    onEvent: (RegistrationEvent) -> Unit,
+    allCategoryGroups: List<EmployerCategoryItem>,
+    onSubmitBusinessDetails: () -> Unit,
     onChangeCategoryClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-
-    // JSON Category Loading logic
-    val allCategoryGroups = remember(context) {
-        BusinessDataLoader.loadBusinessData(context)
-    }
 
     val targetEcc = if (category == EmployerCategory.COMPANY) 3 else 4
     val currentCategoryGroup = remember(allCategoryGroups, targetEcc) {
@@ -104,6 +106,7 @@ fun EmployerBusinessDetailsScreen(
     fun BusinessDetails.getOfficialNamePlaceholder(category: EmployerCategory): String {
         return if (category == EmployerCategory.COMPANY) officialNamePlaceholderCompany else officialNamePlaceholderBusiness
     }
+
 
     Column(
         modifier = modifier
@@ -152,7 +155,16 @@ fun EmployerBusinessDetailsScreen(
             AppTextField(
                 value = formState.officialName,
                 onValueChange = { input ->
-                    onFormStateChange(formState.copy(officialName = input, officialNameError = null))
+                    onEvent(
+                        RegistrationEvent.UpdateBusinessInfo(
+                            officialName = input,
+                            bccId = formState.selectedBcc,
+                            categoryName = formState.selectedCategoryName,
+                            sccId = formState.selectedScc,
+                            subCategoryName = formState.selectedSubCategoryName,
+                            gst = formState.gstNumber
+                        )
+                    )
                 },
                 placeholderText = strings.getOfficialNamePlaceholder(category),
                 errorMessage = formState.officialNameError
@@ -167,19 +179,20 @@ fun EmployerBusinessDetailsScreen(
                 color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(6.dp))
-            AppDropdown<BusinessCategoryItem>(
+            AppDropdown<BusinessCategory>(
                 items = availableCategories,
                 placeholder = strings.categoryPlaceholder,
-                itemLabel = { if (selectedLanguage == AppLanguage.HINGLISH) it.nameHi else it.nameEn },
+                itemLabel = {it.nameEn},
                 selectedItem = availableCategories.find { it.bcc == formState.selectedBcc },
                 onItemSelected = { selected ->
-                    onFormStateChange(
-                        formState.copy(
-                            selectedBcc = selected.bcc,
-                            selectedCategoryName = selected.nameEn,
-                            selectedScc = null,
-                            selectedSubCategoryName = "",
-                            categoryError = null
+                    onEvent(
+                        RegistrationEvent.UpdateBusinessInfo(
+                            officialName = formState.officialName,
+                            bccId = selected.bcc,
+                            categoryName = selected.nameEn,
+                            sccId = null, // Reset SCC when BCC changes
+                            subCategoryName = selected.nameEn,
+                            gst = formState.gstNumber
                         )
                     )
                 },
@@ -195,18 +208,21 @@ fun EmployerBusinessDetailsScreen(
                 color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(6.dp))
-            AppDropdown<BusinessSubCategoryItem>(
+            AppDropdown<SubCategory>(
                 items = availableSubCategories,
                 placeholder = strings.subCategoryPlaceholder,
-                itemLabel = { if (selectedLanguage == AppLanguage.HINGLISH) it.nameHi else it.nameEn },
+                itemLabel ={it.nameEn},
                 selectedItem = availableSubCategories.find { it.scc == formState.selectedScc },
                 enabled = formState.selectedBcc != null,
                 onItemSelected = { selected ->
-                    onFormStateChange(
-                        formState.copy(
-                            selectedScc = selected.scc,
-                            selectedSubCategoryName = selected.nameEn,
-                            subCategoryError = null
+                    onEvent(
+                        RegistrationEvent.UpdateBusinessInfo(
+                            officialName = formState.officialName,
+                            bccId = formState.selectedBcc,
+                            categoryName = formState.selectedCategoryName,
+                            sccId = selected.scc,
+                            subCategoryName = selected.nameEn,
+                            gst = formState.gstNumber
                         )
                     )
                 },
@@ -226,7 +242,16 @@ fun EmployerBusinessDetailsScreen(
                 value = formState.gstNumber,
                 onValueChange = { input ->
                     if (input.length <= 15) {
-                        onFormStateChange(formState.copy(gstNumber = input.uppercase()))
+                        onEvent(
+                            RegistrationEvent.UpdateBusinessInfo(
+                                officialName = formState.officialName,
+                                bccId = formState.selectedBcc,
+                                categoryName = formState.selectedCategoryName,
+                                sccId = formState.selectedScc,
+                                subCategoryName = formState.selectedSubCategoryName,
+                                gst = input.uppercase()
+                            )
+                        )
                     }
                 },
                 placeholderText = strings.gstPlaceholder
@@ -240,22 +265,12 @@ fun EmployerBusinessDetailsScreen(
         AppPrimaryButton(
             text = strings.continueButton,
             onClick = {
-                val isNameValid = formState.officialName.trim().isNotEmpty()
-                val isCategoryValid = formState.selectedBcc != null
-                val isSubCategoryValid = formState.selectedScc != null
-
-                if (isNameValid && isCategoryValid && isSubCategoryValid) {
-                    onSubmitBusinessDetails(formState)
-                } else {
-                    onFormStateChange(
-                        formState.copy(
-                            officialNameError = if (!isNameValid) strings.fieldRequiredError else null,
-                            categoryError = if (!isCategoryValid) strings.fieldRequiredError else null,
-                            subCategoryError = if (!isSubCategoryValid) strings.fieldRequiredError else null
-                        )
-                    )
-                }
+                onSubmitBusinessDetails()
             },
+            enabled = formState.selectedSubCategoryName.isNotBlank()
+                    && formState.selectedSubCategoryName.isNotBlank()
+                    && formState.officialName.isNotBlank()
+            ,
             modifier = Modifier.fillMaxWidth()
         )
     }

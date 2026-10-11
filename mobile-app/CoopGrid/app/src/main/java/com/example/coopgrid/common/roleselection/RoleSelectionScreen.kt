@@ -113,14 +113,13 @@ fun AuthSelectionScreen(
                     end = 24.dp
                 ),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.Top // 👈 SpaceBetween ko Top kar do
         ) {
             // ================= TOP SECTION =================
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Language Switcher Button (Top Right)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
@@ -134,7 +133,6 @@ fun AuthSelectionScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Styled App Name ("CoopGrid")
                 Text(
                     text = styledAppName,
                     style = MaterialTheme.typography.displayLarge,
@@ -156,6 +154,8 @@ fun AuthSelectionScreen(
                     textAlign = TextAlign.Center
                 )
             }
+
+            Spacer(modifier = Modifier.weight(1f))
 
             // ================= MIDDLE SECTION =================
             Column(
@@ -187,49 +187,11 @@ fun AuthSelectionScreen(
                     onClick = onRegisterEmployerClick
                 )
             }
-
-            // ================= BOTTOM SECTION =================
-            LoginButton(
-                text = strings.alreadyAccount,
-                onClick = onLoginClick
-            )
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }
 
-/**
- * Custom Dedicated Login Button for AuthSelectionScreen
- * Theme-aware (Light/Dark mode sync)
- */
-@Composable
-private fun LoginButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(52.dp),
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surface, // Light: OffWhite | Dark: DarkGrey
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelLarge,
-                fontSize = 15.nonScaleSp(),
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
-}
 
 @Composable
 fun RoleSelectionCard(
