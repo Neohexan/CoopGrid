@@ -1,6 +1,5 @@
 package com.example.coopgrid.worker.registration.presentation.steps.step21.model
 
-import com.example.coopgrid.worker.registration.viewmodel.AvailabilityType
 import com.example.coopgrid.worker.registration.viewmodel.WageType
 import java.util.UUID
 

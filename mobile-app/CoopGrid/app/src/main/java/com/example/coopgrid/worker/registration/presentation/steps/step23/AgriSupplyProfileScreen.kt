@@ -21,29 +21,45 @@ import com.example.coopgrid.worker.registration.presentation.components.AppTextF
 import com.example.coopgrid.worker.registration.presentation.steps.step23.model.AgriBusinessCategory
 import com.example.coopgrid.worker.registration.presentation.steps.step23.model.AgriSupplyProfile
 import com.example.coopgrid.worker.registration.presentation.steps.step23.strings.AgriSupplyProfileStrings
+import com.example.coopgrid.worker.registration.viewmodel.WorkerFormViewModel
+import com.example.coopgrid.worker.registration.viewmodel.WorkerRegistrationEvent
 import kotlin.math.roundToInt
 
 // =================================================================
-// 1. STATEFUL ROUTE
+// 1. STATEFUL ROUTE (ViewModel & App Navigation Binding)
 // =================================================================
 @Composable
 fun AgriSupplyProfileRoute(
-    agriSupplyProfile: AgriSupplyProfile = AgriSupplyProfile(),
-    onSaveAndContinue: (AgriSupplyProfile) -> Unit,
+    onSaveAndContinue: () -> Unit,
+    viewModel: WorkerFormViewModel = hiltViewModel(),
     agriViewModel: AgriSupplyViewModel = hiltViewModel(),
     languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
-    // ViewModel se JSON Loaded Categories collect karna
     val categories by agriViewModel.categories.collectAsStateWithLifecycle()
+    val formState by viewModel.formState.collectAsStateWithLifecycle()
     val selectedLanguage by languageViewModel.currentLanguage.collectAsStateWithLifecycle()
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
+
+    var validationError by remember { mutableStateOf<String?>(null) }
 
     AgriSupplyProfileScreen(
         categories = categories,
         selectedLanguage = selectedLanguage,
         strings = appStrings.workerFlow.agriSupplyProfile,
-        initialProfile = agriSupplyProfile,
-        onSaveAndContinue = onSaveAndContinue
+        profile = formState.agriSupplyProfile,
+        validationError = validationError,
+        onProfileChange = { updatedProfile ->
+            validationError = null
+            viewModel.onEvent(WorkerRegistrationEvent.UpdateAgriSupplyProfile(updatedProfile))
+        },
+        onSaveAndContinue = {
+            if (formState.agriSupplyProfile.selectedCategoryIds.isEmpty()) {
+                validationError = appStrings.workerFlow.agriSupplyProfile.categoryRequiredError
+            } else {
+                validationError = null
+                onSaveAndContinue()
+            }
+        }
     )
 }
 
@@ -55,13 +71,12 @@ fun AgriSupplyProfileScreen(
     categories: List<AgriBusinessCategory>,
     selectedLanguage: AppLanguage,
     strings: AgriSupplyProfileStrings,
-    initialProfile: AgriSupplyProfile = AgriSupplyProfile(),
-    onSaveAndContinue: (AgriSupplyProfile) -> Unit,
+    profile: AgriSupplyProfile,
+    validationError: String?,
+    onProfileChange: (AgriSupplyProfile) -> Unit,
+    onSaveAndContinue: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var profile by remember(initialProfile) { mutableStateOf(initialProfile) }
-    var validationError by remember { mutableStateOf<String?>(null) }
-
     val isHinglish = selectedLanguage == AppLanguage.HINGLISH
 
     // Selected Category find from ViewModel JSON List
@@ -103,7 +118,7 @@ fun AgriSupplyProfileScreen(
             Text(text = strings.businessNameLabel, style = MaterialTheme.typography.labelMedium)
             AppTextField(
                 value = profile.businessName,
-                onValueChange = { profile = profile.copy(businessName = it) },
+                onValueChange = { onProfileChange(profile.copy(businessName = it)) },
                 placeholderText = strings.businessNameHint
             )
 
@@ -115,10 +130,11 @@ fun AgriSupplyProfileScreen(
                 itemLabel = { it.getDisplayName(isHinglish) },
                 placeholder = strings.selectCategoriesLabel,
                 onItemSelected = { cat ->
-                    validationError = null
-                    profile = profile.copy(
-                        selectedCategoryIds = listOf(cat.id),
-                        selectedSubCategoryIds = emptyList() // Reset subcategory on category change
+                    onProfileChange(
+                        profile.copy(
+                            selectedCategoryIds = listOf(cat.id),
+                            selectedSubCategoryIds = emptyList() // Reset subcategory on category change
+                        )
                     )
                 }
             )
@@ -132,7 +148,7 @@ fun AgriSupplyProfileScreen(
                     itemLabel = { it.getDisplayName(isHinglish) },
                     placeholder = strings.selectSubCategoriesLabel,
                     onItemSelected = { subCat ->
-                        profile = profile.copy(selectedSubCategoryIds = listOf(subCat.id))
+                        onProfileChange(profile.copy(selectedSubCategoryIds = listOf(subCat.id)))
                     }
                 )
             }
@@ -158,7 +174,7 @@ fun AgriSupplyProfileScreen(
             Slider(
                 value = profile.serviceRadiusKm,
                 onValueChange = { newRadius ->
-                    profile = profile.copy(serviceRadiusKm = newRadius)
+                    onProfileChange(profile.copy(serviceRadiusKm = newRadius))
                 },
                 valueRange = 2f..50f,
                 steps = 23
@@ -181,7 +197,7 @@ fun AgriSupplyProfileScreen(
                 Text(text = strings.deliveryLabel, style = MaterialTheme.typography.bodyMedium)
                 Switch(
                     checked = profile.offersDelivery,
-                    onCheckedChange = { profile = profile.copy(offersDelivery = it) }
+                    onCheckedChange = { onProfileChange(profile.copy(offersDelivery = it)) }
                 )
             }
 
@@ -194,7 +210,7 @@ fun AgriSupplyProfileScreen(
                 Text(text = strings.pickupLabel, style = MaterialTheme.typography.bodyMedium)
                 Switch(
                     checked = profile.offersStorePickup,
-                    onCheckedChange = { profile = profile.copy(offersStorePickup = it) }
+                    onCheckedChange = { onProfileChange(profile.copy(offersStorePickup = it)) }
                 )
             }
 
@@ -207,13 +223,13 @@ fun AgriSupplyProfileScreen(
                 Text(text = strings.wholesaleLabel, style = MaterialTheme.typography.bodyMedium)
                 Switch(
                     checked = profile.offersWholesale,
-                    onCheckedChange = { profile = profile.copy(offersWholesale = it) }
+                    onCheckedChange = { onProfileChange(profile.copy(offersWholesale = it)) }
                 )
             }
 
             if (validationError != null) {
                 Text(
-                    text = validationError!!,
+                    text = validationError,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )
@@ -225,13 +241,7 @@ fun AgriSupplyProfileScreen(
         // Save & Continue Button
         AppPrimaryButton(
             text = strings.saveAndContinue,
-            onClick = {
-                if (profile.selectedCategoryIds.isEmpty()) {
-                    validationError = strings.categoryRequiredError
-                } else {
-                    onSaveAndContinue(profile)
-                }
-            },
+            onClick = onSaveAndContinue,
             modifier = Modifier.fillMaxWidth()
         )
     }

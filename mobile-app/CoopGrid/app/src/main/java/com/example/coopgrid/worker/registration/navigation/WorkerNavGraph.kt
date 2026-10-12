@@ -14,6 +14,7 @@ import com.example.coopgrid.worker.registration.presentation.steps.step2.model.S
 import com.example.coopgrid.worker.registration.presentation.steps.step3.WorkerAddressScreen
 import com.example.coopgrid.worker.registration.presentation.steps.step4.WorkerKycScreen
 import androidx.navigation.toRoute
+import com.example.coopgrid.employer.registration.navigation.EmployerRoute
 import com.example.coopgrid.worker.registration.presentation.steps.step0.WorkerAuthViewModelStepZero
 import com.example.coopgrid.worker.registration.presentation.steps.step0.screen.OtpRoute
 import com.example.coopgrid.worker.registration.presentation.steps.step0.screen.TermsAndConditionsRoute
@@ -136,9 +137,12 @@ fun NavGraphBuilder.workerNavGraph(
         // -------------------------------------------------------------
         // STEP 2.1: Personal Skills Form
         // -------------------------------------------------------------
-        composable<WorkerRoute.Step2PersonalSkills> {
+        composable<WorkerRoute.Step2PersonalSkills> {backStackEntry ->
 
-            val workerFormViewModel: WorkerFormViewModel = hiltViewModel()
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry<WorkerRoute.OnboardingGraph>()
+            }
+            val workerFormViewModel: WorkerFormViewModel = hiltViewModel(viewModelStoreOwner = parentEntry)
             WorkerSkillScreen(
                 onNextClick = {
                     navController.navigate(WorkerRoute.Step3Address)
@@ -150,41 +154,57 @@ fun NavGraphBuilder.workerNavGraph(
         // -------------------------------------------------------------
         // STEP 2.2: Machinery Rental Form
         // -------------------------------------------------------------
-        composable<WorkerRoute.Step2MachineryRental> {
+        composable<WorkerRoute.Step2MachineryRental> {backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry<WorkerRoute.OnboardingGraph>()
+            }
+            val workerFormViewModel: WorkerFormViewModel = hiltViewModel(viewModelStoreOwner = parentEntry)
             MachineryRentalRoute(
-                onSaveAndContinue = { machineryList ->
+                onSaveAndContinue = {
                     // (Optional) Backstack entry ya ViewModel me list save kar sakte hain
                     navController.navigate(WorkerRoute.Step3Address)
-                }
+                },viewModel = workerFormViewModel
             )
         }
 
         // -------------------------------------------------------------
         // STEP 2.3: Agri Supply Form
         // -------------------------------------------------------------
-        composable<WorkerRoute.Step2AgriSupply> {
+        composable<WorkerRoute.Step2AgriSupply> {backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry<WorkerRoute.OnboardingGraph>()
+            }
+            val workerFormViewModel: WorkerFormViewModel = hiltViewModel(viewModelStoreOwner = parentEntry)
             AgriSupplyProfileRoute(
-                onSaveAndContinue = { savedProfile ->
+                onSaveAndContinue = {
                     navController.navigate(WorkerRoute.Step3Address)
-                }
+                },viewModel = workerFormViewModel
+
             )
         }
 
         // -------------------------------------------------------------
         // STEP 3: Worker Address & Location
         // -------------------------------------------------------------
-        composable<WorkerRoute.Step3Address> {
+        composable<WorkerRoute.Step3Address> {backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry<WorkerRoute.OnboardingGraph>()
+            }
+
+            val workerFormViewModel: WorkerFormViewModel = hiltViewModel(viewModelStoreOwner = parentEntry)
             // Step 2 se selected services fetch karein
             val previousEntry = navController.getBackStackEntry<WorkerRoute.Step2ServiceSelection>()
             val selectedServices = previousEntry.savedStateHandle.get<List<ServiceOfferingType>>("selected_services") ?: emptyList()
 
             WorkerAddressRoute(
-                onSaveAndContinue = { savedAddress ->
+                onSaveAndContinue = {
                     // Selected services ko Step 4 KYC me pass karein
                     navController.navigate(
                         WorkerRoute.Step4Kyc(selectedServices = selectedServices)
                     )
-                }
+                },
+                viewModel = workerFormViewModel
+
             )
         }
 

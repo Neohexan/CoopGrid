@@ -22,6 +22,7 @@ import com.example.coopgrid.worker.registration.presentation.steps.step21.model.
 import com.example.coopgrid.worker.registration.viewmodel.WorkerFormState
 import com.example.coopgrid.worker.registration.viewmodel.WorkerFormViewModel
 import com.example.coopgrid.worker.registration.presentation.steps.step21.model.WorkerSkillItem
+import com.example.coopgrid.worker.registration.viewmodel.WorkerRegistrationEvent
 
 @Composable
 fun WorkerSkillScreen(
@@ -32,15 +33,21 @@ fun WorkerSkillScreen(
 ) {
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
     val skillsCategories by skillViewModel.categories.collectAsStateWithLifecycle()
-    val state by viewModel.uiState.collectAsState()
+    val formState by viewModel.formState.collectAsStateWithLifecycle()
 
     WorkerSkillContent(
-        state = state,
+        state = formState,
         strings = appStrings.workerFlow.workerSkill,
         skillsCategories = skillsCategories,
-        onAddSkill = viewModel::addSkill,
-        onRemoveSkill = viewModel::removeSkill,
-        onUpdateSkill = viewModel::updateSkillItem,
+        onAddSkill = {
+            viewModel.onEvent(WorkerRegistrationEvent.AddSkill)
+        },
+        onRemoveSkill = {skillId ->
+            viewModel.onEvent(WorkerRegistrationEvent.RemoveSkill(skillId))
+        },
+        onUpdateSkill = {updatedItem ->
+            viewModel.onEvent(WorkerRegistrationEvent.UpdateSkillItem(updatedItem))
+        },
         onNextClick = onNextClick
     )
 }

@@ -41,7 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.coopgrid.employer.data.utils.LocationViewModel
+import com.example.coopgrid.data.utils.LocationViewModel
 import com.example.coopgrid.employer.registration.presentation.steps.step3.strings.AddressCategoryStrings
 import com.example.coopgrid.employer.registration.presentation.steps.step3.strings.EmpAddress
 import com.example.coopgrid.employer.registration.viewmodel.EmployerFormState

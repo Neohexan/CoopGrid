@@ -1,6 +1,9 @@
 package com.example.coopgrid.worker.registration.presentation.steps.step3
 
-
+import android.Manifest
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -12,11 +15,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import android.location.LocationManager
+import androidx.core.content.getSystemService
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.coopgrid.common.language.LanguageViewModel
+import com.example.coopgrid.data.utils.LocationViewModel
 import com.example.coopgrid.ui.theme.CoopGridTheme
 import com.example.coopgrid.worker.registration.presentation.components.AppDropdown
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
@@ -29,23 +35,68 @@ import com.example.coopgrid.worker.registration.presentation.steps.step3.model.S
 import com.example.coopgrid.worker.registration.presentation.steps.step3.model.WorkerAddress
 import com.example.coopgrid.worker.data.util.LocationDataLoader
 import com.example.coopgrid.worker.registration.presentation.steps.step3.strings.WorkerAddressStrings
+import com.example.coopgrid.worker.registration.viewmodel.WorkerFormViewModel
+import com.example.coopgrid.worker.registration.viewmodel.WorkerRegistrationEvent
 import kotlin.collections.distinctBy
 import kotlin.collections.map
 
+// =================================================================
+// 1. STATEFUL ROUTE (ViewModel & App Navigation Binding)
+// =================================================================
 @Composable
 fun WorkerAddressRoute(
-    initialAddress: WorkerAddress = WorkerAddress(),
-    onSaveAndContinue: (WorkerAddress) -> Unit,
+    onSaveAndContinue: () -> Unit,
+    viewModel: WorkerFormViewModel = hiltViewModel(),
     addressViewModel: WorkerAddressViewModel = hiltViewModel(),
+    locationViewModel: LocationViewModel = hiltViewModel(),
     languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
     val allLocations by addressViewModel.locations.collectAsStateWithLifecycle()
     val stateOptions by addressViewModel.stateOptions.collectAsStateWithLifecycle()
     val isLoading by addressViewModel.isLoading.collectAsStateWithLifecycle()
+    val formState by viewModel.formState.collectAsStateWithLifecycle()
+
+    var validationError by remember { mutableStateOf<String?>(null) }
+
+    // --- Location Permission Launcher ---
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val isGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+
+        if (isGranted) {
+            // 1. Pehle permission mil gayi, ab check karo ki GPS on hai ya nahi
+            val locationManager = context.getSystemService<LocationManager>()
+            val isGpsEnabled = locationManager?.isProviderEnabled(LocationManager.GPS_PROVIDER) == true ||
+                    locationManager?.isProviderEnabled(LocationManager.NETWORK_PROVIDER) == true
+
+            if (isGpsEnabled) {
+                // 2. GPS on hai, tab coordinates fetch karo
+                locationViewModel.getUserLocation { lat, lng ->
+                    if (lat != 0.0 && lng != 0.0) {
+                        val updatedAddress = formState.address.copy(
+                            latitude = lat,
+                            longitude = lng,
+                            isGpsCaptured = true
+                        )
+                        viewModel.onEvent(WorkerRegistrationEvent.UpdateAddress(updatedAddress))
+                    } else {
+                        Toast.makeText(context, "Unable to get current location. Try again.", Toast.LENGTH_LONG).show()
+                    }
+                }
+            } else {
+                // 3. GPS off hai, toh user ko toast dikhao
+                Toast.makeText(context, "Location is turned off. Please enable GPS to proceed.", Toast.LENGTH_LONG).show()
+            }
+        } else {
+            Toast.makeText(context, "Location permission is required to continue", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     if (isLoading) {
-        // App Progress Indicator / Loading UI
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -57,36 +108,66 @@ fun WorkerAddressRoute(
             allLocations = allLocations,
             stateOptions = stateOptions,
             strings = appStrings.workerFlow.address,
-            initialAddress = initialAddress,
-            onSaveAndContinue = onSaveAndContinue
+            address = formState.address,
+            validationError = validationError,
+            onAddressChange = { updatedAddress ->
+                validationError = null
+                viewModel.onEvent(WorkerRegistrationEvent.UpdateAddress(updatedAddress))
+            },
+            onSaveAndContinue = {
+                val currentAddress = formState.address
+                if (currentAddress.streetLocality.isBlank() ||
+                    currentAddress.selectedStateCode.isBlank() ||
+                    currentAddress.selectedDistrictCode.isBlank() ||
+                    currentAddress.pincode.length < 6
+                ) {
+                    validationError = appStrings.workerFlow.address.fillRequiredFieldsError
+                } else if (!currentAddress.isGpsCaptured || currentAddress.latitude == null || currentAddress.longitude == null) {
+                    validationError = "Please capture your GPS location to proceed."
+                } else {
+                    validationError = null
+                    onSaveAndContinue()
+                }
+            },
+            // WorkerAddressRoute ke andar location detection logic:
+            onDetectGpsLocation = {
+                // Agar GPS on hai, tab permission launcher fire karein
+                locationPermissionLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
+                )
+            }
         )
     }
 }
 
-
-// 2. Pure Stateless Screen Component
+// =================================================================
+// 2. STATELESS SCREEN (Pure UI Component)
+// =================================================================
 @Composable
 fun WorkerAddressScreen(
     allLocations: List<DistrictLocationData>,
     stateOptions: List<StateOption>,
     strings: WorkerAddressStrings,
-    initialAddress: WorkerAddress = WorkerAddress(),
-    onSaveAndContinue: (WorkerAddress) -> Unit,
+    address: WorkerAddress,
+    validationError: String?,
+    onAddressChange: (WorkerAddress) -> Unit,
+    onSaveAndContinue: () -> Unit,
+    onDetectGpsLocation: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var address by remember(initialAddress) { mutableStateOf(initialAddress) }
-    var validationError by remember { mutableStateOf<String?>(null) }
-
     // Districts Filtered by Selected State
     val availableDistricts = remember(address.selectedStateCode, allLocations) {
         if (address.selectedStateCode.isBlank()) emptyList()
         else allLocations.filter { it.stateCode == address.selectedStateCode }
     }
 
-    // Blocks Filtered by Selected District
+    // Blocks Filtered by Selected District (Safe & Correct Non-Nullable Type)
     val availableBlocks = remember(address.selectedDistrictCode, availableDistricts) {
         val matchedDistrict = availableDistricts.find { it.districtCode == address.selectedDistrictCode }
-        matchedDistrict?.blockList ?: emptyList()
+        matchedDistrict?.blockList ?: emptyList() // Ensures type is strictly List<BlockLocationData>
     }
 
     Column(
@@ -118,14 +199,14 @@ fun WorkerAddressScreen(
             Text(text = strings.selectAddressType, style = MaterialTheme.typography.labelMedium)
             AddressTypeSelector(
                 selectedType = address.addressType,
-                onTypeSelected = { address = address.copy(addressType = it) }
+                onTypeSelected = { onAddressChange(address.copy(addressType = it)) }
             )
 
             // House / Building No Input
             Text(text = strings.houseNoLabel, style = MaterialTheme.typography.labelMedium)
             AppTextField(
                 value = address.houseOrBuildingNo,
-                onValueChange = { address = address.copy(houseOrBuildingNo = it) },
+                onValueChange = { onAddressChange(address.copy(houseOrBuildingNo = it)) },
                 placeholderText = strings.houseNoHint
             )
 
@@ -133,7 +214,7 @@ fun WorkerAddressScreen(
             Text(text = strings.streetLabel, style = MaterialTheme.typography.labelMedium)
             AppTextField(
                 value = address.streetLocality,
-                onValueChange = { address = address.copy(streetLocality = it) },
+                onValueChange = { onAddressChange(address.copy(streetLocality = it)) },
                 placeholderText = strings.streetHint
             )
 
@@ -142,16 +223,18 @@ fun WorkerAddressScreen(
             AppDropdown<StateOption>(
                 items = stateOptions,
                 selectedItem = stateOptions.find { it.stateCode == address.selectedStateCode },
-                itemLabel = { it.stateNameEn }, // Always English
+                itemLabel = { it.stateNameEn },
                 placeholder = strings.stateHint,
                 onItemSelected = { selectedState ->
-                    address = address.copy(
-                        selectedStateCode = selectedState.stateCode,
-                        selectedStateName = selectedState.stateNameEn,
-                        selectedDistrictCode = "",
-                        selectedDistrictName = "",
-                        selectedBlockCode = "",
-                        selectedBlockName = ""
+                    onAddressChange(
+                        address.copy(
+                            selectedStateCode = selectedState.stateCode,
+                            selectedStateName = selectedState.stateNameEn,
+                            selectedDistrictCode = "",
+                            selectedDistrictName = "",
+                            selectedBlockCode = "",
+                            selectedBlockName = ""
+                        )
                     )
                 }
             )
@@ -161,15 +244,17 @@ fun WorkerAddressScreen(
             AppDropdown<DistrictLocationData>(
                 items = availableDistricts,
                 selectedItem = availableDistricts.find { it.districtCode == address.selectedDistrictCode },
-                itemLabel = { it.districtName }, // Always English
+                itemLabel = { it.districtName },
                 placeholder = strings.districtHint,
                 enabled = address.selectedStateCode.isNotBlank(),
                 onItemSelected = { selectedDist ->
-                    address = address.copy(
-                        selectedDistrictCode = selectedDist.districtCode,
-                        selectedDistrictName = selectedDist.districtName,
-                        selectedBlockCode = "",
-                        selectedBlockName = ""
+                    onAddressChange(
+                        address.copy(
+                            selectedDistrictCode = selectedDist.districtCode,
+                            selectedDistrictName = selectedDist.districtName,
+                            selectedBlockCode = "",
+                            selectedBlockName = ""
+                        )
                     )
                 }
             )
@@ -186,13 +271,15 @@ fun WorkerAddressScreen(
                     AppDropdown<BlockLocationData>(
                         items = availableBlocks,
                         selectedItem = availableBlocks.find { it.blockCode == address.selectedBlockCode },
-                        itemLabel = { it.blockNameEn }, // Always English
+                        itemLabel = { it.blockNameEn },
                         placeholder = strings.blockHint,
                         enabled = address.selectedDistrictCode.isNotBlank(),
                         onItemSelected = { selectedBlock ->
-                            address = address.copy(
-                                selectedBlockCode = selectedBlock.blockCode,
-                                selectedBlockName = selectedBlock.blockNameEn
+                            onAddressChange(
+                                address.copy(
+                                    selectedBlockCode = selectedBlock.blockCode,
+                                    selectedBlockName = selectedBlock.blockNameEn
+                                )
                             )
                         }
                     )
@@ -206,7 +293,7 @@ fun WorkerAddressScreen(
                         value = address.pincode,
                         onValueChange = { input ->
                             if (input.length <= 6 && input.all { char -> char.isDigit() }) {
-                                address = address.copy(pincode = input)
+                                onAddressChange(address.copy(pincode = input))
                             }
                         },
                         placeholderText = strings.pincodeHint,
@@ -223,14 +310,15 @@ fun WorkerAddressScreen(
                 latitude = address.latitude,
                 longitude = address.longitude,
                 strings = strings,
-                onDetectLocation = { lat, lng ->
-                    address = address.copy(latitude = lat, longitude = lng, isGpsCaptured = true)
+                onDetectLocation = { _, _ ->
+                    // Route level par define kiye gaye function ko trigger karega
+                    onDetectGpsLocation()
                 }
             )
 
             if (validationError != null) {
                 Text(
-                    text = validationError!!,
+                    text = validationError,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )
@@ -242,19 +330,8 @@ fun WorkerAddressScreen(
         // Save & Continue Action Button
         AppPrimaryButton(
             text = strings.saveAndContinue,
-            onClick = {
-                if (address.streetLocality.isBlank() ||
-                    address.selectedStateCode.isBlank() ||
-                    address.selectedDistrictCode.isBlank() ||
-                    address.pincode.length < 6
-                ) {
-                    validationError = strings.fillRequiredFieldsError
-                } else {
-                    onSaveAndContinue(address)
-                }
-            },
+            onClick = onSaveAndContinue,
             modifier = Modifier.fillMaxWidth()
         )
     }
 }
-
