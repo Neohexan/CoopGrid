@@ -1,278 +1,185 @@
 package com.example.coopgrid.worker.registration.presentation.steps.step4
 
-
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
+import android.Manifest
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.FileProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.coopgrid.common.language.LanguageViewModel
-import com.example.coopgrid.ui.theme.AppLanguage
-import com.example.coopgrid.worker.registration.presentation.components.AppDropdown
-import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
-import com.example.coopgrid.worker.registration.presentation.components.AppTextField
-import com.example.coopgrid.worker.registration.presentation.steps.step2.model.ServiceOfferingType
-import com.example.coopgrid.worker.registration.presentation.steps.step4.components.AgriSupplyKycCard
-import com.example.coopgrid.worker.registration.presentation.steps.step4.components.DocumentUploadCard
-import com.example.coopgrid.worker.registration.presentation.steps.step4.components.MachineryRentalKycCard
-import com.example.coopgrid.worker.registration.presentation.steps.step4.components.PersonalSkillKycCard
-import com.example.coopgrid.worker.registration.presentation.steps.step4.model.CommonIdentityErrors
-import com.example.coopgrid.worker.registration.presentation.steps.step4.model.IdentityDocType
-import com.example.coopgrid.worker.registration.presentation.steps.step4.model.WorkerKycState
-import com.example.coopgrid.worker.registration.presentation.steps.step4.strings.WorkerKyc
-import com.example.coopgrid.worker.registration.presentation.steps.step4.strings.getKycStrings
-import com.example.coopgrid.worker.registration.presentation.steps.step4.util.KycValidation
+import com.example.coopgrid.worker.registration.presentation.steps.step4.viewmodel.KycDocFieldType
+import com.example.coopgrid.worker.registration.presentation.steps.step4.viewmodel.WorkerKycEvent
+import com.example.coopgrid.worker.registration.presentation.steps.step4.viewmodel.WorkerKycViewModel
+import com.example.coopgrid.worker.registration.viewmodel.WorkerFormViewModel
+import com.example.coopgrid.worker.registration.viewmodel.WorkerRegistrationEvent
+import java.io.File
 
 
 @Composable
 fun WorkerKycScreen(
-    selectedServices: List<ServiceOfferingType>,
-    onSubmitKyc: (WorkerKycState) -> Unit,
-    languageViewModel: LanguageViewModel = hiltViewModel(),
-    // Agar KycViewModel hai toh yahan pass kar sakte hain
+    onKycComplete: () -> Unit,
+    registrationViewModel: WorkerFormViewModel = hiltViewModel(),
+    kycViewModel: WorkerKycViewModel = hiltViewModel(),
+    languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
 
-    WorkerKycContent(
-        selectedServices = selectedServices,
-        strings = appStrings.workerFlow.kyc,
-        onSubmitKyc = onSubmitKyc
-    )
-}
+    // 1. Central Single Source of Truth (Parent Form State)
+    val formState by registrationViewModel.formState.collectAsStateWithLifecycle()
 
+    // 2. Local KYC Media ViewModel States
+    val kycUiState by kycViewModel.uiState.collectAsStateWithLifecycle()
+    val uploadProgressMap = kycUiState.uploadProgressMap
+    val identityErrors = kycUiState.identityErrors
 
-@Composable
-fun WorkerKycContent(
-    selectedServices: List<ServiceOfferingType>,
-    strings: WorkerKyc,
-    onSubmitKyc: (WorkerKycState) -> Unit,
-    initialState: WorkerKycState = WorkerKycState()
-) {
-    var kycState by remember {
-        mutableStateOf(initialState.copy(selectedServices = selectedServices))
+    // 🟢 Step: Local ViewModel me Services Sync karein
+    LaunchedEffect(formState.selectedServices) {
+        if (formState.selectedServices.isNotEmpty()) {
+            kycViewModel.onEvent(WorkerKycEvent.InitializeServices(formState.selectedServices))
+        }
     }
 
-    // Specific field error handling state
-    var identityErrors by remember { mutableStateOf(CommonIdentityErrors()) }
+    // Trackers for option dialogs & active upload field
+    var activeFieldType by remember { mutableStateOf<KycDocFieldType?>(null) }
+    var tempUri by remember { mutableStateOf<Uri?>(null) }
+    var showOptionDialog by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .systemBarsPadding()
-            .padding(16.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Screen Header
-            Text(
-                text = strings.screenTitle,
-                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
-            )
-
-            Text(
-                text = strings.screenSubtitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // 1. COMMON PERSONAL IDENTITY KYC CARD
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(
-                        width = if (identityErrors.docNumberError != null || identityErrors.frontImageError != null || identityErrors.backImageError != null) 1.5.dp else 0.dp,
-                        color = if (identityErrors.docNumberError != null || identityErrors.frontImageError != null || identityErrors.backImageError != null) MaterialTheme.colorScheme.error else Color.Transparent,
-                        shape = CardDefaults.shape
-                    ),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = strings.commonIdentityTitle,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+    // 1. Gallery Image Picker Launcher
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        uri?.let { selectedUri ->
+            activeFieldType?.let { field ->
+                kycViewModel.onEvent(
+                    WorkerKycEvent.ImageSelected(
+                        fieldType = field,
+                        uri = selectedUri,
+                        context = context
                     )
-
-                    // Document Type Selector Dropdown
-                    Text(
-                        text = strings.selectDocTypeLabel,
-                        style = MaterialTheme.typography.labelMedium
-                    )
-
-                    AppDropdown<IdentityDocType>(
-                        items = IdentityDocType.values().toList(),
-                        selectedItem = kycState.commonIdentity.docType,
-                        itemLabel = { it.label },
-                        placeholder = strings.selectDocTypeLabel,
-                        onItemSelected = { selectedType ->
-                            identityErrors = identityErrors.copy(docNumberError = null)
-                            kycState = kycState.copy(
-                                commonIdentity = kycState.commonIdentity.copy(
-                                    docType = selectedType,
-                                    docNumber = ""
-                                )
-                            )
-                        }
-                    )
-
-                    // Document Number Input Field + Error
-                    Column {
-                        AppTextField(
-                            value = kycState.commonIdentity.docNumber,
-                            onValueChange = { input ->
-                                identityErrors = identityErrors.copy(docNumberError = null)
-                                kycState = kycState.copy(
-                                    commonIdentity = kycState.commonIdentity.copy(docNumber = input)
-                                )
-                            },
-                            placeholderText = strings.enterDocNumberHint,
-                            errorMessage = identityErrors.docNumberError
-                        )
-
-                        identityErrors.docNumberError?.let { err ->
-                            Text(
-                                text = err,
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.padding(start = 4.dp, top = 4.dp)
-                            )
-                        }
-                    }
-
-                    // Front Document Photo Upload + Error
-                    Column {
-                        DocumentUploadCard(
-                            title = strings.frontDocPhotoLabel,
-                            selectedImageUri = kycState.commonIdentity.frontImageUri,
-                            strings = strings,
-                            onImageSelected = { uri ->
-                                identityErrors = identityErrors.copy(frontImageError = null)
-                                kycState = kycState.copy(
-                                    commonIdentity = kycState.commonIdentity.copy(frontImageUri = uri)
-                                )
-                            }
-                        )
-                        identityErrors.frontImageError?.let { err ->
-                            Text(
-                                text = err,
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.padding(start = 4.dp, top = 4.dp)
-                            )
-                        }
-                    }
-
-                    // Back Document Photo Upload + Error
-                    Column {
-                        DocumentUploadCard(
-                            title = strings.backDocPhotoLabel,
-                            selectedImageUri = kycState.commonIdentity.backImageUri,
-                            strings = strings,
-                            onImageSelected = { uri ->
-                                identityErrors = identityErrors.copy(backImageError = null)
-                                kycState = kycState.copy(
-                                    commonIdentity = kycState.commonIdentity.copy(backImageUri = uri)
-                                )
-                            }
-                        )
-                        identityErrors.backImageError?.let { err ->
-                            Text(
-                                text = err,
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.padding(start = 4.dp, top = 4.dp)
-                            )
-                        }
-                    }
-                }
-            }
-
-            // 2. DYNAMIC SERVICE-SPECIFIC CARDS
-            selectedServices.forEach { serviceType ->
-                when (serviceType) {
-                    ServiceOfferingType.PERSONAL_SKILL -> {
-                        PersonalSkillKycCard(
-                            state = kycState.personalSkillKyc,
-                            strings = strings,
-                            onStateChange = { updated ->
-                                kycState = kycState.copy(personalSkillKyc = updated)
-                            }
-                        )
-                    }
-
-                    ServiceOfferingType.MACHINERY_RENTAL -> {
-                        MachineryRentalKycCard(
-                            state = kycState.machineryRentalKyc,
-                            strings = strings,
-                            onStateChange = { updated ->
-                                kycState = kycState.copy(machineryRentalKyc = updated)
-                            }
-                        )
-                    }
-
-                    ServiceOfferingType.AGRI_SUPPLY -> {
-                        AgriSupplyKycCard(
-                            state = kycState.agriSupplyKyc,
-                            strings = strings,
-                            onStateChange = { updated ->
-                                kycState = kycState.copy(agriSupplyKyc = updated)
-                            }
-                        )
-                    }
-                }
+                )
             }
         }
+    }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Submit Button with Strict Validation Trigger
-        AppPrimaryButton(
-            text = strings.submitKycButton,
-            onClick = {
-                val common = kycState.commonIdentity
-                val isDocBlank = common.docNumber.isBlank()
-                val isNumValid = KycValidation.validateIdentityNumber(common.docType, common.docNumber)
-                val hasFront = common.frontImageUri != null
-                val hasBack = common.backImageUri != null
-
-                // Set Field-Level Errors
-                identityErrors = CommonIdentityErrors(
-                    docNumberError = when {
-                        isDocBlank -> strings.enterDocNumberHint
-                        !isNumValid -> strings.invalidDocNumberError
-                        else -> null
-                    },
-                    frontImageError = if (!hasFront) strings.frontPhotoRequiredError else null,
-                    backImageError = if (!hasBack) strings.backPhotoRequiredError else null
+    // 2. Camera Launcher
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && tempUri != null) {
+            activeFieldType?.let { field ->
+                kycViewModel.onEvent(
+                    WorkerKycEvent.ImageSelected(
+                        fieldType = field,
+                        uri = tempUri!!,
+                        context = context
+                    )
                 )
+            }
+        }
+    }
 
-                // Pass only if all validations succeed
-                if (!isDocBlank && isNumValid && hasFront && hasBack) {
-                    onSubmitKyc(kycState)
+    // 3. Camera Permission Launcher
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted && tempUri != null) {
+            cameraLauncher.launch(tempUri!!)
+        } else {
+            Toast.makeText(
+                context,
+                "Camera permission is required to capture KYC documents.",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    // 4. Passing all required arguments to WorkerKycContent
+    WorkerKycContent(
+        selectedServices = formState.selectedServices,
+        strings = appStrings.workerFlow.kyc,
+        kycState = kycUiState.kycState,
+        identityErrors = identityErrors,
+        isFrontUploading = uploadProgressMap[KycDocFieldType.FRONT_IMAGE] == true,
+        isBackUploading = uploadProgressMap[KycDocFieldType.BACK_IMAGE] == true,
+        onCommonIdentityChange = { updatedCommon ->
+            kycViewModel.onEvent(WorkerKycEvent.UpdateCommonIdentity(updatedCommon))
+        },
+        onSkillKycChange = { updatedSkill ->
+            kycViewModel.onEvent(WorkerKycEvent.UpdateSkillState(updatedSkill))
+        },
+        onMachineryKycChange = { updatedMachinery ->
+            kycViewModel.onEvent(WorkerKycEvent.UpdateMachineryState(updatedMachinery))
+        },
+        onAgriKycChange = { updatedAgri ->
+            kycViewModel.onEvent(WorkerKycEvent.UpdateAgriState(updatedAgri))
+        },
+        onImageSelected = { fieldType ->
+            activeFieldType = fieldType
+            showOptionDialog = true // Direct open source choice dialog (Camera vs Gallery)
+        },
+        onSubmitClick = {
+            // Validate locally first via KycViewModel
+            kycViewModel.onEvent(
+                WorkerKycEvent.SubmitClicked { validKycData ->
+                    // Load final compiled KYC data into Parent WorkerFormViewModel
+                    registrationViewModel.onEvent(
+                        WorkerRegistrationEvent.UpdateKycState(validKycData)
+                    )
+                    // Move to next step
+                    onKycComplete()
+                }
+            )
+        }
+    )
+
+    // Option Dialog (Camera vs Gallery)
+    if (showOptionDialog) {
+        AlertDialog(
+            onDismissRequest = { showOptionDialog = false },
+            title = { Text("Select Document Source") },
+            text = { Text("Choose whether you want to take a live photo or select from the gallery.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showOptionDialog = false
+                        val file = File(
+                            context.externalCacheDir,
+                            "kyc_doc_${System.currentTimeMillis()}.jpg"
+                        )
+                        val uri = FileProvider.getUriForFile(
+                            context,
+                            "${context.packageName}.fileprovider",
+                            file
+                        )
+                        tempUri = uri
+                        cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                    }
+                ) {
+                    Text("Camera")
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            dismissButton = {
+                Button(
+                    onClick = {
+                        showOptionDialog = false
+                        galleryLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    }
+                ) {
+                    Text("Gallery")
+                }
+            }
         )
     }
 }
-
-// ---------------------------------------------------------------------
-// PREVIEW (Android Studio Interactive & Design Preview)
-// ---------------------------------------------------------------------

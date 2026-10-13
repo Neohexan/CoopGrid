@@ -212,14 +212,17 @@ fun NavGraphBuilder.workerNavGraph(
         // STEP 4: Dynamic KYC Document Verification
         // -------------------------------------------------------------
         composable<WorkerRoute.Step4Kyc> { backStackEntry ->
-            val kycRoute: WorkerRoute.Step4Kyc = backStackEntry.toRoute()
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry<WorkerRoute.OnboardingGraph>()
+            }
+            val workerFormViewModel: WorkerFormViewModel = hiltViewModel(viewModelStoreOwner = parentEntry)
 
             WorkerKycScreen(
-                selectedServices = kycRoute.selectedServices,
-                onSubmitKyc = { kycData ->
+                onKycComplete = {
                     // Graph outer app ko notify karega
                     onOnboardingComplete()
-                }
+                },
+                registrationViewModel = workerFormViewModel
             )
         }
     }

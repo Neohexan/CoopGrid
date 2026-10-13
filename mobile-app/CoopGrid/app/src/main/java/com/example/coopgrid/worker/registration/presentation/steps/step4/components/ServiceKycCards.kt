@@ -19,6 +19,7 @@ fun PersonalSkillKycCard(
     state: PersonalSkillKyc,
     strings: WorkerKyc,
     onStateChange: (PersonalSkillKyc) -> Unit,
+    onImageSelected: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -44,7 +45,7 @@ fun PersonalSkillKycCard(
                 title = strings.skillCertPhotoLabel,
                 selectedImageUri = state.certificateImageUri,
                 strings = strings,
-                onImageSelected = { onStateChange(state.copy(certificateImageUri = it)) }
+                onClick = {onImageSelected() }
             )
         }
     }
@@ -56,6 +57,7 @@ fun MachineryRentalKycCard(
     state: MachineryRentalKyc,
     strings: WorkerKyc,
     onStateChange: (MachineryRentalKyc) -> Unit,
+    onImageSelected: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -81,14 +83,20 @@ fun MachineryRentalKycCard(
                 title = strings.rcPhotoLabel,
                 selectedImageUri = state.rcDocumentUri,
                 strings = strings,
-                onImageSelected = { onStateChange(state.copy(rcDocumentUri = it)) }
+                onClick = {
+                    // 👈 Direct parent callback call karein
+                    onImageSelected()
+                }
             )
 
             DocumentUploadCard(
                 title = strings.machinePhotoLabel,
                 selectedImageUri = state.machinePhotoUri,
                 strings = strings,
-                onImageSelected = { onStateChange(state.copy(machinePhotoUri = it)) }
+                onClick = {
+                    // 👈 Direct parent callback call karein
+                    onImageSelected()
+                }
             )
         }
     }
@@ -100,6 +108,7 @@ fun AgriSupplyKycCard(
     state: AgriSupplyKyc,
     strings: WorkerKyc,
     onStateChange: (AgriSupplyKyc) -> Unit,
+    onImageSelected: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -131,14 +140,20 @@ fun AgriSupplyKycCard(
                 title = strings.licenseDocPhotoLabel,
                 selectedImageUri = state.licenseDocUri,
                 strings = strings,
-                onImageSelected = { onStateChange(state.copy(licenseDocUri = it)) }
+                onClick = {
+                    // 👈 Direct parent callback call karein
+                    onImageSelected()
+                }
             )
 
             DocumentUploadCard(
                 title = strings.shopPhotoLabel,
                 selectedImageUri = state.shopPhotoUri,
                 strings = strings,
-                onImageSelected = { onStateChange(state.copy(shopPhotoUri = it)) }
+                onClick = {
+                    // 👈 Direct parent callback call karein
+                    onImageSelected()
+                }
             )
         }
     }

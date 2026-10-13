@@ -1,5 +1,6 @@
 package com.example.coopgrid.worker.registration.viewmodel
 
+import com.example.coopgrid.worker.registration.presentation.steps.step2.model.ServiceOfferingType
 import com.example.coopgrid.worker.registration.presentation.steps.step21.model.JobCategory
 import com.example.coopgrid.worker.registration.presentation.steps.step21.model.WorkerSkillItem
 import com.example.coopgrid.worker.registration.presentation.steps.step22.model.MachineryRentalItem
@@ -34,7 +35,7 @@ data class WorkerFormState(
 
     // Step 4: Address Details
     val address: WorkerAddress = WorkerAddress(),
-
+    val selectedServices: List<ServiceOfferingType> = emptyList(),
     // Step 5: KYC & Documents State
     val kycState: WorkerKycState = WorkerKycState(),
     val commonIdentityErrors: CommonIdentityErrors = CommonIdentityErrors(),
