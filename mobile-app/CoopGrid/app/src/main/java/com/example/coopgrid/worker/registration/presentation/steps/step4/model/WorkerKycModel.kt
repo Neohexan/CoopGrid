@@ -26,7 +26,7 @@ data class PersonalSkillKyc(
 data class MachineryRentalKyc(
     val rcNumber: String = "",
     val fitnessCertNumber: String = "",
-    val rcDocumentUri: String? = null,
+    val licensePhotoUri: String? = null,
     val machinePhotoUri: String? = null
 )
 

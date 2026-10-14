@@ -15,8 +15,10 @@ enum class KycDocFieldType {
     FRONT_IMAGE,
     BACK_IMAGE,
     SKILL_CERTIFICATE,
-    MACHINERY_PROOF,
-    AGRI_LICENSE
+    MACHINERY_PHOTO,       // 👈 Machine ki live photo ke liye
+    MACHINERY_LICENSE,     // 👈 Machinery license / RC proof ke liye
+    AGRI_LICENSE,          // 👈 Agri license ke liye
+    AGRI_SHOP_PHOTO        // 👈 Shop / Dukan ki photo ke liye
 }
 
 data class WorkerKycUiState(

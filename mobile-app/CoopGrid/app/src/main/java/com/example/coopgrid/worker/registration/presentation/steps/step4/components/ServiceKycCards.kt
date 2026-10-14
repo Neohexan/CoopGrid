@@ -57,7 +57,8 @@ fun MachineryRentalKycCard(
     state: MachineryRentalKyc,
     strings: WorkerKyc,
     onStateChange: (MachineryRentalKyc) -> Unit,
-    onImageSelected: () -> Unit,
+    onMachinePhotoClick: () -> Unit,    // 👈 Machine photo ke liye alag callback
+    onLicensePhotoClick: () -> Unit,    // 👈 License photo ke liye alag callback
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -81,22 +82,16 @@ fun MachineryRentalKycCard(
 
             DocumentUploadCard(
                 title = strings.rcPhotoLabel,
-                selectedImageUri = state.rcDocumentUri,
+                selectedImageUri = state.licensePhotoUri,
                 strings = strings,
-                onClick = {
-                    // 👈 Direct parent callback call karein
-                    onImageSelected()
-                }
+                onClick = onMachinePhotoClick
             )
 
             DocumentUploadCard(
                 title = strings.machinePhotoLabel,
                 selectedImageUri = state.machinePhotoUri,
                 strings = strings,
-                onClick = {
-                    // 👈 Direct parent callback call karein
-                    onImageSelected()
-                }
+                onClick = onLicensePhotoClick
             )
         }
     }
@@ -108,7 +103,8 @@ fun AgriSupplyKycCard(
     state: AgriSupplyKyc,
     strings: WorkerKyc,
     onStateChange: (AgriSupplyKyc) -> Unit,
-    onImageSelected: () -> Unit,
+    onShopAgriPhotoClick: () -> Unit,    // 👈 Machine photo ke liye alag callback
+    onLicensePhotoClick: () -> Unit,    // 👈 License photo ke liye alag callback
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -140,20 +136,14 @@ fun AgriSupplyKycCard(
                 title = strings.licenseDocPhotoLabel,
                 selectedImageUri = state.licenseDocUri,
                 strings = strings,
-                onClick = {
-                    // 👈 Direct parent callback call karein
-                    onImageSelected()
-                }
+                onClick = onLicensePhotoClick
             )
 
             DocumentUploadCard(
                 title = strings.shopPhotoLabel,
                 selectedImageUri = state.shopPhotoUri,
                 strings = strings,
-                onClick = {
-                    // 👈 Direct parent callback call karein
-                    onImageSelected()
-                }
+                onClick = onShopAgriPhotoClick
             )
         }
     }

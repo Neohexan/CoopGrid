@@ -1,6 +1,7 @@
 package com.example.coopgrid.worker.data.di
 
 
+import com.example.coopgrid.worker.data.apiservice.ApiService
 import com.example.coopgrid.worker.registration.data.auth.WorkerAuthApiService
 import dagger.Module
 import dagger.Provides
@@ -19,5 +20,13 @@ object WorkerApiModule {
         @WorkerNetwork retrofit: Retrofit // 👈 Injects Worker-annotated Retrofit
     ): WorkerAuthApiService {
         return retrofit.create(WorkerAuthApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWorkerApiService(
+        @WorkerNetwork retrofit: Retrofit // 👈 Injects Worker-annotated Retrofit
+    ): ApiService {
+        return retrofit.create(ApiService::class.java)
     }
 }

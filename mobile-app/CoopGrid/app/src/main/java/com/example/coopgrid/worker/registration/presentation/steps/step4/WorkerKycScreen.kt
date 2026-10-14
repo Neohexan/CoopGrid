@@ -16,6 +16,7 @@ import androidx.core.content.FileProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.coopgrid.common.language.LanguageViewModel
+import com.example.coopgrid.worker.registration.presentation.steps.step2.model.ServiceOfferingType
 import com.example.coopgrid.worker.registration.presentation.steps.step4.viewmodel.KycDocFieldType
 import com.example.coopgrid.worker.registration.presentation.steps.step4.viewmodel.WorkerKycEvent
 import com.example.coopgrid.worker.registration.presentation.steps.step4.viewmodel.WorkerKycViewModel
@@ -26,6 +27,7 @@ import java.io.File
 
 @Composable
 fun WorkerKycScreen(
+    selectedServices: List<ServiceOfferingType>,
     onKycComplete: () -> Unit,
     registrationViewModel: WorkerFormViewModel = hiltViewModel(),
     kycViewModel: WorkerKycViewModel = hiltViewModel(),
@@ -105,7 +107,7 @@ fun WorkerKycScreen(
 
     // 4. Passing all required arguments to WorkerKycContent
     WorkerKycContent(
-        selectedServices = formState.selectedServices,
+        selectedServices = selectedServices,
         strings = appStrings.workerFlow.kyc,
         kycState = kycUiState.kycState,
         identityErrors = identityErrors,

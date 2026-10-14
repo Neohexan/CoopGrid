@@ -5,11 +5,8 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.coopgrid.data.utils.NativeImageCompressor
-import com.example.coopgrid.worker.registration.presentation.steps.step4.model.AgriSupplyKyc
+import com.example.coopgrid.worker.registration.data.form.repository.KycRepository
 import com.example.coopgrid.worker.registration.presentation.steps.step4.model.CommonIdentityErrors
-import com.example.coopgrid.worker.registration.presentation.steps.step4.model.IdentityDocType
-import com.example.coopgrid.worker.registration.presentation.steps.step4.model.MachineryRentalKyc
-import com.example.coopgrid.worker.registration.presentation.steps.step4.model.PersonalSkillKyc
 import com.example.coopgrid.worker.registration.presentation.steps.step4.model.WorkerKycState
 import com.example.coopgrid.worker.registration.presentation.steps.step4.util.KycValidation
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,7 +21,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WorkerKycViewModel @Inject constructor(
-    // private val kycRepository: KycRepository // Jab aap apna chunk upload repo inject karna chahein
+     private val kycRepository: KycRepository // Jab aap apna chunk upload repo inject karna chahein
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(WorkerKycUiState())
@@ -107,21 +104,40 @@ class WorkerKycViewModel @Inject constructor(
                 imageUri = uri
             )
 
-            compressedFile?.let { file ->
-                // 3. TODO: Yahan aapka 64KB chunked upload logic aayega
-                // val serverUrl = kycRepository.uploadFileInChunks(file)
+            if (compressedFile != null) {
+                // 3. 64KB Chunked Upload Call
+                val uploadResult = kycRepository.uploadFileInChunks(
+                    file = compressedFile,
+                    fieldType = fieldType,
+                    originalUri = uri
+                )
 
-                // Simulated server URL / local absolute path for now
-                val simulatedUrl = file.absolutePath
+                uploadResult.onSuccess { serverUrl ->
+                    withContext(Dispatchers.Main) {
+                        // 4. Update state with actual server URL
+                        updateFieldUri(fieldType, serverUrl)
+                        setLoading(fieldType, false)
+                    }
+                }.onFailure { error ->
+                    withContext(Dispatchers.Main) {
+                        // Handle failure error state
+                        setLoading(fieldType, false)
 
-                withContext(Dispatchers.Main) {
-                    // 4. Update state with the uploaded file path/URL
-                    updateFieldUri(fieldType, simulatedUrl)
-                    setLoading(fieldType, false)
+                        // Error message UI state me set kar dein taaki Snackbar ya Toast dikh sake
+                        _uiState.update { state ->
+                            state.copy(
+                                errorMessage = "Upload failed for ${fieldType.name}: ${error.localizedMessage ?: "Unknown error"}"
+                            )
+                        }
+
+                    }
                 }
-            } ?: run {
+            } else {
                 withContext(Dispatchers.Main) {
                     setLoading(fieldType, false)
+                    _uiState.update {
+                        it.copy(errorMessage = "Image compression failed. Please try another image.")
+                    }
                 }
             }
         }
@@ -148,10 +164,17 @@ class WorkerKycViewModel @Inject constructor(
                 KycDocFieldType.SKILL_CERTIFICATE -> currentKyc.copy(
                     personalSkillKyc = currentKyc.personalSkillKyc.copy(certificateImageUri = imageUrl)
                 )
-                KycDocFieldType.MACHINERY_PROOF -> currentKyc.copy(
+
+                KycDocFieldType.MACHINERY_LICENSE -> currentKyc.copy(
+                    machineryRentalKyc = currentKyc.machineryRentalKyc.copy(licensePhotoUri = imageUrl)
+                )
+                KycDocFieldType.MACHINERY_PHOTO -> currentKyc.copy(
                     machineryRentalKyc = currentKyc.machineryRentalKyc.copy(machinePhotoUri = imageUrl)
                 )
                 KycDocFieldType.AGRI_LICENSE -> currentKyc.copy(
+                    agriSupplyKyc = currentKyc.agriSupplyKyc.copy(licenseDocUri = imageUrl)
+                )
+                KycDocFieldType.AGRI_SHOP_PHOTO -> currentKyc.copy(
                     agriSupplyKyc = currentKyc.agriSupplyKyc.copy(shopPhotoUri = imageUrl)
                 )
             }

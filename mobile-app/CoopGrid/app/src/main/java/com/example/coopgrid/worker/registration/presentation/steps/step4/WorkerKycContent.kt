@@ -241,8 +241,11 @@ fun WorkerKycContent(
                             onStateChange = { updated ->
                                 onMachineryKycChange(updated)
                             },
-                            onImageSelected = {
-                                onImageSelected(KycDocFieldType.MACHINERY_PROOF)
+                            onMachinePhotoClick = {
+                                onImageSelected(KycDocFieldType.MACHINERY_PHOTO) // 👈 Yahan MACHINERY_PHOTO hona chahiye
+                            },
+                            onLicensePhotoClick = {
+                                onImageSelected(KycDocFieldType.MACHINERY_LICENSE) // 👈 Yahan MACHINERY_LICENSE hona chahiye
                             }
                         )
                     }
@@ -254,8 +257,11 @@ fun WorkerKycContent(
                             onStateChange = { updated ->
                                 onAgriKycChange(updated)
                             },
-                            onImageSelected = {
-                                onImageSelected(KycDocFieldType.AGRI_LICENSE)
+                            onShopAgriPhotoClick = {
+                                onImageSelected(KycDocFieldType.AGRI_SHOP_PHOTO) // 👈 Machine Photo
+                            },
+                            onLicensePhotoClick = {
+                                onImageSelected(KycDocFieldType.AGRI_LICENSE) // 👈 License Photo
                             }
                         )
                     }
