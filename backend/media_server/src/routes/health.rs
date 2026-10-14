@@ -2,6 +2,7 @@ use crate::error::VaultError;
 use crate::repository::MediaRepository;
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
 use serde::Serialize;
+use tracing::debug;
 
 #[derive(Serialize)]
 pub struct HealthResponse {
@@ -18,6 +19,13 @@ pub async fn health_check(
         Ok(_) => "HEALTHY",
         Err(_) => "DEGRADED",
     };
+
+    // 🎯 Use debug! so it doesn't spam production console,
+    // or info! if you want to see every heartbeat explicitly.
+    debug!(
+        database_status = db_status,
+        "💓 Gateway heartbeat ping received at /health"
+    );
 
     let response = HealthResponse {
         status: "UP",

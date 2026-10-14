@@ -31,6 +31,7 @@ chrono = { version = "=0.4.45", features = ["serde"] }
 
 # Development & Testing
 tower = { version = "0.4", features = ["util"] }
+dotenvy = "0.15.7"
 
 # Production Optimization Settings
 [profile.release]

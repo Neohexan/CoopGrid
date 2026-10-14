@@ -2211,6 +2211,7 @@ dependencies = [
  "axum",
  "bincode",
  "chrono",
+ "dotenvy",
  "futures-util",
  "serde",
  "serde_json",

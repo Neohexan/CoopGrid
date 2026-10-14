@@ -1,7 +1,4 @@
-use axum::{
-    routing::{get, post},
-    Router,
-};
+use routes::build_router;
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
@@ -19,6 +16,8 @@ use repository::MediaRepository;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // .env file ko automatically read karne ke liye
+    dotenvy::dotenv().ok();
     // 1. Logger Setup
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
@@ -42,17 +41,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .allow_headers(Any);
 
     // 5. Fixed API Router Configurations
-    let app = Router::new()
-        .route("/health", get(routes::health_check))
-        .route("/api/v1/media/upload", post(routes::upload_media))
-        .route("/api/v1/media/stream/:media_id", get(routes::stream_media))
-        .layer(cors)
-        .with_state(repo);
+    let app = build_router(repo, cors);
 
     // 6. Bind Server Address
     let addr = SocketAddr::from(([127, 0, 0, 1], config.server_port));
     let listener = TcpListener::bind(addr).await?;
-    tracing::info!("🚀 Ultra-Light Rust Vault Microservice listening on http://{}", addr);
+    tracing::info!(
+        "🚀 Ultra-Light Rust Vault Microservice listening on http://{}",
+        addr
+    );
 
     // 7. Run Server with Graceful Shutdown
     axum::serve(listener, app)

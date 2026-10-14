@@ -23,9 +23,9 @@ pub enum VaultError {
     #[error("Invalid upload payload: {0}")]
     BadRequest(String),
 
-    #[error("Payload size exceeded limit")]
-    PayloadTooLarge,
-
+    // #[error("Payload size exceeded limit")]
+    // PayloadTooLarge,
+    
     #[error("Internal server error: {0}")]
     Internal(String),
 }
@@ -35,10 +35,12 @@ impl IntoResponse for VaultError {
         let (status, error_message) = match &self {
             VaultError::NotFound(msg) => (StatusCode::NOT_FOUND, msg.clone()),
             VaultError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg.clone()),
-            VaultError::PayloadTooLarge => (
-                StatusCode::PAYLOAD_TOO_LARGE,
-                "File size exceeds maximum allowed limit".to_string(),
-            ),
+
+            // VaultError::PayloadTooLarge => (
+            //     StatusCode::PAYLOAD_TOO_LARGE,
+            //     "File size exceeds maximum allowed limit".to_string(),
+            // ),
+
             VaultError::Database(err) => {
                 tracing::error!("Database error occurred: {:?}", err);
                 (

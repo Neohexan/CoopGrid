@@ -10,6 +10,7 @@ impl BincodeEngine {
     }
 
     /// Fixed bytes slice se MediaHeader wapas decode karta hai
+     #[allow(dead_code)]
     pub fn deserialize_header(bytes: &[u8]) -> Result<MediaHeader, VaultError> {
         bincode::deserialize(bytes).map_err(VaultError::Bincode)
     }
