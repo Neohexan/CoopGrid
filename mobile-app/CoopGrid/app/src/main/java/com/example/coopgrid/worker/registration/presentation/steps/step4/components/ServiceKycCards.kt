@@ -57,8 +57,8 @@ fun MachineryRentalKycCard(
     state: MachineryRentalKyc,
     strings: WorkerKyc,
     onStateChange: (MachineryRentalKyc) -> Unit,
-    onMachinePhotoClick: () -> Unit,    // 👈 Machine photo ke liye alag callback
-    onLicensePhotoClick: () -> Unit,    // 👈 License photo ke liye alag callback
+    onMachinePhotoClick: () -> Unit,
+    onLicensePhotoClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -80,18 +80,20 @@ fun MachineryRentalKycCard(
                 placeholderText = strings.rcNumberHint
             )
 
+            // 1. License / RC Proof Card
             DocumentUploadCard(
                 title = strings.rcPhotoLabel,
-                selectedImageUri = state.licensePhotoUri,
+                selectedImageUri = state.licensePhotoUri, // 🟢 licensePhotoUri
                 strings = strings,
-                onClick = onMachinePhotoClick
+                onClick = onLicensePhotoClick            // 🟢 onLicensePhotoClick
             )
 
+            // 2. Machine Live Photo Card
             DocumentUploadCard(
                 title = strings.machinePhotoLabel,
-                selectedImageUri = state.machinePhotoUri,
+                selectedImageUri = state.machinePhotoUri, // 🟢 machinePhotoUri
                 strings = strings,
-                onClick = onLicensePhotoClick
+                onClick = onMachinePhotoClick            // 🟢 onMachinePhotoClick
             )
         }
     }
