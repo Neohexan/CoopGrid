@@ -44,7 +44,7 @@ fun PersonalSkillKycCard(
 
             DocumentUploadCard(
                 title = strings.skillCertPhotoLabel,
-                selectedImageUri = state.certificateImageUri,
+                selectedImageUri = state.certificateImageId,
                 strings = strings,
                 onClick = {onImageSelected() }
             )
@@ -87,7 +87,7 @@ fun MachineryRentalKycCard(
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 DocumentUploadCard(
                     title = strings.rcPhotoLabel,
-                    selectedImageUri = state.licensePhotoUri,
+                    selectedImageUri = state.licensePhotoId,
                     strings = strings,
                     onClick = onLicensePhotoClick
                 )
@@ -100,7 +100,7 @@ fun MachineryRentalKycCard(
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 DocumentUploadCard(
                     title = strings.machinePhotoLabel,
-                    selectedImageUri = state.machinePhotoUri,
+                    selectedImageUri = state.machinePhotoId,
                     strings = strings,
                     onClick = onMachinePhotoClick
                 )
@@ -153,7 +153,7 @@ fun AgriSupplyKycCard(
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 DocumentUploadCard(
                     title = strings.licenseDocPhotoLabel,
-                    selectedImageUri = state.licenseDocUri,
+                    selectedImageUri = state.licenseDocId,
                     strings = strings,
                     onClick = onLicensePhotoClick
                 )
@@ -167,7 +167,7 @@ fun AgriSupplyKycCard(
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 DocumentUploadCard(
                     title = strings.shopPhotoLabel,
-                    selectedImageUri = state.shopPhotoUri,
+                    selectedImageUri = state.shopPhotoId,
                     strings = strings,
                     onClick = onShopAgriPhotoClick
                 )

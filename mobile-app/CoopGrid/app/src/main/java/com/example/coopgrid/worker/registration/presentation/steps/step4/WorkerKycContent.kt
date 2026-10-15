@@ -166,7 +166,7 @@ fun WorkerKycContent(
                         ) {
                             DocumentUploadCard(
                                 title = strings.frontDocPhotoLabel,
-                                selectedImageUri = kycState.commonIdentity.frontImageUri,
+                                selectedImageUri = kycState.commonIdentity.frontImageId,
                                 strings = strings,
                                 onClick = {
                                     onImageSelected(KycDocFieldType.FRONT_IMAGE)
@@ -197,7 +197,7 @@ fun WorkerKycContent(
                         ) {
                             DocumentUploadCard(
                                 title = strings.backDocPhotoLabel,
-                                selectedImageUri = kycState.commonIdentity.backImageUri,
+                                selectedImageUri = kycState.commonIdentity.backImageId,
                                 strings = strings,
                                 onClick = {
                                     onImageSelected(KycDocFieldType.BACK_IMAGE)

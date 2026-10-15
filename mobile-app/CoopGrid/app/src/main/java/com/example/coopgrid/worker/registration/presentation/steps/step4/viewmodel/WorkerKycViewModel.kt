@@ -112,10 +112,10 @@ class WorkerKycViewModel @Inject constructor(
                     originalUri = uri
                 )
 
-                uploadResult.onSuccess { serverUrl ->
+                uploadResult.onSuccess { mediaId ->
                     withContext(Dispatchers.Main) {
                         // 4. Update state with actual server URL
-                        updateFieldUri(fieldType, serverUrl)
+                        updateFieldUri(fieldType, mediaId)
                         setLoading(fieldType, false)
                     }
                 }.onFailure { error ->
@@ -151,31 +151,31 @@ class WorkerKycViewModel @Inject constructor(
         }
     }
 
-    private fun updateFieldUri(fieldType: KycDocFieldType, imageUrl: String) {
+    private fun updateFieldUri(fieldType: KycDocFieldType, mediaId: String) {
         _uiState.update { state ->
             val currentKyc = state.kycState
             val updatedKyc = when (fieldType) {
                 KycDocFieldType.FRONT_IMAGE -> currentKyc.copy(
-                    commonIdentity = currentKyc.commonIdentity.copy(frontImageUri = imageUrl)
+                    commonIdentity = currentKyc.commonIdentity.copy(frontImageId = mediaId)
                 )
                 KycDocFieldType.BACK_IMAGE -> currentKyc.copy(
-                    commonIdentity = currentKyc.commonIdentity.copy(backImageUri = imageUrl)
+                    commonIdentity = currentKyc.commonIdentity.copy(backImageId = mediaId)
                 )
                 KycDocFieldType.SKILL_CERTIFICATE -> currentKyc.copy(
-                    personalSkillKyc = currentKyc.personalSkillKyc.copy(certificateImageUri = imageUrl)
+                    personalSkillKyc = currentKyc.personalSkillKyc.copy(certificateImageId = mediaId)
                 )
 
                 KycDocFieldType.MACHINERY_LICENSE -> currentKyc.copy(
-                    machineryRentalKyc = currentKyc.machineryRentalKyc.copy(licensePhotoUri = imageUrl)
+                    machineryRentalKyc = currentKyc.machineryRentalKyc.copy(licensePhotoId = mediaId)
                 )
                 KycDocFieldType.MACHINERY_PHOTO -> currentKyc.copy(
-                    machineryRentalKyc = currentKyc.machineryRentalKyc.copy(machinePhotoUri = imageUrl)
+                    machineryRentalKyc = currentKyc.machineryRentalKyc.copy(machinePhotoId = mediaId)
                 )
                 KycDocFieldType.AGRI_LICENSE -> currentKyc.copy(
-                    agriSupplyKyc = currentKyc.agriSupplyKyc.copy(licenseDocUri = imageUrl)
+                    agriSupplyKyc = currentKyc.agriSupplyKyc.copy(licenseDocId = mediaId)
                 )
                 KycDocFieldType.AGRI_SHOP_PHOTO -> currentKyc.copy(
-                    agriSupplyKyc = currentKyc.agriSupplyKyc.copy(shopPhotoUri = imageUrl)
+                    agriSupplyKyc = currentKyc.agriSupplyKyc.copy(shopPhotoId = mediaId)
                 )
             }
             state.copy(kycState = updatedKyc)
@@ -188,8 +188,8 @@ class WorkerKycViewModel @Inject constructor(
 
         val isDocBlank = common.docNumber.isBlank()
         val isNumValid = KycValidation.validateIdentityNumber(common.docType, common.docNumber)
-        val hasFront = !common.frontImageUri.isNullOrBlank()
-        val hasBack = !common.backImageUri.isNullOrBlank()
+        val hasFront = !common.frontImageId.isNullOrBlank()
+        val hasBack = !common.backImageId.isNullOrBlank()
 
         val errors = CommonIdentityErrors(
             docNumberError = when {
