@@ -122,9 +122,14 @@ fun WorkerKycScreen(
         onMachineryKycChange = { updatedMachinery ->
             kycViewModel.onEvent(WorkerKycEvent.UpdateMachineryState(updatedMachinery))
         },
+        isMachineUploading = uploadProgressMap[KycDocFieldType.MACHINERY_PHOTO] == true,
+        isLicenseUploading = uploadProgressMap[KycDocFieldType.MACHINERY_LICENSE] == true,
+
         onAgriKycChange = { updatedAgri ->
             kycViewModel.onEvent(WorkerKycEvent.UpdateAgriState(updatedAgri))
         },
+        isAgriLicenseUploading = uploadProgressMap[KycDocFieldType.AGRI_LICENSE] == true,
+        isShopUploading = uploadProgressMap[KycDocFieldType.AGRI_SHOP_PHOTO] == true,
         onImageSelected = { fieldType ->
             activeFieldType = fieldType
             showOptionDialog = true // Direct open source choice dialog (Camera vs Gallery)

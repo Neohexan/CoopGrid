@@ -60,8 +60,12 @@ fun WorkerKycContent(
     onCommonIdentityChange: (CommonIdentityKyc) -> Unit, // 👈 Parent ko changes notify karne ke liye
     onSkillKycChange: (PersonalSkillKyc) -> Unit,
     onMachineryKycChange: (MachineryRentalKyc) -> Unit,
+    isMachineUploading: Boolean = false,
+    isLicenseUploading: Boolean = false,
     onAgriKycChange: (AgriSupplyKyc) -> Unit,
     onImageSelected: (KycDocFieldType) -> Unit,    // 👈 Dialog trigger karne ke liye
+    isAgriLicenseUploading: Boolean = false,
+    isShopUploading: Boolean = false,
     onSubmitClick: () -> Unit                     // 👈 Submit validation trigger
 ) {
     Column(
@@ -246,8 +250,9 @@ fun WorkerKycContent(
                             },
                             onLicensePhotoClick = {
                                 onImageSelected(KycDocFieldType.MACHINERY_LICENSE) // 👈 Yahan MACHINERY_LICENSE hona chahiye
-                            }
-                        )
+                            },
+                            isMachineUploading = isMachineUploading,
+                            isLicenseUploading = isLicenseUploading                        )
                     }
 
                     ServiceOfferingType.AGRI_SUPPLY -> {
@@ -262,7 +267,10 @@ fun WorkerKycContent(
                             },
                             onLicensePhotoClick = {
                                 onImageSelected(KycDocFieldType.AGRI_LICENSE) // 👈 License Photo
-                            }
+                            },
+                            isAgriLicenseUploading = isAgriLicenseUploading,
+                            isShopUploading = isShopUploading
+
                         )
                     }
                 }
