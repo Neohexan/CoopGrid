@@ -19,11 +19,11 @@ from app.domains.worker.schemas import (
 # Router Logger
 logger = logging.getLogger("profile_server.worker.router")
 
-router = APIRouter(prefix="/api/v1/worker", tags=["Worker Domain"])
+router = APIRouter(tags=["Worker Domain"])
 
-
+# Abhi api ka naam me versiongin nahi kar rahe hai jaise v1 v2 etc
 @router.post(
-    "/profiles",
+    "/workers/register",
     response_model=WorkerRegistrationResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Register New Worker Profile",

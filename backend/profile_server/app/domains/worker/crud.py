@@ -1,10 +1,11 @@
 """
 Worker Domain CRUD Operations (worker.db)
 Handles transactional multi-table insertion with structured debugging logs.
+Synced with updated Kotlin DTO schemas.
 """
 
 import logging
-from datetime import datetime, timezone
+import time
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,7 +20,7 @@ from app.domains.worker.models import (
 )
 from app.domains.worker.schemas import WorkerRegistrationRequest, WorkerRegistrationResponse
 
-# Domain Logger Initialization
+# Logger Initialization
 logger = logging.getLogger("profile_server.worker.crud")
 
 
@@ -39,7 +40,7 @@ async def create_worker_profile(
     db: AsyncSession, user_id: str, request: WorkerRegistrationRequest
 ) -> WorkerRegistrationResponse:
     """
-    Saves incoming WorkerRegistrationRequest payload into 7+ relational tables atomically
+    Saves incoming WorkerRegistrationRequest payload into relational tables atomically
     with detailed lifecycle logging.
     """
     logger.info(f"[Worker Registration] Processing registration payload for user_id: {user_id}")
@@ -54,7 +55,7 @@ async def create_worker_profile(
             alt_phone_number=request.alt_phone_number,
             email=request.email,
             categories=request.categories,
-            selected_services=request.selected_services,
+            selected_services=[],
         )
         db.add(profile)
 
@@ -80,16 +81,15 @@ async def create_worker_profile(
         # 3. Personal Trade Skills
         if request.skills:
             logger.debug(f"[{user_id}] Step 3: Processing {len(request.skills)} trade skills...")
-            for idx, skill_item in enumerate(request.skills):
+            for skill_item in request.skills:
                 skill = WorkerSkill(
                     user_id=user_id,
                     category_code=skill_item.category_code,
                     trade_code=skill_item.trade_code,
-                    skill_codes=skill_item.skill_codes,
+                    sub_skill=skill_item.sub_skill,
                     primary_category=skill_item.primary_category,
                     specific_skill=skill_item.specific_skill,
-                    sub_skill=skill_item.sub_skill,
-                    sub_skills=skill_item.sub_skills,
+                    sub_specific_skill=skill_item.sub_specific_skill,
                     experience_years=skill_item.experience_years,
                     expected_wage=skill_item.expected_wage,
                     wage_type=skill_item.wage_type,
@@ -197,23 +197,22 @@ async def create_worker_profile(
         )
         db.add(domain_kyc)
 
-        # Atomic Commit for all entities
-        logger.info(f"[{user_id}] Committing transaction for all worker entities...")
+        # Atomic Commit
+        logger.info(f"[{user_id}] Committing transaction for worker profile entities...")
         await db.commit()
-        logger.info(f"[{user_id}] Worker registration transaction committed successfully.")
+        logger.info(f"[{user_id}] Transaction committed successfully.")
 
-        current_timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        # Generates epoch time in milliseconds matching Kotlin Long
+        epoch_millis = int(time.time() * 1000)
+
         return WorkerRegistrationResponse(
             success=True,
             worker_id=user_id,
             message="Worker profile registered successfully across selected domains.",
-            timestamp=current_timestamp,
+            timestamp=epoch_millis,
         )
 
     except Exception as e:
-        logger.error(
-            f"[Worker Registration Error] Transaction failed for user_id '{user_id}'. Rolling back changes. Error: {str(e)}",
-            exc_info=True,
-        )
+        logger.error(f"[Worker Registration Error] user_id='{user_id}'. Error: {str(e)}", exc_info=True)
         await db.rollback()
         raise e

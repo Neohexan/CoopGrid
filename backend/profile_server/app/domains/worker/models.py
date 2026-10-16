@@ -1,7 +1,6 @@
 """
 Worker Domain Database Models (worker.db)
-Production-grade normalized database schema for Worker Services, Machinery Rentals, 
-Agri Supply Business, Spatial Addresses, and Segmented KYC Verification.
+Production-grade normalized database schema aligned with updated Kotlin DTO contracts.
 """
 
 from datetime import datetime
@@ -15,7 +14,6 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
-    Text,
 )
 from sqlalchemy.orm import relationship
 
@@ -36,9 +34,9 @@ class WorkerProfile(BaseWorker):
     alt_phone_number = Column(String(20), nullable=True, comment="Alternative contact phone")
     email = Column(String(255), nullable=True, index=True, comment="Contact email address")
     
-    # Selected Services & Categories list stored as JSON string
+    # Categories enabled list stored as JSON
     categories = Column(JSON, nullable=True, comment="List of enabled categories (e.g. SKILLED, MACHINERY)")
-    selected_services = Column(JSON, nullable=True, comment="List of active service keys")
+    selected_services = Column(JSON, nullable=True, default=list, comment="List of active service keys")
     
     is_active = Column(String(20), default="ACTIVE", comment="Account operational status")
     created_at = Column(DateTime, default=datetime.utcnow, comment="Profile creation timestamp")
@@ -87,7 +85,7 @@ class WorkerAddress(BaseWorker):
 class WorkerSkill(BaseWorker):
     """
     Personal Trade & Skill Details Table
-    Allows 1-to-N skills per worker.
+    Synced with updated WorkerSkillDto
     """
     __tablename__ = "worker_skills"
 
@@ -100,11 +98,10 @@ class WorkerSkill(BaseWorker):
     )
     category_code = Column(String(50), nullable=True)
     trade_code = Column(String(50), nullable=True)
-    skill_codes = Column(JSON, nullable=True, comment="List of skill codes")
+    sub_skill = Column(String(100), nullable=False, comment="Mapped from sub_skill field")
     primary_category = Column(String(100), nullable=False)
     specific_skill = Column(String(100), nullable=False)
-    sub_skill = Column(String(100), nullable=False)
-    sub_skills = Column(JSON, nullable=True, comment="List of sub-skills strings")
+    sub_specific_skill = Column(String(150), nullable=False)
     experience_years = Column(String(20), nullable=False)
     expected_wage = Column(String(50), nullable=False)
     wage_type = Column(String(50), nullable=False, comment="HOURLY, DAILY, PER_TASK")
@@ -118,7 +115,6 @@ class WorkerSkill(BaseWorker):
 class WorkerMachineryItem(BaseWorker):
     """
     Machinery Rental Equipment Inventory Table
-    Allows 1-to-N machines per worker.
     """
     __tablename__ = "worker_machinery_items"
 
@@ -143,7 +139,7 @@ class WorkerMachineryItem(BaseWorker):
 
 class WorkerAgriSupplyProfile(BaseWorker):
     """
-    Agri-Supply Commercial Profile Table (1-to-1 optional)
+    Agri-Supply Commercial Profile Table (Optional 1-to-1)
     """
     __tablename__ = "worker_agri_supply_profiles"
 
@@ -169,7 +165,7 @@ class WorkerAgriSupplyProfile(BaseWorker):
 
 class WorkerIdentityKyc(BaseWorker):
     """
-    Common Identity Verification Table (Aadhaar, Voter ID, PAN, etc.)
+    Common Identity Verification Table
     """
     __tablename__ = "worker_identity_kyc"
 
@@ -194,7 +190,6 @@ class WorkerIdentityKyc(BaseWorker):
 class WorkerDomainKyc(BaseWorker):
     """
     Specialized Service KYC Verification Table
-    Stores verification docs for Personal Skill, Machinery, and Agri Supply domains.
     """
     __tablename__ = "worker_domain_kyc"
 
