@@ -1,0 +1,78 @@
+$headers = @{
+    "Content-Type" = "application/json"
+    "X-User-ID"   = "worker_9001"
+    "X-User-Role" = "WORKER"
+}
+
+$body = '{
+    "full_name": "Ramesh Kumar",
+    "gender": "MALE",
+    "dob_millis": 800000000000,
+    "alt_phone_number": "9876543210",
+    "email": "ramesh@example.com",
+    "categories": ["SKILLED_TRADE", "MACHINERY_RENTAL"],
+    "skills": [
+      {
+        "category_code": "CAT_AGRI",
+        "trade_code": "TRD_PLOW",
+        "skill_codes": ["SKL_TRACTOR_DRIVER"],
+        "primary_category": "Agriculture",
+        "specific_skill": "Tractor Operator",
+        "sub_skill": "Plowing and Tilling",
+        "sub_skills": ["Deep Plowing", "Rotavator"],
+        "experience_years": "5",
+        "expected_wage": "800",
+        "wage_type": "DAILY",
+        "work_radius_km": 15.0,
+        "availability_type": "FULL_TIME"
+      }
+    ],
+    "machinery_items": [
+      {
+        "category_id": "MACH_TRACTOR",
+        "sub_category_id": "SUB_4WD",
+        "custom_machine_name": "Mahindra 575 DI",
+        "rate": "1200",
+        "rate_unit": "PER_HOUR",
+        "service_radius_km": 25.0,
+        "is_driver_and_fuel_included": true
+      }
+    ],
+    "agri_supply_profile": null,
+    "address": {
+      "address_type": "PERMANENT",
+      "house_or_building_no": "102",
+      "street_locality": "Station Road",
+      "pincode": "800001",
+      "state_code": "10",
+      "state_name": "Bihar",
+      "district_code": "215",
+      "district_name": "Patna",
+      "block_code": "01",
+      "block_name": "Sampatchak",
+      "latitude": 25.5941,
+      "longitude": 85.1376
+    },
+    "selected_services": ["SKILLED_TRADE", "MACHINERY_RENTAL"],
+    "kyc": {
+      "common_identity": {
+        "doc_type": "AADHAAR",
+        "doc_number": "123456789012",
+        "front_image_id": "img_front_101",
+        "back_image_id": "img_back_101"
+      },
+      "personal_skill_kyc": {
+        "certificate_name_or_number": "CERT-2024-991",
+        "certificate_image_id": "img_cert_555"
+      },
+      "machinery_rental_kyc": {
+        "rc_number": "BR01AB1234",
+        "fitness_cert_number": "FIT-8882",
+        "license_photo_id": "img_lic_11",
+        "machine_photo_id": "img_mach_22"
+      },
+      "agri_supply_kyc": null
+    }
+}'
+
+Invoke-RestMethod -Uri "http://127.0.0.1:8004/api/v1/worker/profiles" -Method Post -Headers $headers -Body $body

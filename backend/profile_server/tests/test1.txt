@@ -1,0 +1,1 @@
+Invoke-RestMethod -Uri "http://127.0.0.1:8004/api/v1/worker/profiles/me" -Method Get -Headers @{"X-User-ID"="worker_9001"}

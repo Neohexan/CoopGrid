@@ -5,6 +5,7 @@ from app.config import settings
 from app.database import init_databases
 from app.routers import health
 from app.domains.employer.router import router as employer_router
+from app.domains.worker.router import router as worker_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -22,6 +23,7 @@ app = FastAPI(
 )
 # Include the Employer Router
 app.include_router(employer_router)
+app.include_router(worker_router)
 
 # Include Heartbeat / Health Router
 app.include_router(health.router)
