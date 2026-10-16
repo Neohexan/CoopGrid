@@ -3,6 +3,7 @@ package com.example.coopgrid.worker.data.di
 
 import com.example.coopgrid.worker.data.apiservice.ApiService
 import com.example.coopgrid.worker.registration.data.auth.WorkerAuthApiService
+import com.example.coopgrid.worker.registration.data.form.WorkerFormApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,5 +29,13 @@ object WorkerApiModule {
         @WorkerNetwork retrofit: Retrofit // 👈 Injects Worker-annotated Retrofit
     ): ApiService {
         return retrofit.create(ApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWorkerFormApiService(
+        @WorkerNetwork retrofit: Retrofit // 👈 Injects Worker-annotated Retrofit
+    ): WorkerFormApiService {
+        return retrofit.create(WorkerFormApiService::class.java)
     }
 }

@@ -22,9 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.coopgrid.common.language.LanguageViewModel
-import com.example.coopgrid.ui.theme.CoopGridTheme
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.worker.registration.presentation.components.AppTextField
 import com.example.coopgrid.worker.registration.presentation.steps.step1.model.ScreenValidation
@@ -38,7 +36,7 @@ import java.util.Locale
 @Composable
 fun WorkerPersonalScreen(
     onNextClick: () -> Unit,
-    viewModel: WorkerFormViewModel = viewModel(),
+    viewModel: WorkerFormViewModel = hiltViewModel(),
     languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()

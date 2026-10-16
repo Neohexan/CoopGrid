@@ -1,16 +1,18 @@
 package com.example.coopgrid.worker.registration.viewmodel
 
+import com.example.coopgrid.worker.registration.presentation.steps.step2.model.ServiceOfferingType
 import com.example.coopgrid.worker.registration.presentation.steps.step21.model.WorkerSkillItem
 import com.example.coopgrid.worker.registration.presentation.steps.step22.model.MachineryRentalItem
 import com.example.coopgrid.worker.registration.presentation.steps.step23.model.AgriSupplyProfile
 import com.example.coopgrid.worker.registration.presentation.steps.step3.model.WorkerAddress
 import com.example.coopgrid.worker.registration.presentation.steps.step4.model.WorkerKycState
+import com.example.coopgrid.worker.registration.presentation.steps.step4.viewmodel.WorkerKycEvent
 
 sealed interface WorkerRegistrationUiState {
     object Idle : WorkerRegistrationUiState
     object Loading : WorkerRegistrationUiState
     data class Error(val message: String) : WorkerRegistrationUiState
-    object Success : WorkerRegistrationUiState
+    data class Success(val message: String, val workerId: String) : WorkerRegistrationUiState
 }
 sealed interface WorkerRegistrationEvent {
     // Step 1: Personal Details
@@ -19,6 +21,8 @@ sealed interface WorkerRegistrationEvent {
     data class UpdateDob(val dobMillis: Long?) : WorkerRegistrationEvent
     data class UpdateAltPhone(val phone: String) : WorkerRegistrationEvent
     data class UpdateEmail(val email: String) : WorkerRegistrationEvent
+
+    data class UpdateSelectedServices(val services: List<ServiceOfferingType>) : WorkerRegistrationEvent
 
     // Step 2: Multi-Skills Updates
     data class UpdateSkillsList(val skills: List<WorkerSkillItem>) : WorkerRegistrationEvent

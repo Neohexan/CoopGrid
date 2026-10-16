@@ -2,16 +2,22 @@ package com.example.coopgrid.worker.registration.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.coopgrid.worker.registration.data.form.repository.WorkerFormRepository
 import com.example.coopgrid.worker.registration.presentation.steps.step21.model.WorkerSkillItem
 import com.example.coopgrid.worker.registration.presentation.steps.step22.model.MachineryRentalItem
 import com.example.coopgrid.worker.registration.presentation.steps.step3.model.WorkerAddress
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class WorkerFormViewModel : ViewModel() {
+@HiltViewModel
+class WorkerFormViewModel @Inject constructor(
+    private val workerRepository: WorkerFormRepository
+): ViewModel() {
 
     // Single Source of Truth for Form Data
     private val _formState = MutableStateFlow(WorkerFormState())
@@ -38,6 +44,11 @@ class WorkerFormViewModel : ViewModel() {
             }
             is WorkerRegistrationEvent.UpdateEmail -> {
                 _formState.update { it.copy(email = event.email) }
+            }
+            is WorkerRegistrationEvent.UpdateSelectedServices -> {
+                _formState.update { currentState ->
+                    currentState.copy(selectedServices = event.services)
+                }
             }
             // isaka jarurat nahi hai abhi
             is WorkerRegistrationEvent.UpdateSkillsList -> {
@@ -132,8 +143,21 @@ class WorkerFormViewModel : ViewModel() {
     private fun submitRegistrationData() {
         viewModelScope.launch {
             _uiState.value = WorkerRegistrationUiState.Loading
-            // Yahan par _formState.value ka use karke DTO banayenge aur server par bhejenge
-            // try-catch ke sath success ya error handle karenge
+            // Repository ke through formState ko pass karke API call lagayein
+            val result = workerRepository.registerWorker(_formState.value)
+
+            result.onSuccess { response ->
+                // Success state handle karein (workerId ko save ya UI me show kar sakte hain)
+                _uiState.value = WorkerRegistrationUiState.Success(
+                    message = response.message,
+                    workerId = response.workerId ?: ""
+                )
+            }.onFailure { error ->
+                // Failure / Error state handle karein
+                _uiState.value = WorkerRegistrationUiState.Error(
+                    message = error.localizedMessage ?: "Something went wrong during registration"
+                )
+            }
         }
     }
 }

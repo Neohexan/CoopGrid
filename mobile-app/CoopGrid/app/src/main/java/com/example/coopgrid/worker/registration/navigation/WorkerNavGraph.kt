@@ -97,11 +97,17 @@ fun NavGraphBuilder.workerNavGraph(
         // -------------------------------------------------------------
         // STEP 1: Personal Details
         // -------------------------------------------------------------
-        composable<WorkerRoute.Step1PersonalDetails> {
+        composable<WorkerRoute.Step1PersonalDetails> {backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry<WorkerRoute.OnboardingGraph>()
+            }
+            val workerFormViewModel: WorkerFormViewModel = hiltViewModel(viewModelStoreOwner = parentEntry)
+
             WorkerPersonalScreen(
                 onNextClick = {
                     navController.navigate(WorkerRoute.Step2ServiceSelection)
-                }
+                },
+                viewModel = workerFormViewModel
             )
         }
 
@@ -109,6 +115,11 @@ fun NavGraphBuilder.workerNavGraph(
         // STEP 2: Service Type Selection
         // -------------------------------------------------------------
         composable<WorkerRoute.Step2ServiceSelection> { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry<WorkerRoute.OnboardingGraph>()
+            }
+            val workerFormViewModel: WorkerFormViewModel = hiltViewModel(viewModelStoreOwner = parentEntry)
+
             // Backstack entry se pehle se saved selection fetch karein
             val savedServices = backStackEntry.savedStateHandle.get<List<ServiceOfferingType>>("selected_services")
             val previousSelection = savedServices?.firstOrNull()
@@ -130,7 +141,8 @@ fun NavGraphBuilder.workerNavGraph(
                             navController.navigate(WorkerRoute.Step2AgriSupply)
                         }
                     }
-                }
+                },
+                viewModel = workerFormViewModel
             )
         }
 

@@ -17,6 +17,9 @@ import com.example.coopgrid.worker.registration.presentation.steps.step2.compone
 import com.example.coopgrid.worker.registration.presentation.steps.step2.model.ServiceOfferingType
 import com.example.coopgrid.worker.registration.presentation.steps.step2.strings.ServiceType
 import com.example.coopgrid.worker.registration.presentation.steps.step2.strings.ServiceTypeOption
+import com.example.coopgrid.worker.registration.presentation.steps.step4.viewmodel.WorkerKycEvent
+import com.example.coopgrid.worker.registration.viewmodel.WorkerFormViewModel
+import com.example.coopgrid.worker.registration.viewmodel.WorkerRegistrationEvent
 
 
 // =================================================================
@@ -25,14 +28,26 @@ import com.example.coopgrid.worker.registration.presentation.steps.step2.strings
 @Composable
 fun ServiceTypeSelectionRoute(
     initialSelectedType: ServiceOfferingType? = null,
+    viewModel: WorkerFormViewModel = hiltViewModel(),
     onNextClicked: (ServiceOfferingType) -> Unit,
     languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
+    val formState by viewModel.formState.collectAsStateWithLifecycle()
+
+    // FormState se currently selected services ko track karein (agar list hai toh pehla item ya multi-select)
+    // Agar aapka selectedServices ek List hai, toh hum uske mutabiq handle kar sakte hain.
+    // Yahan current selection state nikal rahe hain:
+    val currentSelectedType = initialSelectedType
+        ?: formState.selectedServices.firstOrNull()
 
     ServiceTypeSelectionContent(
-        strings = appStrings.workerFlow.serviceType, // 👈 Localized JSON model
-        initialSelectedType = initialSelectedType,
+        strings = appStrings.workerFlow.serviceType,
+        initialSelectedType = currentSelectedType,
+        onServiceSelected = { selectedType ->
+            // ViewModel me directly update event bhej dein
+            viewModel.onEvent(WorkerRegistrationEvent.UpdateSelectedServices(listOf(selectedType)))
+        },
         onNextClicked = onNextClicked
     )
 }
@@ -44,10 +59,11 @@ fun ServiceTypeSelectionRoute(
 fun ServiceTypeSelectionContent(
     strings: ServiceType,
     initialSelectedType: ServiceOfferingType? = null,
+    onServiceSelected: (ServiceOfferingType) -> Unit,
     onNextClicked: (ServiceOfferingType) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var selectedType by remember { mutableStateOf(initialSelectedType) }
+    var selectedType by remember(initialSelectedType) { mutableStateOf(initialSelectedType) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Column(
@@ -83,6 +99,7 @@ fun ServiceTypeSelectionContent(
                 onSelect = {
                     errorMessage = null
                     selectedType = ServiceOfferingType.PERSONAL_SKILL
+                    onServiceSelected(ServiceOfferingType.PERSONAL_SKILL)
                 }
             )
 
@@ -95,6 +112,7 @@ fun ServiceTypeSelectionContent(
                 onSelect = {
                     errorMessage = null
                     selectedType = ServiceOfferingType.MACHINERY_RENTAL
+                    onServiceSelected(ServiceOfferingType.MACHINERY_RENTAL)
                 }
             )
 
@@ -107,6 +125,7 @@ fun ServiceTypeSelectionContent(
                 onSelect = {
                     errorMessage = null
                     selectedType = ServiceOfferingType.AGRI_SUPPLY
+                    onServiceSelected(ServiceOfferingType.AGRI_SUPPLY)
                 }
             )
 
@@ -170,7 +189,8 @@ fun ServiceTypeSelectionContentPreview() {
         ServiceTypeSelectionContent(
             strings = sampleStrings,
             initialSelectedType = ServiceOfferingType.PERSONAL_SKILL,
-            onNextClicked = {}
+            onNextClicked = {},
+            onServiceSelected = {}
         )
     }
 }

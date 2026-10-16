@@ -142,6 +142,10 @@ fun WorkerKycScreen(
                     registrationViewModel.onEvent(
                         WorkerRegistrationEvent.UpdateKycState(validKycData)
                     )
+                    // 3. Trigger final server submission event
+                    registrationViewModel.onEvent(
+                        WorkerRegistrationEvent.SubmitRegistration
+                    )
                     // Move to next step
                     onKycComplete()
                 }

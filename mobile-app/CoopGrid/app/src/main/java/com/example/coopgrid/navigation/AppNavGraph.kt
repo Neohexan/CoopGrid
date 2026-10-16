@@ -91,9 +91,9 @@ fun AppNavGraph(
             navController = navController,
             onOnboardingComplete = {
                 // Clear Onboarding Graph from backstack & Go to Home Screen
-                navController.navigate(Screen.WorkerHome.route) {
-                    popUpTo<WorkerRoute.OnboardingGraph> { inclusive = true }
-                }
+//                navController.navigate(Screen.WorkerHome.route) {
+//                    popUpTo<WorkerRoute.OnboardingGraph> { inclusive = true }
+//                }
             }
         )
 

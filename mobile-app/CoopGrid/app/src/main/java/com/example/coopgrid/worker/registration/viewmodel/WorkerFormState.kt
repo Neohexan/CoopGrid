@@ -40,7 +40,4 @@ data class WorkerFormState(
     val kycState: WorkerKycState = WorkerKycState(),
     val commonIdentityErrors: CommonIdentityErrors = CommonIdentityErrors(),
 
-    // Global Validation & Network Status
-    val isLoading: Boolean = false,
-    val errorMessage: String? = null
 )

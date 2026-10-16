@@ -55,7 +55,6 @@ fun WorkerAddressRoute(
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
     val allLocations by addressViewModel.locations.collectAsStateWithLifecycle()
     val stateOptions by addressViewModel.stateOptions.collectAsStateWithLifecycle()
-    val isLoading by addressViewModel.isLoading.collectAsStateWithLifecycle()
     val formState by viewModel.formState.collectAsStateWithLifecycle()
 
     var validationError by remember { mutableStateOf<String?>(null) }
@@ -96,51 +95,43 @@ fun WorkerAddressRoute(
         }
     }
 
-    if (isLoading) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
-    } else {
-        WorkerAddressScreen(
-            allLocations = allLocations,
-            stateOptions = stateOptions,
-            strings = appStrings.workerFlow.address,
-            address = formState.address,
-            validationError = validationError,
-            onAddressChange = { updatedAddress ->
+    WorkerAddressScreen(
+        allLocations = allLocations,
+        stateOptions = stateOptions,
+        strings = appStrings.workerFlow.address,
+        address = formState.address,
+        validationError = validationError,
+        onAddressChange = { updatedAddress ->
+            validationError = null
+            viewModel.onEvent(WorkerRegistrationEvent.UpdateAddress(updatedAddress))
+        },
+        onSaveAndContinue = {
+            val currentAddress = formState.address
+            if (currentAddress.streetLocality.isBlank() ||
+                currentAddress.selectedStateCode.isBlank() ||
+                currentAddress.selectedDistrictCode.isBlank() ||
+                currentAddress.pincode.length < 6
+            ) {
+                validationError = appStrings.workerFlow.address.fillRequiredFieldsError
+            } else if (!currentAddress.isGpsCaptured || currentAddress.latitude == null || currentAddress.longitude == null) {
+                validationError = "Please capture your GPS location to proceed."
+            } else {
                 validationError = null
-                viewModel.onEvent(WorkerRegistrationEvent.UpdateAddress(updatedAddress))
-            },
-            onSaveAndContinue = {
-                val currentAddress = formState.address
-                if (currentAddress.streetLocality.isBlank() ||
-                    currentAddress.selectedStateCode.isBlank() ||
-                    currentAddress.selectedDistrictCode.isBlank() ||
-                    currentAddress.pincode.length < 6
-                ) {
-                    validationError = appStrings.workerFlow.address.fillRequiredFieldsError
-                } else if (!currentAddress.isGpsCaptured || currentAddress.latitude == null || currentAddress.longitude == null) {
-                    validationError = "Please capture your GPS location to proceed."
-                } else {
-                    validationError = null
-                    onSaveAndContinue()
-                }
-            },
-            // WorkerAddressRoute ke andar location detection logic:
-            onDetectGpsLocation = {
-                // Agar GPS on hai, tab permission launcher fire karein
-                locationPermissionLauncher.launch(
-                    arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    )
-                )
+                onSaveAndContinue()
             }
-        )
-    }
+        },
+        // WorkerAddressRoute ke andar location detection logic:
+        onDetectGpsLocation = {
+            // Agar GPS on hai, tab permission launcher fire karein
+            locationPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+    )
+
 }
 
 // =================================================================
