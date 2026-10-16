@@ -58,9 +58,9 @@ fun WorkerSkillCard(
 ) {
     val selectedLanguage by languageViewModel.currentLanguage.collectAsState()
 
-    // 1. Find Selected Category from categoryCode
-    val selectedCategory = remember(skillItem.primaryCategory, skillsCategories) {
-        skillsCategories.find { it.categoryCode == skillItem.primaryCategory }
+    // 1. Find Selected Category from selectedCategoryCode
+    val selectedCategory = remember(skillItem.selectedCategoryCode, skillsCategories) {
+        skillsCategories.find { it.categoryCode == skillItem.selectedCategoryCode }
     }
 
     // 2. Available Trades under selected category
@@ -68,19 +68,18 @@ fun WorkerSkillCard(
         selectedCategory?.trades ?: emptyList()
     }
 
-    // Find Selected Trade from tradeCode
-    val selectedTrade = remember(skillItem.specificSkill, availableTrades) {
-        availableTrades.find { it.tradeCode == skillItem.specificSkill }
+    // 2. Find Selected Trade from selectedTradeCode
+    val selectedTrade = remember(skillItem.selectedTradeCode, availableTrades) {
+        availableTrades.find { it.tradeCode == skillItem.selectedTradeCode }
     }
-
     // 3. Available Skills under selected trade
     val availableSkills = remember(selectedTrade) {
         selectedTrade?.skills ?: emptyList()
     }
 
     // Find Selected Skill from skillCode
-    val selectedSkill = remember(skillItem.subSkill, availableSkills) {
-        availableSkills.find { it.skillCode == skillItem.subSkill }
+    val selectedSkill = remember(skillItem.subSkillCode, availableSkills) {
+        availableSkills.find { it.skillCode == skillItem.subSkillCode }
     }
 
     Card(
@@ -134,9 +133,10 @@ fun WorkerSkillCard(
                 onItemSelected = { cat ->
                     onUpdate(
                         skillItem.copy(
-                            primaryCategory = cat.categoryCode,
-                            specificSkill = "",
-                            subSkill = ""
+                            selectedCategoryCode = cat.categoryCode, // primaryCategory ki jagah yeh use karein
+                            primaryCategory = cat.categoryName,
+                            selectedTradeCode = null,                // Reset trade
+                            subSkillCode = ""                            // Reset skill
                         )
                     )
                 }
@@ -159,8 +159,9 @@ fun WorkerSkillCard(
                     onItemSelected = { trade ->
                         onUpdate(
                             skillItem.copy(
-                                specificSkill = trade.tradeCode,
-                                subSkill = ""
+                                selectedTradeCode = trade.tradeCode, // specificSkill ki jagah yeh use karein
+                                specificSkill = trade.tradeName,
+                                subSkillCode = ""                        // Reset skill
                             )
                         )
                     }
@@ -182,7 +183,10 @@ fun WorkerSkillCard(
                     itemLabel = { skill -> skill.skillName },
                     placeholder = "Select Skill",
                     onItemSelected = { skill ->
-                        onUpdate(skillItem.copy(subSkill = skill.skillCode))
+                        onUpdate(skillItem.copy(
+                            subSkillCode = skill.skillCode,
+                            subSpecificSkill = skill.skillName
+                        ))
                     }
                 )
 

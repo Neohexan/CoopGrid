@@ -26,9 +26,9 @@ data class WorkerRegistrationRequest(
     @SerialName("dob_millis")
     val dobMillis: Long?,
     @SerialName("alt_phone_number")
-    val altPhoneNumber: String,
+    val altPhoneNumber: String?,
     @SerialName("email")
-    val email: String,
+    val email: String?,
     @SerialName("categories")
     val categories: List<String>,
     @SerialName("skills")
@@ -49,16 +49,14 @@ data class WorkerSkillDto(
     val categoryCode: String?,
     @SerialName("trade_code")
     val tradeCode: String?,
-    @SerialName("skill_codes")
-    val skillCodes: List<String>,
+    @SerialName("sub_skill")
+    val subSkillCode: String,
     @SerialName("primary_category")
     val primaryCategory: String,
     @SerialName("specific_skill")
     val specificSkill: String,
-    @SerialName("sub_skill")
-    val subSkill: String,
-    @SerialName("sub_skills")
-    val subSkills: List<String>,
+    @SerialName("sub_specific_skill")
+    val subSpecificSkill: String,
     @SerialName("experience_years")
     val experienceYears: String,
     @SerialName("expected_wage")

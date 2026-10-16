@@ -10,20 +10,18 @@ fun WorkerFormState.toRegistrationRequest(): WorkerRegistrationRequest {
         fullName = this.fullName,
         gender = this.selectedGender,
         dobMillis = this.selectedDobMillis,
-        altPhoneNumber = this.altPhoneNumber,
-        email = this.email,
+        altPhoneNumber = this.altPhoneNumber.takeIf { it.isNotBlank() },
+        email = this.email.takeIf { it.isNotBlank() },
 
         categories = this.selectedServices.map { it.id },
-
         skills = this.skillsList.map { skill ->
             WorkerSkillDto(
                 categoryCode = skill.selectedCategoryCode,
                 tradeCode = skill.selectedTradeCode,
-                skillCodes = skill.selectedSkillCodes,
+                subSkillCode = skill.subSkillCode,
                 primaryCategory = skill.primaryCategory,
                 specificSkill = skill.specificSkill,
-                subSkill = skill.subSkill,
-                subSkills = skill.selectedSubSkills,
+                subSpecificSkill = skill.subSpecificSkill,
                 experienceYears = skill.experienceYears,
                 expectedWage = skill.expectedWage,
                 wageType = skill.wageType.name,

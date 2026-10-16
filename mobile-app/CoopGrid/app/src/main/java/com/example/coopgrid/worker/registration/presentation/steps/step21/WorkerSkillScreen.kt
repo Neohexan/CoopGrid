@@ -133,7 +133,7 @@ fun WorkerSkillContent(
         AppPrimaryButton(
             text = strings.nextButton,
             onClick = onNextClick,
-            enabled = state.skillsList.any { it.primaryCategory.isNotBlank() && it.expectedWage.isNotBlank() }
+            enabled = state.skillsList.any { !it.selectedCategoryCode.isNullOrBlank() && it.expectedWage.isNotBlank() }
         )
     }
 }
