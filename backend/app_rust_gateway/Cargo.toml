@@ -26,6 +26,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 chrono = { version = "0.4", features = ["serde"] }
 jsonwebtoken = "8.2"
 dotenvy = "0.15"
+once_cell = "1.0"
  # test funtion ke liye 
 [dev-dependencies]
 tower = { version = "0.4", features = ["util"] }

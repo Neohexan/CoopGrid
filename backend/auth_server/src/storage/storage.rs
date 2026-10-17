@@ -1,17 +1,16 @@
+use crate::storage::persistence::{
+    OtpSession, StorageSnapshot, StoredUser, CURRENT_STORAGE_VERSION,
+};
 use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::{Read, Write};
 use std::path::Path;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 use tokio::sync::RwLock;
 use tracing::{error, info, warn};
 
-use crate::storage::persistence::{
-    OtpSession, StorageSnapshot, StoredUser, CURRENT_STORAGE_VERSION,
-};
-
 pub const PRIMARY_STORAGE_PATH: &str = "auth_store.bin";
-pub const TEMP_STORAGE_PATH: &str = "auth_store.tmp";
 
 /// Default OTP Expiry Duration: 300 Seconds (5 Minutes)
 pub const OTP_EXPIRY_DURATION_SECS: i64 = 300;
@@ -23,6 +22,8 @@ pub struct AuthStorageManager {
     users: Arc<RwLock<HashMap<String, StoredUser>>>,
     /// OTP Sessions map locked behind Async RwLock for maximum read-throughput
     otp_sessions: Arc<RwLock<HashMap<String, OtpSession>>>,
+    // 🛠️ Mutex ko Arc ke andar wrap karein taaki ye easily clone ho sake
+    disk_lock: Arc<Mutex<()>>,
 }
 
 impl AuthStorageManager {
@@ -40,6 +41,8 @@ impl AuthStorageManager {
         Self {
             users: Arc::new(RwLock::new(loaded_users)),
             otp_sessions: Arc::new(RwLock::new(HashMap::new())),
+            // 🛠️ Naya Mutex Lock disk synchronization ke liye
+            disk_lock: Arc::new(Mutex::new(())),
         }
     }
 
@@ -100,6 +103,9 @@ impl AuthStorageManager {
 
     /// ATOMIC FILE WRITE: Disk par Safe Mode me binary dump save karta hai
     pub async fn sync_to_disk(&self) -> Result<(), String> {
+        // 🛠️ Yahan lock acquire karte hain. Yeh ensure karega ki ek time par sirf ek hi thread disk par likhe.
+        let _lock = self.disk_lock.lock().await;
+
         let users_guard = self.users.read().await;
 
         let snapshot = StorageSnapshot {
@@ -108,12 +114,18 @@ impl AuthStorageManager {
             users: users_guard.clone(),
         };
 
+        // Lock ko jaldi free karne ke liye users_guard ko drop kar sakte hain (optional but good practice)
+        drop(users_guard);
+
         // Binary Bincode Serialization
         let encoded_bytes = bincode::serialize(&snapshot)
             .map_err(|e| format!("Bincode serialization error: {}", e))?;
 
-        // Step 1: Temporary File (`auth_store.tmp`) par Pehle Write Karte Hain
-        let temp_path = Path::new(TEMP_STORAGE_PATH);
+        // Unique Temporary File banayein (UUID use karke) taaki koi clash na ho
+        let unique_temp_filename = format!("auth_store_{}.tmp", uuid::Uuid::new_v4());
+        let temp_path = Path::new(&unique_temp_filename);
+
+        // Step 1: Unique Temporary File par Pehle Write Karte Hain
         let mut temp_file =
             File::create(temp_path).map_err(|e| format!("Temp file creation error: {}", e))?;
 
@@ -126,9 +138,11 @@ impl AuthStorageManager {
             .sync_all()
             .map_err(|e| format!("Disk flush error: {}", e))?;
 
-        // Step 2: Atomic Rename (`auth_store.tmp` -> `auth_store.bin`)
-        // Is step se file write hone se pehle crash hone par bhi main data loss nahi hota!
-        fs::rename(TEMP_STORAGE_PATH, PRIMARY_STORAGE_PATH)
+        // File handle ko explicitly drop karna zaroori hai (Windows par rename error se bachne ke liye)
+        drop(temp_file);
+
+        // Step 2: Atomic Rename (`auth_store_<uuid>.tmp` -> `auth_store.bin`)
+        fs::rename(temp_path, PRIMARY_STORAGE_PATH)
             .map_err(|e| format!("Atomic file swap error: {}", e))?;
 
         info!(

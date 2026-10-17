@@ -8,6 +8,18 @@ use tracing::{error, info};
 
 use crate::utils::errors::GatewayError;
 
+use once_cell::sync::Lazy;
+use std::time::Duration;
+
+// Ek global shared client jo connections pool aur keep-alive maintain karega
+pub static GLOBAL_HTTP_CLIENT: Lazy<Client> = Lazy::new(|| {
+    Client::builder()
+        .pool_max_idle_per_host(500) // Concurrency ke liye idle pool badha dein
+        .pool_idle_timeout(Duration::from_secs(30))
+        .build()
+        .unwrap()
+});
+
 /// Downstream Microservice ko HTTP Request safely forward karne wala core Proxy Handler.
 ///
 /// # Arguments
@@ -19,7 +31,7 @@ pub async fn proxy_handler(
     strip_prefix: &str,
     req: Request<Body>,
 ) -> Result<Response<Body>, GatewayError> {
-    let client = Client::new();
+    // let client = Client::new();
     let start_time = Instant::now();
 
     // 1. PATH REWRITING LOGIC
@@ -64,7 +76,7 @@ pub async fn proxy_handler(
 
     // 3. BUILD DOWNSTREAM HTTP REQUEST
     // Note: Method ko .as_str() karke pass kar rahe hain taaki version mismatch na ho
-    let mut downstream_request = client.request(
+    let mut downstream_request = GLOBAL_HTTP_CLIENT.request(
         reqwest::Method::from_bytes(method.as_str().as_bytes()).unwrap_or(reqwest::Method::GET),
         &target_uri_str,
     );
@@ -72,9 +84,9 @@ pub async fn proxy_handler(
     // FIX: Filter out Host, Content-Length and Hop-by-Hop headers!
     for (name, value) in headers.iter() {
         let name_str = name.as_str();
-        
+
         // Host aur Content-Length ko forward NAHI karenge (reqwest khud correct set karega)
-        if name_str.eq_ignore_ascii_case("host") 
+        if name_str.eq_ignore_ascii_case("host")
             || name_str.eq_ignore_ascii_case("content-length")
             || name_str.eq_ignore_ascii_case("connection")
         {
