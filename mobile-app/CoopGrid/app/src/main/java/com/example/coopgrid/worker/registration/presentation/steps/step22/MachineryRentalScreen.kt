@@ -19,32 +19,62 @@ import com.example.coopgrid.worker.registration.presentation.steps.step22.compon
 import com.example.coopgrid.worker.registration.presentation.steps.step22.model.MachineryCategory
 import com.example.coopgrid.worker.registration.presentation.steps.step22.model.MachineryRentalItem
 import com.example.coopgrid.worker.registration.presentation.steps.step22.strings.MachineryRental
+import com.example.coopgrid.worker.registration.viewmodel.WorkerFormViewModel
+import com.example.coopgrid.worker.registration.viewmodel.WorkerRegistrationEvent
 
 // =================================================================
 // 1. STATEFUL ROUTE (ViewModel & App Navigation Binding)
 // =================================================================
 @Composable
 fun MachineryRentalRoute(
-    initialItems: List<MachineryRentalItem> = listOf(MachineryRentalItem()),
-    onSaveAndContinue: (List<MachineryRentalItem>) -> Unit,
+    onSaveAndContinue: () -> Unit,
+    viewModel: WorkerFormViewModel = hiltViewModel(),
     machineryViewModel: MachineryViewModel = hiltViewModel(),
     languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
     val categories by machineryViewModel.categories.collectAsStateWithLifecycle()
     val isLoading by machineryViewModel.isLoading.collectAsStateWithLifecycle()
+    val formState by viewModel.formState.collectAsStateWithLifecycle()
     val selectedLanguage by languageViewModel.currentLanguage.collectAsStateWithLifecycle()
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
 
+    var validationError by remember { mutableStateOf<String?>(null) }
 
     MachineryRentalContent(
         categories = categories,
         selectedLanguage = selectedLanguage,
         strings = appStrings.workerFlow.machineryRental,
-        initialItems = initialItems,
-        onSaveAndContinue = onSaveAndContinue
+        machineryList = formState.machineryItems,
+        validationError = validationError,
+        onAddMachinery = {
+            validationError = null
+            viewModel.onEvent(WorkerRegistrationEvent.AddMachineryItem)
+        },
+        onRemoveMachinery = { machineryId ->
+            validationError = null
+            viewModel.onEvent(WorkerRegistrationEvent.RemoveMachineryItem(machineryId))
+        },
+        onUpdateMachinery = { updatedItem ->
+            validationError = null
+            viewModel.onEvent(WorkerRegistrationEvent.UpdateMachineryItem(updatedItem))
+        },
+        onToggleExpand = { machineryId ->
+            viewModel.onEvent(WorkerRegistrationEvent.ToggleMachineryExpand(machineryId))
+        },
+        onSaveAndContinue = {
+            val hasInvalidItem = formState.machineryItems.any {
+                it.categoryId.isBlank() || it.rate.isBlank()
+            }
+
+            if (hasInvalidItem) {
+                validationError = appStrings.workerFlow.machineryRental.requiredFieldError
+            } else {
+                validationError = null
+                onSaveAndContinue()
+            }
+        }
     )
 }
-
 
 // =================================================================
 // 2. STATELESS UI CONTENT (Pure Screen Rendering)
@@ -54,13 +84,16 @@ fun MachineryRentalContent(
     categories: List<MachineryCategory>,
     selectedLanguage: AppLanguage,
     strings: MachineryRental,
-    initialItems: List<MachineryRentalItem> = listOf(MachineryRentalItem()),
-    onSaveAndContinue: (List<MachineryRentalItem>) -> Unit,
+    machineryList: List<MachineryRentalItem>,
+    validationError: String?,
+    onAddMachinery: () -> Unit,
+    onRemoveMachinery: (String) -> Unit,
+    onUpdateMachinery: (MachineryRentalItem) -> Unit,
+    onToggleExpand: (String) -> Unit,
+    onSaveAndContinue: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val isHinglish = selectedLanguage == AppLanguage.HINGLISH
-    var machineryList by remember(initialItems) { mutableStateOf(initialItems) }
-    var validationError by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = modifier
@@ -92,25 +125,18 @@ fun MachineryRentalContent(
                 MachineryRentalCard(
                     itemNumber = index + 1,
                     item = item,
-                    categories = categories, // Fixed: Passed JSON categories parameter
-                    isHinglish = isHinglish,  // Fixed: Clean language parameter
+                    categories = categories,
+                    isHinglish = isHinglish,
                     strings = strings,
                     showRemoveButton = machineryList.size > 1,
                     onItemChange = { updatedItem ->
-                        validationError = null
-                        machineryList = machineryList.mapIndexed { i, currentItem ->
-                            if (i == index) updatedItem else currentItem
-                        }
+                        onUpdateMachinery(updatedItem)
                     },
                     onRemoveClick = {
-                        validationError = null
-                        machineryList = machineryList.filterIndexed { i, _ -> i != index }
+                        onRemoveMachinery(item.id)
                     },
                     onToggleExpand = {
-                        machineryList = machineryList.mapIndexed { i, currentItem ->
-                            if (i == index) currentItem.copy(isExpanded = !currentItem.isExpanded)
-                            else currentItem
-                        }
+                        onToggleExpand(item.id)
                     }
                 )
             }
@@ -118,11 +144,7 @@ fun MachineryRentalContent(
             // "+ Add Another Machine" Button (Max limit 5)
             if (machineryList.size < 5) {
                 OutlinedButton(
-                    onClick = {
-                        validationError = null
-                        val collapsedList = machineryList.map { it.copy(isExpanded = false) }
-                        machineryList = collapsedList + MachineryRentalItem(isExpanded = true)
-                    },
+                    onClick = onAddMachinery,
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.medium
                 ) {
@@ -141,7 +163,7 @@ fun MachineryRentalContent(
 
             if (validationError != null) {
                 Text(
-                    text = validationError!!,
+                    text = validationError,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )
@@ -153,17 +175,7 @@ fun MachineryRentalContent(
         // Save & Continue Action Button
         AppPrimaryButton(
             text = strings.saveAndContinue,
-            onClick = {
-                val hasInvalidItem = machineryList.any {
-                    it.categoryId.isBlank() || it.rate.isBlank()
-                }
-
-                if (hasInvalidItem) {
-                    validationError = strings.requiredFieldError
-                } else {
-                    onSaveAndContinue(machineryList)
-                }
-            },
+            onClick = onSaveAndContinue,
             modifier = Modifier.fillMaxWidth()
         )
     }

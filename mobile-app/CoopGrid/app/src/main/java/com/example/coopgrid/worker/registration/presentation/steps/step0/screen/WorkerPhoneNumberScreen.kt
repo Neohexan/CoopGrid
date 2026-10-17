@@ -1,6 +1,7 @@
 package com.example.coopgrid.worker.registration.presentation.steps.step0.screen
 
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -10,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -18,9 +20,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.coopgrid.common.language.LanguageViewModel
+import com.example.coopgrid.employer.registration.presentation.steps.step0.EmpAuthNetworkState
 import com.example.coopgrid.ui.theme.CoopGridTheme
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.worker.registration.presentation.components.AppTextField
+import com.example.coopgrid.worker.registration.presentation.steps.step0.WorkerAuthNetworkState
 import com.example.coopgrid.worker.registration.presentation.steps.step0.WorkerAuthViewModelStepZero
 import com.example.coopgrid.worker.registration.presentation.steps.step0.string.WorkerPhoneNumStrings
 
@@ -34,17 +38,36 @@ fun WorkerPhoneRoute(
     onNavigateToOtp: () -> Unit = {},
     onNavigateToTerms: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     // Collect Localization JSON State & UI State
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
     val authState by authViewModel.uiState.collectAsStateWithLifecycle()
+    val networkState by authViewModel.networkState.collectAsStateWithLifecycle()
+
+    // --- ONE-TIME UI SIDE EFFECTS (TOAST & NAVIGATION) ---
+    LaunchedEffect(networkState) {
+        when (val state = networkState) {
+            is WorkerAuthNetworkState.OtpSent -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+                authViewModel.resetNetworkState() // Event repeatation block karne ke liye reset
+                onNavigateToOtp() // Successfully OTP send hone par screen navigate hogi
+            }
+            is WorkerAuthNetworkState.Error -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
+                authViewModel.resetNetworkState()
+            }
+            else -> Unit // Clean way to represent "Do Nothing"
+        }
+    }
+
 
     WorkerPhoneContent(
         strings = appStrings.workerFlow.workerPhone,
         phoneNumber = authState.phoneNumber,
         isPhoneValid = authState.isPhoneValid,
-        isLoading = authState.isLoading,
+        isLoading =  networkState is WorkerAuthNetworkState.Loading,
         onPhoneNumberChange = authViewModel::onPhoneNumberChange,
-        onContinueClick = { authViewModel.sendOtp(onNavigateToOtp) },
+        onContinueClick = { authViewModel.sendOtp() },
         onTermsClick = onNavigateToTerms
     )
 }

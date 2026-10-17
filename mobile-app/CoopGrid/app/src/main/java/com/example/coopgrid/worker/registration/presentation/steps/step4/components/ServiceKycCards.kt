@@ -4,6 +4,7 @@ package com.example.coopgrid.worker.registration.presentation.steps.step4.compon
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.coopgrid.worker.registration.presentation.components.AppTextField
@@ -19,6 +20,7 @@ fun PersonalSkillKycCard(
     state: PersonalSkillKyc,
     strings: WorkerKyc,
     onStateChange: (PersonalSkillKyc) -> Unit,
+    onImageSelected: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -42,9 +44,9 @@ fun PersonalSkillKycCard(
 
             DocumentUploadCard(
                 title = strings.skillCertPhotoLabel,
-                selectedImageUri = state.certificateImageUri,
+                selectedImageUri = state.certificateImageId,
                 strings = strings,
-                onImageSelected = { onStateChange(state.copy(certificateImageUri = it)) }
+                onClick = {onImageSelected() }
             )
         }
     }
@@ -56,6 +58,10 @@ fun MachineryRentalKycCard(
     state: MachineryRentalKyc,
     strings: WorkerKyc,
     onStateChange: (MachineryRentalKyc) -> Unit,
+    onMachinePhotoClick: () -> Unit,
+    onLicensePhotoClick: () -> Unit,
+    isMachineUploading: Boolean = false,  // 👈 Loading flag for machine photo
+    isLicenseUploading: Boolean = false, // 👈 Loading flag for license photo
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -77,19 +83,31 @@ fun MachineryRentalKycCard(
                 placeholderText = strings.rcNumberHint
             )
 
-            DocumentUploadCard(
-                title = strings.rcPhotoLabel,
-                selectedImageUri = state.rcDocumentUri,
-                strings = strings,
-                onImageSelected = { onStateChange(state.copy(rcDocumentUri = it)) }
-            )
+            // 1. License / RC Proof Card with Loader
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                DocumentUploadCard(
+                    title = strings.rcPhotoLabel,
+                    selectedImageUri = state.licensePhotoId,
+                    strings = strings,
+                    onClick = onLicensePhotoClick
+                )
+                if (isLicenseUploading) {
+                    CircularProgressIndicator(modifier = Modifier.size(40.dp))
+                }
+            }
 
-            DocumentUploadCard(
-                title = strings.machinePhotoLabel,
-                selectedImageUri = state.machinePhotoUri,
-                strings = strings,
-                onImageSelected = { onStateChange(state.copy(machinePhotoUri = it)) }
-            )
+            // 2. Machine Photo Card with Loader
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                DocumentUploadCard(
+                    title = strings.machinePhotoLabel,
+                    selectedImageUri = state.machinePhotoId,
+                    strings = strings,
+                    onClick = onMachinePhotoClick
+                )
+                if (isMachineUploading) {
+                    CircularProgressIndicator(modifier = Modifier.size(40.dp))
+                }
+            }
         }
     }
 }
@@ -100,6 +118,10 @@ fun AgriSupplyKycCard(
     state: AgriSupplyKyc,
     strings: WorkerKyc,
     onStateChange: (AgriSupplyKyc) -> Unit,
+    onShopAgriPhotoClick: () -> Unit,    // 👈 Machine photo ke liye alag callback
+    onLicensePhotoClick: () -> Unit,    // 👈 License photo ke liye alag callback
+    isAgriLicenseUploading: Boolean = false, // 👈 Agri license loader
+    isShopUploading: Boolean = false,    // 👈 Shop photo loader
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -127,19 +149,34 @@ fun AgriSupplyKycCard(
                 placeholderText = strings.licenseNumberHint
             )
 
-            DocumentUploadCard(
-                title = strings.licenseDocPhotoLabel,
-                selectedImageUri = state.licenseDocUri,
-                strings = strings,
-                onImageSelected = { onStateChange(state.copy(licenseDocUri = it)) }
-            )
+            // 1. License Photo Card with Loader
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                DocumentUploadCard(
+                    title = strings.licenseDocPhotoLabel,
+                    selectedImageUri = state.licenseDocId,
+                    strings = strings,
+                    onClick = onLicensePhotoClick
+                )
+                if (isAgriLicenseUploading) {
+                    CircularProgressIndicator(modifier = Modifier.size(40.dp))
+                }
+            }
 
-            DocumentUploadCard(
-                title = strings.shopPhotoLabel,
-                selectedImageUri = state.shopPhotoUri,
-                strings = strings,
-                onImageSelected = { onStateChange(state.copy(shopPhotoUri = it)) }
-            )
+
+            // 2. Shop Photo Card with Loader
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                DocumentUploadCard(
+                    title = strings.shopPhotoLabel,
+                    selectedImageUri = state.shopPhotoId,
+                    strings = strings,
+                    onClick = onShopAgriPhotoClick
+                )
+                if (isShopUploading) {
+                    CircularProgressIndicator(modifier = Modifier.size(40.dp))
+                }
+            }
+
+
         }
     }
 }

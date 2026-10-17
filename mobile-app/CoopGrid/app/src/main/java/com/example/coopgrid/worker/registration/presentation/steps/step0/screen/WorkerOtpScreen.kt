@@ -1,5 +1,6 @@
 package com.example.coopgrid.worker.registration.presentation.steps.step0.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -21,7 +23,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.coopgrid.common.language.LanguageViewModel
+import com.example.coopgrid.employer.registration.presentation.steps.step0.EmpAuthNetworkState
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
+import com.example.coopgrid.worker.registration.presentation.steps.step0.WorkerAuthNetworkState
 import com.example.coopgrid.worker.registration.presentation.steps.step0.WorkerAuthViewModelStepZero
 import com.example.coopgrid.worker.registration.presentation.steps.step0.string.WorkerOtpStrings
 
@@ -30,25 +34,55 @@ import com.example.coopgrid.worker.registration.presentation.steps.step0.string.
 // =================================================================
 @Composable
 fun OtpRoute(
-    phoneNumber: String,
-    onVerifySuccess: () -> Unit,
+    onNavigateToHome: () -> Unit,
+    onNavigateToProfileSetup: () -> Unit,
     viewModel: WorkerAuthViewModelStepZero = hiltViewModel(),
     languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val networkState by viewModel.networkState.collectAsStateWithLifecycle()
+
+    // --- LAUNCHED EFFECT FOR ONE-TIME SIDE EFFECTS (TOAST & NAVIGATION) ---
+    LaunchedEffect(networkState) {
+        when (val state = networkState) {
+            is WorkerAuthNetworkState.Error -> {
+                // Network ya OTP verification error ka toast show karein
+                Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+                // Event trigger hone ke baad state reset karein taaki Toast repeat na ho
+                viewModel.resetNetworkState()
+            }
+            is WorkerAuthNetworkState.OtpSent -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+                viewModel.resetNetworkState()
+            }
+            is WorkerAuthNetworkState.Success -> {
+                // Conditional Navigation
+                if (state.isProfileComplete) {
+                    onNavigateToHome()
+                } else {
+                    onNavigateToProfileSetup()
+                }
+            }
+            is WorkerAuthNetworkState.Idle,
+            is WorkerAuthNetworkState.Loading -> {
+                // Do nothing
+            }
+        }
+    }
 
     OtpContent(
-        phoneNumber = phoneNumber,
+        phoneNumber = uiState.phoneNumber,
         otpCode = uiState.otpCode,
         canResendOtp = uiState.canResendOtp,
         resendTimerSeconds = uiState.resendTimerSeconds,
         isOtpValid = uiState.isOtpValid,
-        isLoading = uiState.isLoading,
+        isLoading = networkState is WorkerAuthNetworkState.Loading,
         strings = appStrings.workerFlow.workerOtp, // 👈 Directly from localized JSON
         onOtpCodeChange = viewModel::onOtpCodeChange,
-        onResendClick = viewModel::resendOtp,
-        onVerifyClick = { viewModel.verifyOtp(onVerifySuccess) }
+        onResendClick = { viewModel.verifyOtp() },
+        onVerifyClick = { viewModel.verifyOtp() }
     )
 }
 

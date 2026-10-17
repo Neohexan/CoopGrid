@@ -26,7 +26,6 @@ import com.example.coopgrid.ui.theme.AppLanguage
 
 fun NavGraphBuilder.employerNavGraph(
     navController: NavController,
-    currentLanguage: AppLanguage,
     onOnboardingComplete: () -> Unit
 ) {
     // 🔹 Type-Safe Nested Navigation Graph

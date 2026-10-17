@@ -25,15 +25,9 @@ fun DocumentUploadCard(
     title: String,
     selectedImageUri: String?,
     strings: WorkerKyc,
-    onImageSelected: (String) -> Unit,
+    onClick: () -> Unit, // 👈 Gallery launch karne ke bajaye ab yeh parent ka click callback lega
     modifier: Modifier = Modifier
 ) {
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let { onImageSelected(it.toString()) }
-    }
-
     Card(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
@@ -42,7 +36,7 @@ fun DocumentUploadCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .clickable { launcher.launch("image/*") }
+            .clickable { onClick() } // 👈 Ab card click par parent ka action chalega (Dialog khulega)
             .border(
                 width = 1.dp,
                 color = if (selectedImageUri != null) MaterialTheme.colorScheme.primary else Color.LightGray,

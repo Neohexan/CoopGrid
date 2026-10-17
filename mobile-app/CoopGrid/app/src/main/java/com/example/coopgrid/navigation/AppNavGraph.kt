@@ -91,16 +91,15 @@ fun AppNavGraph(
             navController = navController,
             onOnboardingComplete = {
                 // Clear Onboarding Graph from backstack & Go to Home Screen
-                navController.navigate(Screen.WorkerHome.route) {
-                    popUpTo<WorkerRoute.OnboardingGraph> { inclusive = true }
-                }
+//                navController.navigate(Screen.WorkerHome.route) {
+//                    popUpTo<WorkerRoute.OnboardingGraph> { inclusive = true }
+//                }
             }
         )
 
         // 2. Naya Employer Flow (Graph Registration)
         employerNavGraph(
             navController = navController,
-            currentLanguage = currentLanguage, // Jo aapka current app language hai
             onOnboardingComplete = {
                 // Employer Registration complete hone par Home / Dashboard Screen par bhejein
                 navController.navigate(Screen.EmployerHome.route) {

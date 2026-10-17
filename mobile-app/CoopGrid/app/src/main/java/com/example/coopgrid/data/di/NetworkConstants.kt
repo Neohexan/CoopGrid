@@ -6,7 +6,7 @@ object NetworkConstants {
     private const val IS_TUNNEL = false
 
     // 2. IP aur Tunnel Domains
-    private const val LOCAL_HOST = "172.26.123.58"
+    private const val LOCAL_HOST = "172.30.6.58"
     private const val TUNNEL_DOMAIN = "app-api.neohexane.com" // 👈 Yahan apna mila hua domain daliye (bina http/https aur port ke)
 
     // 3. Ports (const hatakar sirf val use karenge)

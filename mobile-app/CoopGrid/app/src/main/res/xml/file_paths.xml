@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- context.externalCacheDir ke liye yeh tag bilkul sahi hai -->
+    <external-cache-path
+        name="my_documents"
+        path="." />
+</paths>

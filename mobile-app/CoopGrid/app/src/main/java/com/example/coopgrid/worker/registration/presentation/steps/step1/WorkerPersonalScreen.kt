@@ -22,14 +22,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.coopgrid.common.language.LanguageViewModel
-import com.example.coopgrid.ui.theme.CoopGridTheme
 import com.example.coopgrid.worker.registration.presentation.components.AppPrimaryButton
 import com.example.coopgrid.worker.registration.presentation.components.AppTextField
 import com.example.coopgrid.worker.registration.presentation.steps.step1.model.ScreenValidation
 import com.example.coopgrid.worker.registration.viewmodel.WorkerFormState
 import com.example.coopgrid.worker.registration.viewmodel.WorkerFormViewModel
+import com.example.coopgrid.worker.registration.viewmodel.WorkerRegistrationEvent
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -37,20 +36,30 @@ import java.util.Locale
 @Composable
 fun WorkerPersonalScreen(
     onNextClick: () -> Unit,
-    viewModel: WorkerFormViewModel = viewModel(),
+    viewModel: WorkerFormViewModel = hiltViewModel(),
     languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
-    val state by viewModel.uiState.collectAsState()
+    val formState by viewModel.formState.collectAsStateWithLifecycle()
 
     WorkerPersonalContent(
-        state = state,
+        state = formState,
         strings = appStrings.workerFlow.workerPersonal,
-        onFullNameChange = viewModel::onFullNameChange,
-        onGenderChange = viewModel::onGenderChange,
-        onDobChange = viewModel::onDobChange,
-        onAltPhoneChange = viewModel::onAltPhoneChange,
-        onEmailChange = viewModel::onEmailChange,
+        onFullNameChange = { name ->
+            viewModel.onEvent(WorkerRegistrationEvent.UpdateFullName(name))
+        },
+        onGenderChange = { gender ->
+            viewModel.onEvent(WorkerRegistrationEvent.UpdateGender(gender))
+        },
+        onDobChange = { dob ->
+            viewModel.onEvent(WorkerRegistrationEvent.UpdateDob(dob))
+        },
+        onAltPhoneChange = { altPhone ->
+            viewModel.onEvent(WorkerRegistrationEvent.UpdateAltPhone(altPhone))
+        },
+        onEmailChange = { email ->
+            viewModel.onEvent(WorkerRegistrationEvent.UpdateEmail(email))
+        },
         onNextClick = onNextClick
     )
 }

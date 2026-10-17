@@ -66,41 +66,41 @@ private val mockStringsEnglish = AgriSupplyProfileStrings(
 
 // 2. Previews
 
-@Preview(name = "Hinglish Mode - Initial State", showBackground = true)
-@Composable
-fun AgriSupplyProfileScreenHinglishPreview() {
-    MaterialTheme {
-        Surface {
-            AgriSupplyProfileScreen(
-                categories = sampleCategories,
-                strings = mockStringsHinglish,
-                initialProfile = AgriSupplyProfile(),
-                onSaveAndContinue = {},
-                selectedLanguage = AppLanguage.HINGLISH
-            )
-        }
-    }
-}
-
-@Preview(name = "English Mode - Selected State", showBackground = true)
-@Composable
-fun AgriSupplyProfileScreenEnglishPreview() {
-    MaterialTheme {
-        Surface {
-            AgriSupplyProfileScreen(
-                categories = sampleCategories,
-                strings = mockStringsEnglish,
-                initialProfile = AgriSupplyProfile(
-                    businessName = "Kisan Krishi Kendra",
-                    selectedCategoryIds = listOf("seeds_plants"),
-                    selectedSubCategoryIds = listOf("crop_seeds"),
-                    serviceRadiusKm = 12f,
-                    offersDelivery = true,
-                    offersStorePickup = true
-                ),
-                onSaveAndContinue = {},
-                selectedLanguage = AppLanguage.ENGLISH
-            )
-        }
-    }
-}
+//@Preview(name = "Hinglish Mode - Initial State", showBackground = true)
+//@Composable
+//fun AgriSupplyProfileScreenHinglishPreview() {
+//    MaterialTheme {
+//        Surface {
+//            AgriSupplyProfileScreen(
+//                categories = sampleCategories,
+//                strings = mockStringsHinglish,
+//                initialProfile = AgriSupplyProfile(),
+//                onSaveAndContinue = {},
+//                selectedLanguage = AppLanguage.HINGLISH
+//            )
+//        }
+//    }
+//}
+//
+//@Preview(name = "English Mode - Selected State", showBackground = true)
+//@Composable
+//fun AgriSupplyProfileScreenEnglishPreview() {
+//    MaterialTheme {
+//        Surface {
+//            AgriSupplyProfileScreen(
+//                categories = sampleCategories,
+//                strings = mockStringsEnglish,
+//                initialProfile = AgriSupplyProfile(
+//                    businessName = "Kisan Krishi Kendra",
+//                    selectedCategoryIds = listOf("seeds_plants"),
+//                    selectedSubCategoryIds = listOf("crop_seeds"),
+//                    serviceRadiusKm = 12f,
+//                    offersDelivery = true,
+//                    offersStorePickup = true
+//                ),
+//                onSaveAndContinue = {},
+//                selectedLanguage = AppLanguage.ENGLISH
+//            )
+//        }
+//    }
+//}

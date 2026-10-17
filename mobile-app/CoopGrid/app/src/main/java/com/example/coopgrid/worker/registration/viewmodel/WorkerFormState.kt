@@ -1,7 +1,13 @@
 package com.example.coopgrid.worker.registration.viewmodel
 
+import com.example.coopgrid.worker.registration.presentation.steps.step2.model.ServiceOfferingType
 import com.example.coopgrid.worker.registration.presentation.steps.step21.model.JobCategory
 import com.example.coopgrid.worker.registration.presentation.steps.step21.model.WorkerSkillItem
+import com.example.coopgrid.worker.registration.presentation.steps.step22.model.MachineryRentalItem
+import com.example.coopgrid.worker.registration.presentation.steps.step23.model.AgriSupplyProfile
+import com.example.coopgrid.worker.registration.presentation.steps.step3.model.WorkerAddress
+import com.example.coopgrid.worker.registration.presentation.steps.step4.model.CommonIdentityErrors
+import com.example.coopgrid.worker.registration.presentation.steps.step4.model.WorkerKycState
 import java.util.UUID
 
 enum class WageType(val labelHinglish: String, val labelEnglish: String) {
@@ -10,12 +16,6 @@ enum class WageType(val labelHinglish: String, val labelEnglish: String) {
     CONTRACT("Contract (Theka)", "Contract Basis")
 }
 
-enum class AvailabilityType(val labelEnglish: String, val labelHinglish: String) {
-    FULL_TIME("Full Time", "Full Time (Pura Din)"),
-    PART_TIME("Part Time", "Part Time (Kuch Ghante)"),
-    CONTRACT("Contract Basis", "Contract / Theka Work"),
-    WEEKEND("Weekend Only", "Sirf Weekend")
-}
 
 data class WorkerFormState(
     // Step 1: Personal Details
@@ -25,10 +25,19 @@ data class WorkerFormState(
     val altPhoneNumber: String = "",
     val email: String = "",
     val categories: List<JobCategory> = emptyList(),
+
     // Step 2: Multi-Skills (1 to 3 items)
     val skillsList: List<WorkerSkillItem> = listOf(WorkerSkillItem()),
 
-    // Validation & Status
-    val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    // Step 3: Service Specific Profiles (Machinery / Agri Supply etc.)
+    val machineryItems: List<MachineryRentalItem> = emptyList(),
+    val agriSupplyProfile: AgriSupplyProfile = AgriSupplyProfile(),
+
+    // Step 4: Address Details
+    val address: WorkerAddress = WorkerAddress(),
+    val selectedServices: List<ServiceOfferingType> = emptyList(),
+    // Step 5: KYC & Documents State
+    val kycState: WorkerKycState = WorkerKycState(),
+    val commonIdentityErrors: CommonIdentityErrors = CommonIdentityErrors(),
+
 )
