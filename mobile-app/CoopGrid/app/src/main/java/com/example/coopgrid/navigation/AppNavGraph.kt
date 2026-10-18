@@ -9,9 +9,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.example.coopgrid.common.auth.screen.LoginScreen
-import com.example.coopgrid.common.auth.screen.OtpScreen
 import com.example.coopgrid.common.roleselection.AuthSelectionRoute
 import com.example.coopgrid.common.splash.AuthState
 import com.example.coopgrid.common.splash.SplashScreen
@@ -107,51 +104,5 @@ fun AppNavGraph(
                 }
             }
         )
-
-        // 3. Common Login Screen
-        composable(route = Screen.Login.route) {
-            LoginScreen(
-                language = currentLanguage,
-                onSendOtpClick = { phoneNumber ->
-                    navController.navigate(Screen.Otp.createRoute(phoneNumber, "ANY"))
-                }
-            )
-        }
-
-
-        // 4. OTP Screen (Verification for Login & Registration)
-        composable(
-            route = Screen.Otp.route,
-            arguments = listOf(
-                navArgument("phoneNumber") { type = NavType.StringType },
-                navArgument("userType") { type = NavType.StringType } // Naya parameter
-            )
-        ) { backStackEntry ->
-            val phoneNumber = backStackEntry.arguments?.getString("phoneNumber") ?: ""
-            val userType = backStackEntry.arguments?.getString("userType") ?: "WORKER"
-
-            OtpScreen(
-                phoneNumber = phoneNumber,
-                language = currentLanguage,
-                onVerifyClick = { otpCode ->
-                    // OTP Verification Success hone par dynamic navigation:
-                    if (userType == "EMPLOYER") {
-                        // Employer ke liye Step 2 screen khulegi
-                        navController.navigate(Screen.EmployerStep2.route) {
-                            popUpTo(Screen.EmployerStep1.route) { inclusive = true } // Back stack clean karein
-                        }
-                    } else {
-                        // Worker ke liye Direct Home Screen khulegi
-                        navController.navigate(Screen.WorkerHome.route) {
-                            popUpTo(Screen.WorkerStep3.route) { inclusive = true } // Back stack clean karein
-                        }
-                    }
-                },
-                onResendClick = {
-                    // Trigger Resend OTP API
-                }
-            )
-        }
-
     }
 }
