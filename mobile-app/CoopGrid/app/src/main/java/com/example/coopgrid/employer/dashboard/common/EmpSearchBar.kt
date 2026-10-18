@@ -1,4 +1,4 @@
-package com.example.coopgrid.ui.components
+package com.example.coopgrid.employer.dashboard.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun AppSearchBar(
+fun EmpSearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
     placeholderText: String = "Search jobs, skills...",
@@ -34,15 +34,13 @@ fun AppSearchBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(50.dp)
             .clip(RoundedCornerShape(14.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .border(
                 width = 1.dp,
                 color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f),
                 shape = RoundedCornerShape(14.dp)
-            )
-            .padding(horizontal = 12.dp),
+            ),
         contentAlignment = Alignment.CenterStart
     ) {
         TextField(
@@ -65,12 +63,13 @@ fun AppSearchBar(
             },
             trailingIcon = {
                 if (query.isNotEmpty()) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Clear Search",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.clickable { onQueryChange("") }
-                    )
+                    IconButton(onClick = { onQueryChange("") }) { // 👈 IconButton use karne se proper touch target aur ripple milta hai
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Clear Search",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             },
             singleLine = true,
