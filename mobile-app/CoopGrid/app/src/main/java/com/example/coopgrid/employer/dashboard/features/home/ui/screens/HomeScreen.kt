@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,8 +27,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.coopgrid.common.language.LanguageViewModel
 import com.example.coopgrid.employer.dashboard.common.EmpSearchBar
 import com.example.coopgrid.employer.dashboard.container.EmployerDashboardScreen
+import com.example.coopgrid.employer.dashboard.features.home.ui.components.EmpWorkerPostCard
 import com.example.coopgrid.employer.dashboard.features.home.ui.components.HomePostJobCompactCard
 import com.example.coopgrid.employer.dashboard.features.home.ui.components.HomeTopBar
+import com.example.coopgrid.employer.dashboard.features.home.ui.components.WorkerPostItemState
 import com.example.coopgrid.employer.dashboard.features.home.ui.strings.EmployerHomeStrings
 
 @Composable
@@ -37,6 +40,32 @@ fun HomeScreenRoute(
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
+
+    // Dummy Worker Posts Data
+    val dummyWorkerPosts = listOf(
+        WorkerPostItemState(
+            workerName = "Ramesh Kumar",
+            skillTitle = "Plumber",
+            postTitle = "Special 4-Day Home Leakage Repair Discount!",
+            level = "Expert",
+            originalPrice = "700",
+            offerPrice = "500",
+            offerValidity = "4 Days Offer",
+            description = "Aagami 4 dino tak koi bhi booking karega usko ₹200 off milega. Complete bathroom fixtures aur leakage repair included.",
+            location = "Sector 62, Noida"
+        ),
+        WorkerPostItemState(
+            workerName = "Amit Sharma",
+            skillTitle = "Electrician",
+            postTitle = "Full House Wiring & Fitting Special Rate",
+            level = "Intermediate",
+            originalPrice = "800",
+            offerPrice = "600",
+            offerValidity = "Limited Offer",
+            description = "Inverter installation aur AC point fitting par discount. Quick service within 1 hour.",
+            location = "Indirapuram, Ghaziabad"
+        )
+    )
 
     HomeScreenContent(
         userName = "Rahul Sharma",
@@ -48,6 +77,8 @@ fun HomeScreenRoute(
         onAccountClick = {},
         onSettingsClick = {},
         onPostJobClick = {},
+        workerPosts = dummyWorkerPosts,
+        onWorkerCardClick = { worker -> },
         modifier = Modifier.padding(bottom = bottomPadding)
     )
 }
@@ -63,6 +94,8 @@ fun HomeScreenContent(
     onAccountClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onPostJobClick: () -> Unit,
+    workerPosts: List<WorkerPostItemState>,
+    onWorkerCardClick: (WorkerPostItemState) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -106,6 +139,28 @@ fun HomeScreenContent(
                 HomePostJobCompactCard(
                     strings = employerHomeStrings,
                     onPostJobClick = onPostJobClick,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+
+            // Section Header for Workers List
+            item {
+                Spacer(modifier = Modifier.height(4.dp))
+                androidx.compose.material3.Text(
+                    text = "Available Workers Near You",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                    ),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+
+            // List of Worker Post Cards
+            items(workerPosts) { workerPost ->
+                EmpWorkerPostCard(
+                    post = workerPost,
+                    onCardClick = { onWorkerCardClick(workerPost) },
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }
