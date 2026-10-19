@@ -8,24 +8,9 @@ sealed class Screen(val route: String) {
     // Future screens ke routes yahan add honge:
     object Login : Screen("login_screen")
 
-    // OTP Screen me Phone Number pass karne ke liye argument route
-    object Otp : Screen("otp_screen/{phoneNumber}/{userType}") {
-        fun createRoute(phoneNumber: String, userType: String): String {
-            return "otp_screen/$phoneNumber/$userType"
-        }
-    }
-
-    object RegisterWorker : Screen("register_worker_screen")
-
-    object WorkerStep3 : Screen("worker_step3")
-
     object WorkerHome : Screen("worker_home")
 
-    // Employer 2-Step Registration
-    object EmployerStep1 : Screen("employer_step1")
-    object EmployerStep2 : Screen("employer_step2")
-
-    object EmployerHome : Screen("employer_home")
+    object EmployerDashboard : Screen("employer_dashboard")
 
 
 }

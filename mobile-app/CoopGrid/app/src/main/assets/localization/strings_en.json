@@ -367,6 +367,11 @@
                     "areaPlaceholder": "Enter shop number or warehouse address"
                 }
             }
+        },
+        "employerHome": {
+            "postJobCardTitle": "Hire Skilled Workers Fast",
+            "postJobCardSubtitle": "Post a job requirement and get applications from verified workers near you.",
+            "postJobButtonText": "Post a New Job"
         }
     }
 }

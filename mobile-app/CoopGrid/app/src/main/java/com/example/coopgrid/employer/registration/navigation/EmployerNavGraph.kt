@@ -24,7 +24,7 @@ import com.example.coopgrid.employer.registration.viewmodel.RegistrationViewMode
 import com.example.coopgrid.ui.theme.AppLanguage
 
 
-fun NavGraphBuilder.employerNavGraph(
+fun NavGraphBuilder.empRegNavGraph(
     navController: NavController,
     onOnboardingComplete: () -> Unit
 ) {

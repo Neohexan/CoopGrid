@@ -13,9 +13,10 @@ import com.example.coopgrid.common.roleselection.AuthSelectionRoute
 import com.example.coopgrid.common.splash.AuthState
 import com.example.coopgrid.common.splash.SplashScreen
 import com.example.coopgrid.common.splash.SplashViewModel
-import com.example.coopgrid.employer.registration.navigation.employerNavGraph
+import com.example.coopgrid.employer.dashboard.container.EmployerDashboardScreen
 
 import com.example.coopgrid.employer.registration.navigation.EmployerRoute
+import com.example.coopgrid.employer.registration.navigation.empRegNavGraph
 
 import com.example.coopgrid.worker.registration.navigation.WorkerRoute
 import com.example.coopgrid.worker.registration.navigation.workerNavGraph
@@ -45,7 +46,7 @@ fun AppNavGraph(
                             val targetHomeRoute = if (state.role == "WORKER") {
                                 Screen.WorkerHome.route // Ya aapka worker home route
                             } else {
-                                Screen.EmployerHome.route // Ya aapka employer home route
+                                Screen.EmployerDashboard.route // Ya aapka employer home route
                             }
 
                             navController.navigate(targetHomeRoute) {
@@ -95,14 +96,18 @@ fun AppNavGraph(
         )
 
         // 2. Naya Employer Flow (Graph Registration)
-        employerNavGraph(
+        empRegNavGraph(
             navController = navController,
             onOnboardingComplete = {
                 // Employer Registration complete hone par Home / Dashboard Screen par bhejein
-                navController.navigate(Screen.EmployerHome.route) {
+                navController.navigate(Screen.EmployerDashboard.route) {
                     popUpTo(EmployerRoute.Graph) { inclusive = true }
                 }
             }
         )
+
+        composable(route = Screen.EmployerDashboard.route) {
+            EmployerDashboardScreen()
+        }
     }
 }

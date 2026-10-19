@@ -1,5 +1,6 @@
 package com.example.coopgrid.data.lanlocal.model
 
+import com.example.coopgrid.employer.dashboard.features.home.ui.strings.EmployerHomeStrings
 import com.example.coopgrid.employer.registration.presentation.steps.step0.string.EmpOtpStrings
 import com.example.coopgrid.employer.registration.presentation.steps.step0.string.EmpPhoneNumStrings
 import com.example.coopgrid.employer.registration.presentation.steps.step0.string.EmpTerms
@@ -17,5 +18,6 @@ data class EmployerFlowStrings(
     val employerPersonal: EmployerPersonal = EmployerPersonal(),
     val employerOnboarding: EmployerOnboarding = EmployerOnboarding(),
     val businessDetails: BusinessDetails = BusinessDetails(),
-    val employerAddress: EmpAddress = EmpAddress()
+    val employerAddress: EmpAddress = EmpAddress(),
+    val employerHome: EmployerHomeStrings = EmployerHomeStrings()
 )

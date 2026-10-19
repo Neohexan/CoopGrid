@@ -13,14 +13,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.navigation.compose.rememberNavController
 import com.example.coopgrid.common.language.TestLocalizationScreen
+import com.example.coopgrid.employer.dashboard.container.EmployerDashboardScreen
 import com.example.coopgrid.navigation.AppNavGraph
 import com.example.coopgrid.ui.theme.CoopGridTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
     override fun attachBaseContext(newBase: Context) {
         val overrideConfig = Configuration(newBase.resources.configuration).apply {
             fontScale = 0.85f // 0.85f se text size XS (Extra Small) par lock ho jayega
@@ -53,7 +54,8 @@ class MainActivity : ComponentActivity() {
                             .padding(innerPadding) // Status bar & Bottom bar ke liye exact safe margin
                     ) {
 //                        TestLocalizationScreen()
-                        AppNavGraph()
+//                        AppNavGraph()
+                        EmployerDashboardScreen()
                     }
                 }
             }
