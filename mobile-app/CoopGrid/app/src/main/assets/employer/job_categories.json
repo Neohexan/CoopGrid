@@ -1,0 +1,64 @@
+{
+  "CAT_HOUSEHOLD": {
+    "categoryCode": "CAT_HOUSEHOLD",
+    "displayTitle": "Domestic & Home Services",
+    "skills": [
+      "Plumber",
+      "Electrician",
+      "Carpenter",
+      "Maid/Cleaner",
+      "Painter"
+    ],
+    "rateTypes": [
+      "FIXED_PRICE",
+      "PER_HOUR",
+      "PER_DAY"
+    ]
+  },
+  "CAT_FARMER": {
+    "categoryCode": "CAT_FARMER",
+    "displayTitle": "Agricultural Labor & Services",
+    "skills": [
+      "Crop Harvesting (Fasal Katai)",
+      "Tractor Operator",
+      "Irrigation Helper",
+      "Pesticide Spraying"
+    ],
+    "rateTypes": [
+      "PER_ACRE",
+      "PER_DAY",
+      "PER_BAG"
+    ]
+  },
+  "CAT_WHOLESALER": {
+    "categoryCode": "CAT_WHOLESALER",
+    "displayTitle": "Bulk Crop Purchase & Mandi Procurement",
+    "skills": [
+      "Wheat Buying (Gehun)",
+      "Paddy Buying (Dhan)",
+      "Vegetables Bulk",
+      "Pulses & Grains"
+    ],
+    "rateTypes": [
+      "PER_QUINTAL",
+      "PER_TON",
+      "PER_KG"
+    ],
+    "quantityUnit": "Quintals"
+  },
+  "CAT_COMPANY": {
+    "categoryCode": "CAT_COMPANY",
+    "displayTitle": "Commercial & Office Staffing",
+    "skills": [
+      "Office Electrician",
+      "Warehouse Loader",
+      "Security Guard",
+      "CCTV Technician"
+    ],
+    "rateTypes": [
+      "PER_DAY",
+      "PER_SHIFT",
+      "MONTHLY_CONTRACT"
+    ]
+  }
+}
