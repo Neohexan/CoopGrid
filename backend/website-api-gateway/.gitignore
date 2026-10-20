@@ -1,14 +1,27 @@
 # Rust build artifacts & target directory
 /target/
+Cargo.lock
 
 # Environment variables / secrets
 .env
+*.env
+.env.local
+*.pem
+*.key
+
+
+# Ignore RSA Key Certificates
+*.pem
+certs/*.pem
+!certs/.gitkeep
+
 
 # IDE specific files
 .vscode/
 .idea/
 *.swp
 *.swo
+*.rs.bk
 
 # OS generated files
 .DS_Store
