@@ -56,7 +56,14 @@ fun EmployerBottomBar(
         val currentRoute = navBackStackEntry?.destination?.route
 
         items.forEach { destination ->
-            val isSelected = currentRoute == destination.route
+
+            // 🌟 Yahan check lagayein ki agar destination Home hai,
+            // toh wo "emp_home_main" ya "emp_home" kisi par bhi selected ho
+            val isSelected = if (destination.route == EmployerDestination.Home.route) {
+                currentRoute == destination.route || currentRoute?.startsWith("emp_home") == true
+            } else {
+                currentRoute == destination.route
+            }
 
             // Har ek item ko clickable wrapper diya taaki bar compact rahe
             // FIXED: Column ke parameters ko sahi kiya gaya hai

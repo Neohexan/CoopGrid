@@ -35,7 +35,11 @@ import com.example.coopgrid.employer.dashboard.features.home.ui.strings.Employer
 
 @Composable
 fun HomeScreenRoute(
-    bottomPadding: Dp, // Scaffold se aane wali bottom navigation ki padding
+    bottomPadding: Dp = 0.dp, // Scaffold se aane wali bottom navigation ki padding
+    onWorkerCardClick: (WorkerPostItemState) -> Unit,
+    onAccountClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+    onPostJobClick: () -> Unit,
     languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
@@ -74,11 +78,11 @@ fun HomeScreenRoute(
         onSearchQueryChange = { searchQuery = it },
         employerHomeStrings =  appStrings.employerFlow.employerHome,
         onSearchClick = { query -> },
-        onAccountClick = {},
-        onSettingsClick = {},
-        onPostJobClick = {},
+        onAccountClick = onAccountClick,
+        onSettingsClick = onSettingsClick,
+        onPostJobClick = onPostJobClick,
         workerPosts = dummyWorkerPosts,
-        onWorkerCardClick = { worker -> },
+        onWorkerCardClick = onWorkerCardClick,
         modifier = Modifier.padding(bottom = bottomPadding)
     )
 }
@@ -147,7 +151,7 @@ fun HomeScreenContent(
             item {
                 Spacer(modifier = Modifier.height(4.dp))
                 androidx.compose.material3.Text(
-                    text = "Available Workers Near You",
+                    text = "Available Services Near You",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                     ),

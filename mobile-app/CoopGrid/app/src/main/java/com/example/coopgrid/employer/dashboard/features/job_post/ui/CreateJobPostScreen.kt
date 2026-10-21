@@ -12,6 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
+import com.example.coopgrid.employer.dashboard.common.EmpPrimaryButton
 import com.example.coopgrid.employer.dashboard.features.job_post.ui.components.CategoryBadgeCard
 import com.example.coopgrid.employer.dashboard.features.job_post.ui.components.JobCommonDetailsCard
 import com.example.coopgrid.employer.dashboard.features.job_post.ui.components.JobLocationSelectionCard
@@ -136,18 +137,10 @@ fun CreateJobPostContent(
 
             // Submit Button
             item {
-                Button(
+                EmpPrimaryButton(
                     onClick = onSubmitClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(
-                        text = "Publish Requirement",
-                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-                    )
-                }
+                    text = "Publish Requirement",
+                )
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
