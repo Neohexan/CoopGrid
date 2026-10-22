@@ -27,13 +27,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = Config::init();
     let port = config.server_port;
 
+    let live_frontend_url = config.frontend_url.clone();
     // 3. Initialize shared application state (Loads public PEM key & reqwest client)
     let state = AppState::init(config).expect("Failed to initialize AppState");
 
     // 4. Configure CORS for Website (Crucial for HttpOnly Cookies)
-    // 4. Configure CORS for Website (Explicit headers instead of Any)
+    // 4. Configure CORS dynamically (Localhost + Live Website from .env)
     let cors = CorsLayer::new()
-        .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
+        .allow_origin([
+            "http://localhost:3000".parse::<HeaderValue>().unwrap(), // Local development ke liye
+            live_frontend_url.parse::<HeaderValue>().expect("Invalid FRONTEND_URL in .env"), // Live website via Cloudflare tunnel
+        ])
         .allow_methods([
             Method::GET,
             Method::POST,
@@ -43,7 +47,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         ])
         .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION]) // <-- Yahan change kiya hai
         .allow_credentials(true); // Cookies pass hone ke liye true zaroori hai
-                                  // 5. Build Router with all private routes and middlewares
+
+    // 5. Build Router with all private routes and middlewares
     let app = create_router(state)
         .layer(cors)
         .layer(TraceLayer::new_for_http());

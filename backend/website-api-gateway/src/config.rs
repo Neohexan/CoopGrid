@@ -8,6 +8,7 @@ pub struct Config {
     pub profile_service_url: String,
     pub media_service_url: String,
     pub public_key_path: String,
+    pub frontend_url: String,
 }
 
 impl Config {
@@ -22,14 +23,14 @@ impl Config {
 
         let auth_service_url =
             env::var("AUTH_SERVICE_URL").expect("AUTH_SERVICE_URL must be set in .env");
-
         let profile_service_url =
             env::var("PROFILE_SERVICE_URL").expect("PROFILE_SERVICE_URL must be set in .env");
-
         let media_service_url =
             env::var("MEDIA_SERVICE_URL").expect("MEDIA_SERVICE_URL must be set in .env");
         let public_key_path =
-            env::var("PUBLIC_KEY_PATH").unwrap_or_else(|_| "certs/jwt_public.pem".to_string());
+            env::var("PUBLIC_KEY_PATH").expect("PUBLIC_KEY_PATH must be set in .env");
+        let frontend_url =
+            env::var("FRONTEND_URL").expect("FRONTEND_URL must be set in .env");
 
         Self {
             server_port,
@@ -37,6 +38,7 @@ impl Config {
             profile_service_url,
             media_service_url,
             public_key_path,
+            frontend_url,
         }
     }
 }

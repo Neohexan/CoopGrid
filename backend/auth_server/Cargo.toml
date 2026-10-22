@@ -2,15 +2,7 @@
 name = "auth_server"
 version = "0.1.0"
 edition = "2021"
-
-# [lib]
-# name = "auth_server"
-# path = "src/lib.rs"
-
-# [[bin]]
-# name = "auth_server"
-# path = "src/main.rs"
-# ==================================
+default-run = "auth_server"
 
 
 [dependencies]
@@ -33,6 +25,7 @@ bincode = "1.3.3"
 dashmap = "6.0"
 uuid = { version = "1.3", features = ["v4"] }
 rand = "0.8"
+argon2 = "0.5"
 # test funtion ke liye 
 
 
