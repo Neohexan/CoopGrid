@@ -1,0 +1,20 @@
+[package]
+name = "website-api-gateway"
+version = "0.1.0"
+edition = "2021"
+authors = ["Arvind Sharma <coopgrid@gmail.com>"]
+description = "A high-performance, cookie-based authenticated API Gateway for the website built with Rust and Axum"
+readme = "README.md"
+
+[dependencies]
+axum = "0.8"
+tokio = { version = "1.0", features = ["full"] }
+reqwest = { version = "0.12", features = ["json", "multipart"] }
+jsonwebtoken = { version = "11.1.0", features = ["rust_crypto"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tower-http = { version = "0.7", features = ["cors", "trace"] }
+tower = { version = "0.4", features = ["util"] }
+dotenvy = "0.15"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }

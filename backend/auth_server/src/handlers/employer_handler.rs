@@ -2,7 +2,7 @@ use crate::dtos::employer_dto::{
     EmpPhoneOtpRequest, EmpPhoneOtpResponse, EmpVerifyOtpRequest, EmpVerifyOtpResponse,
 };
 use crate::services::otp_service::OtpService;
-use crate::AppState;
+use crate::state::AppState;
 use axum::{body::Bytes, extract::State, http::StatusCode, response::IntoResponse, Json};
 use tracing::{error, info, warn};
 

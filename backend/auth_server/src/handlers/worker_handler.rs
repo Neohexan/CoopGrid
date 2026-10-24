@@ -2,7 +2,7 @@ use crate::dtos::worker_dto::{
     WorkerPhoneOtpRequest, WorkerPhoneOtpResponse, WorkerVerifyOtpRequest, WorkerVerifyOtpResponse,
 };
 use crate::services::otp_service::OtpService;
-use crate::AppState;
+use crate::state::AppState;
 use axum::{body::Bytes, extract::State, http::StatusCode, response::IntoResponse, Json};
 use tracing::{error, info, warn};
 
@@ -177,7 +177,9 @@ pub async fn verify_worker_otp_handler(
             );
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(WorkerVerifyOtpResponse::error("Failed to save user details")),
+                Json(WorkerVerifyOtpResponse::error(
+                    "Failed to save user details",
+                )),
             )
                 .into_response();
         }

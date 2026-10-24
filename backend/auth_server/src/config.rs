@@ -7,6 +7,7 @@ use tracing::info;
 pub struct Config {
     pub server_port: u16,
     pub gateway_url: String,
+    pub web_gateway_url: String,
     pub jwt_encoding_key: EncodingKey, // 👈 Pre-parsed RSA EncodingKey in RAM
     pub jwt_expiration_hours: i64,
 }
@@ -20,9 +21,10 @@ impl Config {
             .parse::<u16>()
             .expect("PORT environment variable must be a valid u16 integer");
 
-        let gateway_url = env::var("GATEWAY_URL")
-            .unwrap_or_else(|_| "http://127.0.0.1:8001".to_string());
-
+        let gateway_url =
+            env::var("GATEWAY_URL").unwrap_or_else(|_| "http://127.0.0.1:8001".to_string());
+        let web_gateway_url =
+            env::var("WEB_GATEWAY_URL").unwrap_or_else(|_| "http://127.0.0.1:8000".to_string());
         // 1. .env se path padhein
         let private_key_path = env::var("JWT_PRIVATE_KEY_PATH")
             .unwrap_or_else(|_| "./certs/jwt_private.pem".to_string());
@@ -51,6 +53,7 @@ impl Config {
         let config = Self {
             server_port,
             gateway_url,
+            web_gateway_url,
             jwt_encoding_key,
             jwt_expiration_hours,
         };

@@ -2,8 +2,8 @@ use crate::utils::errors::AuthError;
 use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
 // use std::fs;
+use axum_extra::extract::cookie::{Cookie, SameSite};
 use std::time::{SystemTime, UNIX_EPOCH};
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
     pub sub: String, // user_id
@@ -70,6 +70,62 @@ impl TokenService {
     }
 }
 
+// Admin ke liye specific claims structure (Regional Authorization ke sath)
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AdminClaims {
+    pub sub: String,           // Admin UUID
+    pub admin_id: String,      // Admin Username/ID
+    pub state: String,         // Regional State scope
+    pub district: String,      // Regional District scope
+    pub block: Option<String>, // Optional Block scope
+    pub role: String,          // "admin"
+    pub exp: usize,            // Expiration timestamp
+}
+
+impl TokenService {
+    /// Admin ke liye JWT token banata hai aur use secure HttpOnly Cookie mein pack karke deta hai
+    pub fn generate_admin_auth_cookie(
+        uuid: &str,
+        admin_id: &str,
+        state: &str,
+        district: &str,
+        block: Option<&str>,
+        encoding_key: &EncodingKey,
+    ) -> Result<Cookie<'static>, String> {
+        // Token expiry set karna (jaise 24 hours / 1 day)
+        let expiration = chrono::Utc::now()
+            .checked_add_signed(chrono::Duration::hours(24))
+            .expect("valid timestamp")
+            .timestamp() as usize;
+
+        let claims = AdminClaims {
+            sub: uuid.to_string(),
+            admin_id: admin_id.to_string(),
+            state: state.to_string(),
+            district: district.to_string(),
+            block: block.map(|b| b.to_string()),
+            role: "admin".to_string(),
+            exp: expiration,
+        };
+
+        // JWT Encode karna
+        let token = encode(&Header::new(Algorithm::RS256), &claims, encoding_key)
+            .map_err(|e| format!("Token generation failed: {}", e))?;
+
+        // Secure HTTP-Only Cookie build karna (axum-extra v0.10+ ke naye syntax ke sath)
+        // Yahan Cookie::build ko (name, value) do alag arguments chahiye hote hain
+        // ✅ Sahi: Naam aur value ko alag-alag pass karein
+        let cookie = Cookie::build(("token", token))
+            .path("/")
+            .http_only(true)
+            .secure(true) // Production me true (HTTPS)
+            .same_site(SameSite::Strict)
+            .max_age(time::Duration::days(7))
+            .build(); // Is version mein .build() method hi chalta hai
+
+        Ok(cookie)
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -94,13 +150,9 @@ mod tests {
         let test_phone = "+919876543210";
         let test_role = "EMPLOYER";
 
-        let token_pair = TokenService::generate_token_pair(
-            test_user_id,
-            test_phone,
-            test_role,
-            &encoding_key,
-        )
-        .expect("❌ Test Failed: Token Pair generation failed");
+        let token_pair =
+            TokenService::generate_token_pair(test_user_id, test_phone, test_role, &encoding_key)
+                .expect("❌ Test Failed: Token Pair generation failed");
 
         println!("\n✅ [GENERATED ACCESS TOKEN]: {}", token_pair.access_token);
         println!("✅ [GENERATED REFRESH TOKEN]: {}", token_pair.refresh_token);
