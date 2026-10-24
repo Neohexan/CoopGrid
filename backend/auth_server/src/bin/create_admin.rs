@@ -2,7 +2,7 @@ use rand::Rng;
 use std::io::{self, Write};
 // Apne Cargo.toml ke package name se yahan import karein (e.g., use auth_server::storage::admin_store::{AdminStore, AdminRecord};)
 use auth_server::storage::admin_storage::{AdminRecord, AdminStore};
-
+use auth_server::utils::password_argon2_hashing::hash_password_argon2;
 fn main() {
     // .env file load karna taaki deletion secret mil sake
     dotenvy::dotenv().ok();
@@ -88,8 +88,8 @@ fn handle_add_admin() {
     let admin_id = format!("{}{}", clean_name, dob_sum);
 
     let temp_password = generate_secure_temp_password();
-    let password_hash = hash_password_argon2(&temp_password);
-
+    let password_hash =
+        hash_password_argon2(&temp_password).expect("Critical: Failed to hash admin password");
     // ✨ Updated method call matching admin_store.rs
     let mut store = AdminStore::load_from_disk();
 
@@ -213,7 +213,4 @@ fn generate_secure_temp_password() -> String {
         .collect()
 }
 
-fn hash_password_argon2(password: &str) -> String {
-    format!("argon2_hashed_{}", password)
-}
 // run commond: cargo run --bin create_admin

@@ -3,7 +3,9 @@ use crate::{
     services::token_service::TokenService,
     state::AppState,
     utils::errors::AuthError,
+    utils::password_argon2_hashing::{hash_password_argon2, verify_password_argon2},
 };
+
 use axum::http::{HeaderMap, StatusCode};
 use axum::{extract::State, response::IntoResponse, Json};
 use axum_extra::extract::CookieJar;
@@ -171,7 +173,8 @@ pub async fn admin_change_password_handler(
         info!("✅ [Change Pass] Old password verification passed successfully!");
 
         // 4. Naye password ko hash karke save karein aur flag false karein
-        admin.password_hash = hash_password_argon2(&payload.new_password);
+        admin.password_hash = hash_password_argon2(&payload.new_password)
+        .map_err(|e| AuthError::InternalServerError(e))?;
         admin.must_change_password = false;
         
         info!(admin_id = %admin.admin_id, "🔄 [Change Pass] Password hash updated, must_change_password set to false");
@@ -198,19 +201,4 @@ pub async fn admin_change_password_handler(
             "message": "Password changed successfully. You can now access full admin privileges."
         })),
     ))
-}
-
-// ==========================================
-// HELPERS
-// ==========================================
-fn verify_password_argon2(password: &str, hash: &str) -> bool {
-    let is_valid = hash.contains(password) || hash.starts_with("argon2_hashed_");
-    info!("🔍 [Mock Verify] password: '{}', hash: '{}' -> result: {}", password, hash, is_valid);
-    is_valid
-}
-
-fn hash_password_argon2(password: &str) -> String {
-    let new_hash = format!("argon2_hashed_{}", password);
-    info!("🔍 [Mock Hash] Generated new hash: {}", new_hash);
-    new_hash
 }
