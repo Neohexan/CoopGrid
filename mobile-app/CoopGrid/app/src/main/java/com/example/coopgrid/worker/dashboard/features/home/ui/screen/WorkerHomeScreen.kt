@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.*
 import androidx.compose.ui.unit.Dp
@@ -33,6 +34,7 @@ fun WorkerHomeScreenRoute(
         onProfileClick =onProfileClick,
         onSettingsClick = onSettingsClick,
         onSearchClick = {},
+        bottomPadding = bottomPadding,
         modifier = Modifier.padding(bottom = bottomPadding)
     )
 }
@@ -46,6 +48,7 @@ fun WorkerHomeScreenContent(
     onProfileClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onSearchClick: (String) -> Unit,
+    bottomPadding: Dp,
     modifier: Modifier = Modifier
 ) {
     // Dummy Promos (Aage chal kar yeh server/API se aayenge)
@@ -85,32 +88,28 @@ fun WorkerHomeScreenContent(
         )
     )
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .statusBarsPadding()
-    ) {
-        // 1. Worker Top Bar (Profile, Name, Blue Tick & Settings)
-        WorkerHomeTopBar(
-            workerName = workerName,
-            strings = strings,
-            onProfileClick = onProfileClick,
-            onSettingsClick = onSettingsClick,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        // 2. Scrollable Content Area
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
+            // Scaffold topBar me status bar padding automatic properly manage ho jati hai
+            WorkerHomeTopBar(
+                workerName = workerName,
+                strings = strings,
+                onProfileClick = onProfileClick,
+                onSettingsClick = onSettingsClick,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
+        }
+    ) { innerPadding ->
+        // innerPadding layout ko TopBar ke theek niche se start karta hai (bina kisi bekar gap ke)
         LazyColumn(
             modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            contentPadding = PaddingValues(vertical = 8.dp),
+                .fillMaxSize()
+                .padding(innerPadding),
+            contentPadding = PaddingValues(top = 8.dp, bottom = bottomPadding + 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Search Bar Component
             item {
                 WorkerSearchBar(
                     query = searchQuery,
@@ -124,14 +123,10 @@ fun WorkerHomeScreenContent(
             item {
                 WorkerPromoBannerCarousel(
                     promos = dummyPromos,
-                    onPromoClick = { clickedPromo ->
-                        // Handle promo click
-                    },
+                    onPromoClick = { clickedPromo -> },
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }
-
-            // Aage chal kar yahan Worker ke liye Available Jobs / Projects cards aayenge
         }
     }
 }

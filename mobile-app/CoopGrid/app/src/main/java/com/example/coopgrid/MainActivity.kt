@@ -53,8 +53,8 @@ class MainActivity : ComponentActivity() {
                     ) {
 //                        TestLocalizationScreen()
 //                        AppNavGraph()
-//                        EmployerDashboardScreen()
-                        WorkerDashboardContainer()
+                        EmployerDashboardScreen()
+//                        WorkerDashboardContainer()
                     }
                 }
             }

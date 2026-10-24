@@ -17,6 +17,7 @@ import com.example.coopgrid.employer.dashboard.container.EmployerDashboardScreen
 
 import com.example.coopgrid.employer.registration.navigation.EmployerRoute
 import com.example.coopgrid.employer.registration.navigation.empRegNavGraph
+import com.example.coopgrid.worker.dashboard.container.WorkerDashboardContainer
 
 import com.example.coopgrid.worker.registration.navigation.WorkerRoute
 import com.example.coopgrid.worker.registration.navigation.workerNavGraph
@@ -44,9 +45,9 @@ fun AppNavGraph(
                         is AuthState.Authenticated -> {
                             // User ke role ke hisab se Home Screen par navigate karein
                             val targetHomeRoute = if (state.role == "WORKER") {
-                                Screen.WorkerHome.route // Ya aapka worker home route
+                                Screen.WorkerDashboard.route // Ya worker home route
                             } else {
-                                Screen.EmployerDashboard.route // Ya aapka employer home route
+                                Screen.EmployerDashboard.route // Ya employer home route
                             }
 
                             navController.navigate(targetHomeRoute) {
@@ -89,9 +90,9 @@ fun AppNavGraph(
             navController = navController,
             onOnboardingComplete = {
                 // Clear Onboarding Graph from backstack & Go to Home Screen
-//                navController.navigate(Screen.WorkerHome.route) {
-//                    popUpTo<WorkerRoute.OnboardingGraph> { inclusive = true }
-//                }
+                navController.navigate(Screen.WorkerDashboard.route) {
+                    popUpTo<WorkerRoute.OnboardingGraph> { inclusive = true }
+                }
             }
         )
 
@@ -108,6 +109,10 @@ fun AppNavGraph(
 
         composable(route = Screen.EmployerDashboard.route) {
             EmployerDashboardScreen()
+        }
+
+        composable(route = Screen.WorkerDashboard.route) {
+            WorkerDashboardContainer()
         }
     }
 }

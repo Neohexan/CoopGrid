@@ -6,6 +6,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.example.coopgrid.worker.dashboard.features.home.navigation.WorkerHomeNestedDestination
 import com.example.coopgrid.worker.dashboard.features.settings.ui.screen.WorkerSettingsScreen
 
 fun NavGraphBuilder.workerSettingsNavGraph(
@@ -14,7 +15,7 @@ fun NavGraphBuilder.workerSettingsNavGraph(
 ) {
     navigation(
         startDestination = WorkerSettingsDestination.MainSettings.route,
-        route = "worker_settings_graph"
+        route = WorkerHomeNestedDestination.Settings.route
     ) {
         composable(WorkerSettingsDestination.MainSettings.route) {
             WorkerSettingsScreen(

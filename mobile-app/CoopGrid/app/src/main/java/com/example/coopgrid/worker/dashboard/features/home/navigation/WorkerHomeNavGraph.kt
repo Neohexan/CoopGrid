@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.example.coopgrid.worker.dashboard.features.home.ui.screen.WorkerHomeScreenRoute
 import com.example.coopgrid.worker.dashboard.features.profile.navigation.workerProfileNavGraph
+import com.example.coopgrid.worker.dashboard.features.settings.navigation.workerSettingsNavGraph
 import com.example.coopgrid.worker.dashboard.navigation.WorkerDestination
 
 fun NavGraphBuilder.workerHomeNavGraph(
@@ -23,21 +24,24 @@ fun NavGraphBuilder.workerHomeNavGraph(
                 bottomPadding = bottomPadding,
                 onProfileClick = {
                     // Yahi par profile screen ka route navigate kar denge
-                    // navController.navigate("worker_profile_route")
+                     navController.navigate(WorkerHomeNestedDestination.Profile.route)
                 },
                 onSettingsClick = {
                     // Yahi par settings screen ka route navigate kar denge
-                    // navController.navigate("worker_settings_route")
+                     navController.navigate(WorkerHomeNestedDestination.Settings.route)
                 }
             )
         }
         // Example usage inside parent graph
-//        workerProfileNavGraph(
-//            navController = navController,
-//            bottomPadding = bottomPadding,
-//            uiState = workerProfileUiState
-//        )
+        workerProfileNavGraph(
+            navController = navController,
+            bottomPadding = bottomPadding,
+        )
 
+        workerSettingsNavGraph(
+            navController = navController,
+            bottomPadding = bottomPadding,
+        )
         // Future sub-screens yahan asani se add ho jayengi
     }
 }
