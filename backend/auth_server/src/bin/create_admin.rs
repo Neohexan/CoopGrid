@@ -1,7 +1,7 @@
 use rand::Rng;
 use std::io::{self, Write};
 // Apne Cargo.toml ke package name se yahan import karein (e.g., use auth_server::storage::admin_store::{AdminStore, AdminRecord};)
-use auth_server::storage::admin_store::{AdminRecord, AdminStore};
+use auth_server::storage::admin_storage::{AdminRecord, AdminStore};
 
 fn main() {
     // .env file load karna taaki deletion secret mil sake
@@ -90,7 +90,8 @@ fn handle_add_admin() {
     let temp_password = generate_secure_temp_password();
     let password_hash = hash_password_argon2(&temp_password);
 
-    let mut store = AdminStore::load();
+    // ✨ Updated method call matching admin_store.rs
+    let mut store = AdminStore::load_from_disk();
 
     if store.admins.iter().any(|a| a.admin_id == admin_id) {
         println!("\n[-] Error: Admin with ID '{}' already exists!", admin_id);
@@ -109,7 +110,8 @@ fn handle_add_admin() {
 
     store.admins.push(new_admin);
 
-    match store.save() {
+    // ✨ Updated save method call matching admin_store.rs
+    match store.save_to_disk() {
         Ok(_) => {
             println!("\n[+] Professional Admin successfully created!");
             println!("--------------------------------------------------");
@@ -149,14 +151,14 @@ fn handle_delete_admin() {
         return;
     }
 
-    let mut store = AdminStore::load();
+    let mut store = AdminStore::load_from_disk();
     let initial_len = store.admins.len();
 
     // Admin ko filter karke remove karna
     store.admins.retain(|a| a.admin_id != admin_id);
 
     if store.admins.len() < initial_len {
-        match store.save() {
+        match store.save_to_disk() {
             Ok(_) => println!(
                 "\n[+] Success: Admin '{}' has been permanently deleted.",
                 admin_id
@@ -171,7 +173,7 @@ fn handle_delete_admin() {
 // 3. List Admins Function (Basic Stats)
 fn handle_list_admins() {
     println!("\n--- Registered Admins Overview ---");
-    let store = AdminStore::load();
+    let store = AdminStore::load_from_disk();
 
     println!("Total Active Admins: {}\n", store.admins.len());
 
@@ -183,18 +185,18 @@ fn handle_list_admins() {
     for (index, admin) in store.admins.iter().enumerate() {
         println!("{}. Admin ID: {}", index + 1, admin.admin_id);
         println!(
-            "   Location: {}, {} (Block: {:?})",
+            "  Location: {}, {} (Block: {:?})",
             admin.state, admin.district, admin.block
         );
         println!(
-            "   UUID Bound: {}",
+            "  UUID Bound: {}",
             if admin.uuid.is_some() {
                 "Yes"
             } else {
                 "No (Pending First Login)"
             }
         );
-        println!("   Must Change Password: {}", admin.must_change_password);
+        println!("  Must Change Password: {}", admin.must_change_password);
         println!("--------------------------------------------------");
     }
 }
@@ -214,5 +216,4 @@ fn generate_secure_temp_password() -> String {
 fn hash_password_argon2(password: &str) -> String {
     format!("argon2_hashed_{}", password)
 }
-
 // run commond: cargo run --bin create_admin

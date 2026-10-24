@@ -22,6 +22,10 @@ pub enum AuthError {
     #[error("Unauthorized: {0}")]
     Unauthorized(String),
 
+    /// 401 - Invalid login credentials
+    #[error("Invalid credentials")]
+    InvalidCredentials,
+
     /// 400 - Validation or payload formatting failures
     #[error("Bad Request: {0}")]
     BadRequest(String),
@@ -65,6 +69,17 @@ impl IntoResponse for AuthError {
                     "Authentication failure"
                 );
                 (StatusCode::UNAUTHORIZED, details.clone())
+            }
+            AuthError::InvalidCredentials => {
+                error!(
+                    target: "auth_service::error",
+                    error_type = "InvalidCredentials",
+                    "Authentication failed"
+                );
+                (
+                    StatusCode::UNAUTHORIZED,
+                    "Invalid admin credentials".to_string(),
+                )
             }
             AuthError::BadRequest(details) => {
                 error!(

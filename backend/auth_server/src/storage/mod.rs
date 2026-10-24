@@ -1,6 +1,5 @@
+pub mod admin_storage;
 pub mod persistence;
 pub mod storage;
-pub mod admin_store;
-
-pub use persistence::{StoredUser, StorageSnapshot};
+pub use persistence::{StorageSnapshot, StoredUser};
 pub use storage::AuthStorageManager;
