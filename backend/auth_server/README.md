@@ -71,6 +71,7 @@ Detailed documentation is available in the `docs/` directory:
 - [Architecture](./docs/architecture.md) — Service components and dependencies
 - [Authentication Flow](./docs/auth-flow.md) — The flow from OTP to token issuance
 - [API Reference](./docs/api-reference.md) — Request and response details
+- [Admin API](./docs/admin-api.md) — Admin login and password-change details
 - [Security and Keys](./docs/security-and-keys.md) — JWT key and security guidance
 
 This README provides a high-level overview of the service. Implementation

@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from app.config import settings
 from app.database import init_databases
 from app.routers import health
+from app.domains.admin.admin_router import router as admin_router
 from app.domains.employer.router import router as employer_router
 from app.domains.worker.router import router as worker_router
 
@@ -24,6 +25,7 @@ app = FastAPI(
 # Include the Employer Router
 app.include_router(employer_router)
 app.include_router(worker_router)
+app.include_router(admin_router)
 
 # Include Heartbeat / Health Router
 app.include_router(health.router)
