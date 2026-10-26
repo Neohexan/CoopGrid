@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -79,21 +80,19 @@ fun WorkerJobDetailScreen(
             )
         },
         bottomBar = {
-            // Bottom Action Bar: Save for Later & Accept Job
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 0.dp,
-                shadowElevation = 0.dp
+            // Transparent Floating Action Bar Container
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding() // System gesture/nav bar overlap rokne ke liye
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .padding(bottom = bottomPadding),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // 1. Save for Later Button (Outlined)
                     OutlinedButton(
                         onClick = onSaveClick,
                         modifier = Modifier
@@ -116,6 +115,7 @@ fun WorkerJobDetailScreen(
                         )
                     }
 
+                    // 2. Accept Job Button (Primary Filled)
                     Button(
                         onClick = onAcceptClick,
                         modifier = Modifier

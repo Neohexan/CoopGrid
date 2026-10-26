@@ -44,10 +44,25 @@ fun WorkerBottomBar(
         val currentRoute = navBackStackEntry?.destination?.route
 
         items.forEach { destination ->
-            val isSelected = if (destination.route == WorkerDestination.Home.route) {
-                currentRoute == destination.route || currentRoute?.startsWith("worker_home") == true
-            } else {
-                currentRoute == destination.route
+            val isSelected = when (destination.route) {
+                WorkerDestination.Home.route -> {
+                    currentRoute == destination.route || currentRoute?.startsWith("worker_home") == true
+                }
+                WorkerDestination.Post.route -> {
+                    currentRoute == destination.route || currentRoute?.startsWith("worker_post") == true
+                }
+                WorkerDestination.Cart.route -> {
+                    currentRoute == destination.route || currentRoute?.startsWith("worker_cart") == true
+                }
+                WorkerDestination.Ordered.route -> {
+                    currentRoute == destination.route || currentRoute?.startsWith("worker_order") == true
+                }
+                WorkerDestination.Earning.route -> {
+                    currentRoute == destination.route || currentRoute?.startsWith("worker_earning") == true
+                }
+                else -> {
+                    currentRoute == destination.route
+                }
             }
 
             Column(
