@@ -14,6 +14,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.coopgrid.employer.dashboard.container.EmployerDashboardScreen
+import com.example.coopgrid.navigation.AppNavGraph
 import com.example.coopgrid.ui.theme.CoopGridTheme
 import com.example.coopgrid.worker.dashboard.container.WorkerDashboardContainer
 import dagger.hilt.android.AndroidEntryPoint
@@ -53,8 +54,8 @@ class MainActivity : ComponentActivity() {
                     ) {
 //                        TestLocalizationScreen()
 //                        AppNavGraph()
-                        EmployerDashboardScreen()
-//                        WorkerDashboardContainer()
+//                        EmployerDashboardScreen()
+                        WorkerDashboardContainer()
                     }
                 }
             }

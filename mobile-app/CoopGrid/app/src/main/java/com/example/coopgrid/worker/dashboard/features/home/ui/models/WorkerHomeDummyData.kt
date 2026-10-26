@@ -1,0 +1,85 @@
+package com.example.coopgrid.worker.dashboard.features.home.ui.models
+
+
+val dummyWorkerJobPosts = listOf(
+    WorkerJobPostModel(
+        jobId = "JOB_101",
+        employerId = "EMP_001",
+        employerName = "Ramesh Kumar",
+        employerCategoryCode = "CAT_FARMER",
+        employerRating = "4.9",
+        employerVerified = true,
+        jobTitle = "Wheat Harvesting & Tractor Driver Needed",
+        selectedSkill = "Tractor Driving",
+        description = "Need experienced tractor driver for wheat harvesting in 5-acre land. Equipment provided on-site. Need experienced tractor driver for wheat harvesting in 5-acre land. Equipment provided on-site. Need experienced tractor driver for wheat harvesting in 5-acre land. Equipment provided on-site. Need experienced tractor driver for wheat harvesting in 5-acre land. Equipment provided on-site.",
+        rateType = "PER_DAY",
+        offerPrice = "650",
+        quantityInfo = null,
+        location = "Varanasi, Uttar Pradesh",
+        postedTimeAgo = "1 hour ago"
+    ),
+    WorkerJobPostModel(
+        jobId = "JOB_102",
+        employerId = "EMP_002",
+        employerName = "Gupta Wholesalers",
+        employerCategoryCode = "CAT_WHOLESALER",
+        employerRating = "4.7",
+        employerVerified = true,
+        jobTitle = "Bulk Loading & Stacking Workers",
+        selectedSkill = "Heavy Lifting",
+        description = "Urgent requirement for grain bag loading onto transport trucks. Grade A wheat sacks handling.",
+        rateType = "PER_DAY",
+        offerPrice = "550",
+        quantityInfo = "100 Bags - Grade A",
+        location = "Mandi Yard, Kanpur",
+        postedTimeAgo = "3 hours ago"
+    ),
+    WorkerJobPostModel(
+        jobId = "JOB_103",
+        employerId = "EMP_003",
+        employerName = "Anita Singh",
+        employerCategoryCode = "CAT_HOUSEHOLD",
+        employerRating = "4.8",
+        employerVerified = true,
+        jobTitle = "Bathroom Plumbing Repair & Pipe Fitting",
+        selectedSkill = "Plumbing",
+        description = "Bathroom pipe leak repair, main valve check, and two tap replacements required immediately.",
+        rateType = "FIXED",
+        offerPrice = "400",
+        quantityInfo = null,
+        location = "Civil Lines, Prayagraj",
+        postedTimeAgo = "5 hours ago"
+    ),
+    WorkerJobPostModel(
+        jobId = "JOB_104",
+        employerId = "EMP_004",
+        employerName = "Verma Agro Machinery",
+        employerCategoryCode = "CAT_MACHINERY",
+        employerRating = "4.6",
+        employerVerified = true,
+        jobTitle = "Harvester Engine Maintenance & Mechanic Helper",
+        selectedSkill = "Mechanic Helper",
+        description = "Assisting senior mechanic with combine harvester gearbox oil change and minor welding work.",
+        rateType = "PER_DAY",
+        offerPrice = "750",
+        quantityInfo = "Duration: 2 Days",
+        location = "Industrial Area, Gorakhpur",
+        postedTimeAgo = "Yesterday"
+    ),
+    WorkerJobPostModel(
+        jobId = "JOB_105",
+        employerId = "EMP_005",
+        employerName = "Suresh Patel",
+        employerCategoryCode = "CAT_FARMER",
+        employerRating = "4.5",
+        employerVerified = false,
+        jobTitle = "Paddy Crop Watering & Canal Management",
+        selectedSkill = "Field Irrigation",
+        description = "Manage water flow into paddy fields from tube-well and local canal channel for 3 days.",
+        rateType = "PER_DAY",
+        offerPrice = "500",
+        quantityInfo = null,
+        location = "Mirzapur Rural, UP",
+        postedTimeAgo = "2 days ago"
+    )
+)

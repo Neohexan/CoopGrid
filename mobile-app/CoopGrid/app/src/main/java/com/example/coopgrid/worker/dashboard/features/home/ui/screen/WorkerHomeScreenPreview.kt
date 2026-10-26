@@ -21,6 +21,7 @@ private fun WorkerHomeScreenPreview() {
             onSettingsClick = {},
             onSearchClick = {},
             bottomPadding =0.dp,
+            onJobCardClick = {}
         )
     }
 }
@@ -39,6 +40,7 @@ private fun WorkerHomeScreenDarkModePreview() {
             onSettingsClick = {},
             onSearchClick = {},
             bottomPadding =0.dp,
+            onJobCardClick = {}
         )
     }
 }
