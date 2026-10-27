@@ -1,69 +1,104 @@
-import Image from "next/image";
+"use client";
+
+import React, { useState } from "react";
+import { PensatoriPreloader } from "@/components/preloader/PensatoriPreloader";
 
 export default function Home() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [replayKey, setReplayKey] = useState(0);
+
+  const handleReplay = () => {
+    setIsLoading(true);
+    setReplayKey((prev) => prev + 1);
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main className="min-h-screen bg-[#f5f5f5] text-[#111111] font-sans selection:bg-black selection:text-white">
+      {/* 1. KINETIC PRELOADER COMPONENT */}
+      {isLoading && (
+        <PensatoriPreloader
+          replayTrigger={replayKey}
+          speedMultiplier={1}
+          onComplete={() => setIsLoading(false)}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+      )}
+
+      {/* 2. MAIN COOPGRID ADMIN DASHBOARD CONTENT */}
+      <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col min-h-screen justify-between">
+        {/* Header Navigation */}
+        <header className="flex justify-between items-center border-b border-neutral-300 pb-6">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">CoopGrid Admin</h1>
+            <p className="text-xs font-mono text-neutral-500 uppercase tracking-widest mt-0.5">
+              Decentralized Gig & Community Platform Core
+            </p>
+          </div>
+          <button
+            onClick={handleReplay}
+            className="px-4 py-2 rounded-lg bg-neutral-900 text-white text-xs font-mono tracking-wider uppercase hover:bg-neutral-800 transition-all shadow-sm"
+          >
+            Replay Preloader
+          </button>
+        </header>
+
+        {/* Dashboard Core Content Grid */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 my-12">
+          {/* Metric Card 1 */}
+          <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm flex flex-col justify-between">
+            <div>
+              <span className="text-[10px] font-mono tracking-wider text-neutral-400 uppercase">
+                System Status
+              </span>
+              <h3 className="text-xl font-semibold mt-1 text-emerald-600 flex items-center gap-2">
+                <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                Synchronized Active
+              </h3>
+            </div>
+            <p className="text-xs text-neutral-500 mt-4 font-mono">
+              Worker verification queues and lease pipelines are live.
+            </p>
+          </div>
+
+          {/* Metric Card 2 */}
+          <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm flex flex-col justify-between">
+            <div>
+              <span className="text-[10px] font-mono tracking-wider text-neutral-400 uppercase">
+                Verification Pipeline
+              </span>
+              <h3 className="text-xl font-semibold mt-1">Pending Review</h3>
+            </div>
+            <p className="text-xs text-neutral-500 mt-4 font-mono">
+              New worker profiles awaiting proximity mapping.
+            </p>
+          </div>
+
+          {/* Metric Card 3 */}
+          <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm flex flex-col justify-between">
+            <div>
+              <span className="text-[10px] font-mono tracking-wider text-neutral-400 uppercase">
+                Agri-Resource Hub
+              </span>
+              <h3 className="text-xl font-semibold mt-1">Active Leases</h3>
+            </div>
+            <p className="text-xs text-neutral-500 mt-4 font-mono">
+              Peer-to-peer machinery and fertilizer exchange feeds active.
+            </p>
+          </div>
+        </section>
+
+        {/* Platform Mission Statement Block */}
+        <section className="bg-white border border-neutral-200 p-8 rounded-2xl shadow-sm">
+          <h2 className="text-lg font-medium mb-2">Platform Overview</h2>
+          <p className="text-neutral-600 text-sm leading-relaxed max-w-3xl">
+            CoopGrid is a digital ecosystem designed to break the monopoly of private service platforms by directly connecting skilled cooperative federation workers with local households. Powered by an offline-first mobile app alongside this utilitarian React admin dashboard, the system eliminates restrictive verification bottlenecks and middleman exploitation.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="text-center text-xs text-neutral-400 font-mono py-6 border-t border-neutral-200 mt-12">
+          CoopGrid Admin Panel • Secured via ED25519 SSH Cryptographic Signing
+        </footer>
+      </div>
+    </main>
   );
 }
