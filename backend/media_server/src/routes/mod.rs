@@ -19,7 +19,7 @@ pub fn build_router(repo: MediaRepository, cors: CorsLayer) -> Router {
     Router::new()
         .route("/health", get(health_check))
         .route("/upload", post(upload_media))
-        .route("/api/v1/media/stream/:media_id", get(stream_media))
+        .route("/stream/:media_id", get(stream_media))
         .layer(cors)
         .with_state(repo)
 }

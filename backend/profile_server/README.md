@@ -80,7 +80,7 @@ pip install --upgrade pip
 pip install -r requirements.txt
 
 # Start server with auto-reload (Development)
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn app.main:app --host 0.0.0.0 --port 8004 --reload
 ```
 
 ---

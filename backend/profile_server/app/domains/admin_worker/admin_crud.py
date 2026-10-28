@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, joinedload
 
 from app.domains.worker.models import WorkerProfile, WorkerAddress
-from app.domains.admin.admin_schemas import (
+from app.domains.admin_worker.admin_schemas import (
     AdminWorkerDetailResponse,
     AdminAddressResponseDto,
     AdminSkillResponseDto,
@@ -29,17 +29,12 @@ async def get_filtered_workers_with_fallback(
     limit: int = 50,
 ) -> tuple[list[WorkerProfile], int]:
     """
-    Fetches worker profiles with cascading fallback filtering and pagination.
-    1. Tries matching State + District + Block.
-    2. If 0 results found (e.g., due to block typo), falls back to State + District.
-    Returns a tuple of (workers_list, total_count).
+    Cascading fallback filtering with extensive diagnostic logging for admin jurisdiction matching.
     """
-    logger.info(
-        f"[Admin DB Query] Filtering workers - State: {state_code}, District: {district_code}, Block: {block_code} "
-        f"[Pagination: skip={skip}, limit={limit}]"
-    )
+    logger.info("==================================================")
+    logger.info(f"[ADMIN QUERY DIAGNOSTIC] Incoming Admin Filters -> State Code: '{state_code}' | District Code: '{district_code}' | Block Code: '{block_code}'")
+    logger.info("==================================================")
 
-    # Base query with joined address for location filtering
     base_query = select(WorkerProfile).options(joinedload(WorkerProfile.address))
     count_query = select(func.count(WorkerProfile.user_id))
 
@@ -49,7 +44,7 @@ async def get_filtered_workers_with_fallback(
         base_query = base_query.join(WorkerAddress, WorkerProfile.user_id == WorkerAddress.user_id)
         count_query = count_query.join(WorkerAddress, WorkerProfile.user_id == WorkerAddress.user_id)
 
-        # Attempt 1: Strict matching with all provided location parameters (State + District + Block)
+        # STEP 1: Strict Match Check (State + District + Block)
         strict_filters = []
         if state_code:
             strict_filters.append(WorkerAddress.state_code == state_code)
@@ -58,41 +53,73 @@ async def get_filtered_workers_with_fallback(
         if block_code:
             strict_filters.append(WorkerAddress.block_code == block_code)
 
-        # Execute Attempt 1
         current_query = base_query.where(*strict_filters)
         current_count_query = count_query.where(*strict_filters)
 
-        # Get total count for strict filter
         total_result = await db.execute(current_count_query)
-        total_count = total_result.scalar() or 0
+        strict_count = total_result.scalar() or 0
 
-        if total_count == 0 and block_code:
-            logger.warning(
-                f"[Admin Fallback Triggered] No workers found with Block '{block_code}'. "
-                f"Falling back to State + District matching..."
-            )
-            # Attempt 2: Fallback (Drop Block, search by State + District only)
+        logger.info(f"[DIAGNOSTIC STEP 1] Strict Match (State: '{state_code}' + District: '{district_code}' + Block: '{block_code}') -> Found {strict_count} records in DB.")
+
+        total_count = strict_count
+        final_query = current_query
+
+        # STEP 2: Fallback Check (If strict match got 0 records, try dropping Block or District)
+        if strict_count == 0 and (state_code or district_code):
+            logger.warning(f"[DIAGNOSTIC FALLBACK TRIGGERED] Strict match yielded 0 records! Checking looser match...")
+
+            # Try matching State + District (ignoring block typo)
             fallback_filters = []
             if state_code:
                 fallback_filters.append(WorkerAddress.state_code == state_code)
             if district_code:
                 fallback_filters.append(WorkerAddress.district_code == district_code)
 
-            current_query = base_query.where(*fallback_filters)
-            current_count_query = count_query.where(*fallback_filters)
+            fallback_query = base_query.where(*fallback_filters)
+            fallback_count_query = count_query.where(*fallback_filters)
 
-            total_result = await db.execute(current_count_query)
-            total_count = total_result.scalar() or 0
+            fallback_result = await db.execute(fallback_count_query)
+            fallback_count = fallback_result.scalar() or 0
 
-        # Apply pagination (offset & limit)
-        paginated_query = current_query.offset(skip).limit(limit)
+            logger.info(f"[DIAGNOSTIC STEP 2] Looser Match (State: '{state_code}' + District: '{district_code}') -> Found {fallback_count} records in DB.")
+
+            if fallback_count > 0:
+                logger.info(f"[DIAGNOSTIC RESULT] Successfully matched using State + District fallback! Serving {fallback_count} records.")
+                total_count = fallback_count
+                final_query = fallback_query
+            else:
+                logger.warning(f"[DIAGNOSTIC RESULT] Even State + District matched 0 records! Checking if State '{state_code}' exists at all in DB...")
+                
+                # Check if state itself exists
+                state_only_query = count_query.where(WorkerAddress.state_code == state_code)
+                state_res = await db.execute(state_only_query)
+                state_count = state_res.scalar() or 0
+                
+                if state_count > 0:
+                    logger.info(f"[DIAGNOSTIC STATE CHECK] State code '{state_code}' exists in DB with {state_count} total workers, but District '{district_code}' did not match.")
+                else:
+                    logger.error(f"[DIAGNOSTIC STATE CHECK] CRITICAL: State code '{state_code}' does NOT exist in the database at all!")
+
+                # Final fallback to State only if District failed completely
+                if state_code:
+                    state_fallback_filters = [WorkerAddress.state_code == state_code]
+                    final_query = base_query.where(*state_fallback_filters)
+                    state_fallback_count_query = count_query.where(*state_fallback_filters)
+                    s_res = await db.execute(state_fallback_count_query)
+                    total_count = s_res.scalar() or 0
+                    logger.info(f"[DIAGNOSTIC FINAL FALLBACK] Falling back to State code only ('{state_code}') -> Found {total_count} records.")
+
+        # Apply Pagination (Offset & Limit)
+        paginated_query = final_query.offset(skip).limit(limit)
         result = await db.execute(paginated_query)
         workers = result.unique().scalars().all()
 
+        logger.info(f"[ADMIN QUERY SUMMARY] Returning chunk of {len(workers)} workers (Pagination: skip={skip}, limit={limit}). Total matching count: {total_count}")
+        logger.info("==================================================")
         return workers, total_count
 
     else:
-        # No location headers provided: Return all workers with pagination
+        logger.info("[ADMIN QUERY] No location filters provided in headers. Fetching all workers across database.")
         total_result = await db.execute(count_query)
         total_count = total_result.scalar() or 0
 
@@ -100,6 +127,8 @@ async def get_filtered_workers_with_fallback(
         result = await db.execute(paginated_query)
         workers = result.unique().scalars().all()
 
+        logger.info(f"[ADMIN QUERY SUMMARY] Returning all workers chunk: {len(workers)} (Total count: {total_count})")
+        logger.info("==================================================")
         return workers, total_count
     
 

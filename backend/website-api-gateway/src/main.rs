@@ -34,19 +34,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 4. Configure CORS for Website (Crucial for HttpOnly Cookies)
     // 4. Configure CORS dynamically (Localhost + Live Website from .env)
     let cors = CorsLayer::new()
-        .allow_origin([
-            "http://localhost:3000".parse::<HeaderValue>().unwrap(), // Local development ke liye
-            live_frontend_url.parse::<HeaderValue>().expect("Invalid FRONTEND_URL in .env"), // Live website via Cloudflare tunnel
-        ])
-        .allow_methods([
-            Method::GET,
-            Method::POST,
-            Method::PUT,
-            Method::DELETE,
-            Method::PATCH,
-        ])
-        .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION]) // <-- Yahan change kiya hai
-        .allow_credentials(true); // Cookies pass hone ke liye true zaroori hai
+    .allow_origin(live_frontend_url.parse::<HeaderValue>().expect("Invalid FRONTEND_URL"))
+    .allow_methods([
+        Method::GET,
+        Method::POST,
+        Method::PUT,
+        Method::DELETE,
+        Method::PATCH,
+        Method::OPTIONS, // ⚠️ OPTIONS method hona bahut zaroori hai Preflight requests ke liye!
+    ])
+    .allow_headers([
+        header::CONTENT_TYPE,
+        header::AUTHORIZATION,
+        header::ACCEPT,
+        header::COOKIE,    // ⚠️ Cookie header allow hona zaroori hai!
+        header::ORIGIN,
+    ])
+    .allow_credentials(true); // Cookies pass hone ke liye true zaroori hai
 
     // 5. Build Router with all private routes and middlewares
     let app = create_router(state)
