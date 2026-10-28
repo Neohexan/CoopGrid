@@ -155,7 +155,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
           loginTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         });
       }, 600);
-      return; // Exit here so it doesn't hit the API
+      return; 
     }
     // ==========================================
 
@@ -164,12 +164,12 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
 
       const response = await fetch(`${API_BASE_URL}/api/auth/admin/login`, {
         method: "POST",
-        // Removed Accept header to keep it as a simple request
-        headers: { 
-          "Content-Type": "application/json"
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
         },
-        credentials: "include", // Enforces cookie storage
-        body: JSON.stringify({ admin_id: trimmedAdminId, password }),
+        credentials: "include",
+        body: JSON.stringify({ admin_id: trimmedAdminId, password })
       });
 
       const data = await response.json();
@@ -228,18 +228,20 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
     setIsLoading(true);
 
     try {
-      // Pass UUID in the URL to avoid custom headers
       const endpoint = `${API_BASE_URL}/api/auth/private/admin/change-password${adminUuid ? `?uuid=${encodeURIComponent(adminUuid)}` : ""}`;
       console.log("🚀 SENDING PASSWORD CHANGE TO:", endpoint);
       
       const response = await fetch(endpoint, {
         method: "POST",
-        // Stripped down headers to bypass strict CORS preflight blocking
-        headers: { 
-          "Content-Type": "application/json"
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
         },
-        credentials: "include", // Ensures the cookie set in step 1 is sent here
-        body: JSON.stringify({ old_password: currentPassword, new_password: newPassword }),
+        credentials: "include",
+        body: JSON.stringify({
+          old_password: currentPassword,
+          new_password: newPassword
+        })
       });
 
       const data = await response.json();
@@ -260,7 +262,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         });
       }, 900);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Password change request failed. Please check your connection.";
+      const msg = err instanceof Error ? err.message : "Password change failed";
       setErrorMessage(msg);
     } finally {
       setIsLoading(false);
