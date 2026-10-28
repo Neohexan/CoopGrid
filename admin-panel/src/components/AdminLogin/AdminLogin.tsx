@@ -72,7 +72,6 @@ const playAudioFeedback = (type: "click" | "success") => {
   }
 };
 
-
 const CAROUSEL_IMAGES = [
   { url: "/assets/image1.jpg", alt: "Farmer in agricultural field" },
   { url: "/assets/image2.jpeg", alt: "Cotton field farmer" },
@@ -81,8 +80,6 @@ const CAROUSEL_IMAGES = [
   { url: "/assets/image5.jpeg", alt: "Field workers" },
   { url: "/assets/image6.jpeg", alt: "Logistics and masonry cooperative worker" },
 ];
-
-
 
 type AuthView = "login" | "first_time_password";
 
@@ -147,7 +144,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
     setIsLoading(true);
 
     // ==========================================
-    // HARDCODED BYPASS LOGIC
+    // HARDCODED TEST BYPASS
     // ==========================================
     if (trimmedAdminId === "Coop" && password === "admin") {
       setTimeout(() => {
@@ -158,7 +155,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
           loginTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         });
       }, 600);
-      return;
+      return; // Exit here so it doesn't hit the API
     }
     // ==========================================
 
@@ -175,7 +172,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
       });
 
       const data = await response.json();
-      console.log("📥 RAW API RESPONSE:", data);
+      console.log("📨 RAW API RESPONSE:", data);
 
       if (!response.ok || data.success !== true) {
         throw new Error(data.message || "Login failed");
@@ -239,7 +236,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
       });
 
       const data = await response.json();
-      console.log("📥 PASSWORD CHANGE RESPONSE:", data);
+      console.log("📨 PASSWORD CHANGE RESPONSE:", data);
 
       if (!response.ok || data.success !== true) {
         throw new Error(data.message || "Password change failed");
