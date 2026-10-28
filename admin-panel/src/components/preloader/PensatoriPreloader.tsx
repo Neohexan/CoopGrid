@@ -339,21 +339,22 @@ export const PensatoriPreloader: React.FC<PensatoriPreloaderProps> = ({
                   </div>
                 </div>
 
-                <div className="pl-status-col">
-                  {Array.from({ length: 7 }).map((_, dotIdx) => (
-                    <div key={dotIdx} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "10px" }}>
-                      <ScrambleText
-                        text={`${(dotIdx + 1).toString().padStart(2, "0")} STATUS / ACTIVE`}
-                        scrambleSpeed={30}
-                        delay={80 * dotIdx}
-                        continuous={true}
-                        className="pl-scramble-active"
-                      />
-                      <div style={{ width: "9px", height: "9px", borderRadius: "50%", backgroundColor: "#282828", flexShrink: 0 }} className="loader-right-dot" />
-                    </div>
-                  ))}
-                </div>
-              </div>
+                
+        <div className="pl-status-col">
+  {Array.from({ length: 7 }).map((_, dotIdx) => (
+    <div key={dotIdx} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "10px" }}>
+      <ScrambleText
+        text={`${(dotIdx + 1).toString().padStart(2, "0")} STATUS / ACTIVE`}
+        scrambleSpeed={30}
+        delay={80 * dotIdx}
+        continuous={true}
+        className="pl-scramble-active"
+      />
+      <div style={{ width: "9px", height: "9px", borderRadius: "50%", backgroundColor: "#282828", flexShrink: 0 }} className="loader-right-dot" />
+    </div>
+  ))}
+</div>
+       
               
             </React.Fragment>
           ))}
