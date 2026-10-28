@@ -216,6 +216,8 @@ export const PensatoriPreloader: React.FC<PensatoriPreloaderProps> = ({
         .pl-status-col { display: flex; flex-direction: column; justify-content: space-between; font-size: 9.5px; font-family: var(--font-tech-mono), monospace; color: rgba(255,255,255,0.85); flex-shrink: 0; height: 100%; }
         @media (min-width: 1280px) { .pl-status-col { font-size: 11px; } }
 
+        .pl-scramble-active { color: #a3a3a3; }
+
         /* Outro Elements */
         .pl-blinds-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 30; display: flex; flex-direction: column; pointer-events: none; }
         .pl-blind { width: 0%; flex-basis: 20%; background-color: #f5f5f5; transform-origin: center; }
@@ -339,13 +341,13 @@ export const PensatoriPreloader: React.FC<PensatoriPreloaderProps> = ({
 
                 <div className="pl-status-col">
                   {Array.from({ length: 7 }).map((_, dotIdx) => (
-                    // Inherit the color here on the parent div instead of passing it to ScrambleText
-                    <div key={dotIdx} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "10px", color: "#a3a3a3" }}>
+                    <div key={dotIdx} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "10px" }}>
                       <ScrambleText
                         text={`${(dotIdx + 1).toString().padStart(2, "0")} STATUS / ACTIVE`}
                         scrambleSpeed={30}
                         delay={80 * dotIdx}
                         continuous={true}
+                        className="pl-scramble-active"
                       />
                       <div style={{ width: "9px", height: "9px", borderRadius: "50%", backgroundColor: "#282828", flexShrink: 0 }} className="loader-right-dot" />
                     </div>
@@ -370,8 +372,7 @@ export const PensatoriPreloader: React.FC<PensatoriPreloaderProps> = ({
 
             <div className="pl-c-1 loader-circle" />
             <div className="pl-c-2 loader-circle">
-              {/* Moved the filter and flex properties to the parent div instead of GlobeSvg */}
-              <div style={{ position: "relative", width: "100%", height: "100%", transformOrigin: "center", color: "#e6e6e6", filter: "drop-shadow(0 0 12px rgba(255,255,255,0.15))", display: "flex", alignItems: "center", justifyContent: "center" }} className="loader-rotate">
+              <div style={{ position: "relative", width: "100%", height: "100%", transformOrigin: "center", color: "#e6e6e6", display: "flex", alignItems: "center", justifyContent: "center" }} className="loader-rotate">
                 <GlobeSvg />
               </div>
             </div>
