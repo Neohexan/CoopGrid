@@ -1,5 +1,4 @@
 import { Ballet, JetBrains_Mono } from "next/font/google";
-import { Header } from "@/components/Header/Header";
 import "./globals.css";
 
 const ballet = Ballet({
@@ -25,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${ballet.variable} ${jetbrainsMono.variable}`}>
       <body className="bg-[#111111] text-[#f5f5f5] antialiased">
-        <Header />
+        
         {children}
       </body>
     </html>

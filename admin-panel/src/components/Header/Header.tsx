@@ -1,8 +1,11 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { AdminSessionData } from "./AdminLogin";
 
 interface HeaderProps {
+  adminSession: AdminSessionData;
+  onLogout: () => void;
   onReplayPreloader?: () => void;
   isAudioMuted?: boolean;
   onToggleAudio?: () => void;
@@ -78,6 +81,8 @@ const CheckCircle2Icon = ({ size = 24, color = "currentColor" }) => (
 );
 
 export const Header: React.FC<HeaderProps> = ({
+  adminSession,
+  onLogout,
   onReplayPreloader,
   isAudioMuted = false,
   onToggleAudio,
@@ -218,16 +223,16 @@ export const Header: React.FC<HeaderProps> = ({
         .cg-um-avatar { position: relative; width: 38px; height: 38px; border-radius: 10px; background: #27272a; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .cg-um-avatar-dot { position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; background-color: #10b981; border-radius: 50%; border: 2px solid #18181b; }
         .cg-um-info { min-width: 0; flex: 1; }
-        .cg-um-name-row { display: flex; align-items: center; justify-content: space-between; }
+        .cg-um-name-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
         .cg-um-name { font-size: 13px; font-family: sans-serif; font-weight: 600; color: #ffffff; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cg-um-badge { font-size: 9.5px; font-family: monospace; padding: 1px 5px; background-color: rgba(16,185,129,0.2); color: #34d399; border-radius: 9999px; }
+        .cg-um-badge { font-size: 9.5px; font-family: monospace; padding: 1px 5px; background-color: rgba(16,185,129,0.2); color: #34d399; border-radius: 9999px; flex-shrink: 0; }
         .cg-um-email { font-size: 10px; font-family: monospace; color: #a1a1aa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 2px 0 0 0; }
         .cg-um-clearance { font-size: 9.5px; font-family: monospace; color: #84cc16; margin: 3px 0 0 0; display: flex; align-items: center; gap: 4px; }
         
         .cg-um-telemetry { margin: 10px 0; padding: 10px; border-radius: 10px; background-color: rgba(255,255,255,0.04); font-family: monospace; font-size: 10px; }
-        .cg-um-tel-row { display: flex; justify-content: space-between; color: #a1a1aa; margin-bottom: 4px; }
+        .cg-um-tel-row { display: flex; justify-content: space-between; color: #a1a1aa; margin-bottom: 4px; gap: 8px; }
         .cg-um-tel-row:last-child { margin-bottom: 0; }
-        .cg-um-tel-val { color: #e4e4e7; font-weight: 600; }
+        .cg-um-tel-val { color: #e4e4e7; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cg-um-tel-val-ok { color: #34d399; font-weight: 600; }
 
         .cg-um-actions { display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; font-family: sans-serif; }
@@ -286,11 +291,10 @@ export const Header: React.FC<HeaderProps> = ({
       `}</style>
       
       <header className="cg-header">
-        
         {/* 1. LEFT: Branding & Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', minWidth: 0, flex: 1, marginRight: '8px' }}>
+        <div style={{ display: "flex", alignItems: "center", minWidth: 0, flex: 1, marginRight: "8px" }}>
           <a href="/" className="cg-brand-link">
-            <div style={{ position: 'relative', flexShrink: 0 }}>
+            <div style={{ position: "relative", flexShrink: 0 }}>
               <img
                 src="/logo.png"
                 alt="CoopGrid Emblem"
@@ -298,11 +302,8 @@ export const Header: React.FC<HeaderProps> = ({
               />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-              <h1 className="cg-brand-title">
-                COOPGRID ADMINISTRATOR
-              </h1>
-              
+            <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+              <h1 className="cg-brand-title">COOPGRID ADMINISTRATOR</h1>
               <div className="cg-accent-strip">
                 <span className="cg-accent-bar">
                   <span className="cg-accent-blue" />
@@ -316,23 +317,34 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* 2. RIGHT: Controls Group */}
         <div className="cg-controls">
-          
           {onToggleAudio && (
-            <button onClick={onToggleAudio} className="cg-btn-util cg-btn-util-hide-mobile" title={isAudioMuted ? "Unmute sounds" : "Mute sounds"}>
-              {isAudioMuted ? <VolumeXIcon size={13} color="#a1a1aa" /> : <Volume2Icon size={13} color="#059669" />}
+            <button
+              onClick={onToggleAudio}
+              className="cg-btn-util cg-btn-util-hide-mobile"
+              title={isAudioMuted ? "Unmute sounds" : "Mute sounds"}
+            >
+              {isAudioMuted ? (
+                <VolumeXIcon size={13} color="#a1a1aa" />
+              ) : (
+                <Volume2Icon size={13} color="#059669" />
+              )}
               <span>{isAudioMuted ? "Muted" : "Audio On"}</span>
             </button>
           )}
 
           {onReplayPreloader && (
-            <button onClick={onReplayPreloader} className="cg-btn-util" title="Replay Kinetic Preloader">
+            <button
+              onClick={onReplayPreloader}
+              className="cg-btn-util"
+              title="Replay Kinetic Preloader"
+            >
               <RotateCcwIcon size={13} color="#3f3f46" />
               <span className="hidden sm:inline">Replay Loader</span>
             </button>
           )}
 
-          {/* User Profile Button & Modal */}
-          <div style={{ position: 'relative' }}>
+          {/* User Profile Button & Floating Admin Info Modal */}
+          <div style={{ position: "relative" }}>
             <button
               ref={userButtonRef}
               onClick={() => {
@@ -340,7 +352,8 @@ export const Header: React.FC<HeaderProps> = ({
                 if (isMenuOpen) setIsMenuOpen(false);
               }}
               aria-expanded={isUserMenuOpen}
-              className={`cg-user-btn ${isUserMenuOpen ? 'active' : ''}`}
+              className={`cg-user-btn ${isUserMenuOpen ? "active" : ""}`}
+              title={`Logged in as ${adminSession.adminId}`}
             >
               <UserIcon size={16} />
               <span className="cg-online-dot-wrap">
@@ -358,41 +371,71 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
                   <div className="cg-um-info">
                     <div className="cg-um-name-row">
-                      <h3 className="cg-um-name">Ritinkum (Root)</h3>
-                      <span className="cg-um-badge">ONLINE</span>
+                      <h3 className="cg-um-name">{adminSession.adminId}</h3>
+                      <span className="cg-um-badge">VERIFIED</span>
                     </div>
-                    <p className="cg-um-email">ritinkum2005@gmail.com</p>
-                    <p className="cg-um-clearance"><ShieldCheckIcon size={11} /> Lvl 5 Authority</p>
+                    <p className="cg-um-email">
+                      {adminSession.uuid
+                        ? `UUID: ${adminSession.uuid.slice(0, 18)}...`
+                        : `${adminSession.adminId.toLowerCase()}@neohexane.com`}
+                    </p>
+                    <p className="cg-um-clearance">
+                      <ShieldCheckIcon size={11} /> Authenticated Admin
+                    </p>
                   </div>
                 </div>
 
                 <div className="cg-um-telemetry">
                   <div className="cg-um-tel-row">
-                    <span>Cluster Node:</span>
-                    <span className="cg-um-tel-val">#A01-EUR</span>
+                    <span>Admin ID:</span>
+                    <span className="cg-um-tel-val">{adminSession.adminId}</span>
                   </div>
                   <div className="cg-um-tel-row">
-                    <span>Network Ledger:</span>
-                    <span className="cg-um-tel-val-ok">Synchronized</span>
+                    <span>API Gateway:</span>
+                    <span className="cg-um-tel-val-ok">
+                      admin-api.neohexane.com
+                    </span>
                   </div>
                   <div className="cg-um-tel-row">
-                    <span>Session Latency:</span>
-                    <span className="cg-um-tel-val">12ms • 99.98%</span>
+                    <span>Login Time:</span>
+                    <span className="cg-um-tel-val">
+                      {adminSession.loginTime} • Active
+                    </span>
                   </div>
                 </div>
 
                 <div className="cg-um-actions">
-                  <button onClick={() => triggerToast("Security Keys exported")} className="cg-um-btn">
-                    <KeyIcon size={13} className="cg-um-icon" /> <span>API Credentials</span>
+                  <button
+                    onClick={() =>
+                      triggerToast(`Active ID: ${adminSession.adminId}`)
+                    }
+                    className="cg-um-btn"
+                  >
+                    <KeyIcon size={13} className="cg-um-icon" />{" "}
+                    <span>API Credentials</span>
                   </button>
-                  <button onClick={() => triggerToast("Telemetry Matrix refreshed")} className="cg-um-btn">
-                    <ActivityIcon size={13} className="cg-um-icon" /> <span>Telemetry Stream</span>
+                  <button
+                    onClick={() => triggerToast("Telemetry Matrix refreshed")}
+                    className="cg-um-btn"
+                  >
+                    <ActivityIcon size={13} className="cg-um-icon" />{" "}
+                    <span>Telemetry Stream</span>
                   </button>
-                  <button onClick={() => triggerToast("Workspace set to Production")} className="cg-um-btn">
-                    <DatabaseIcon size={13} className="cg-um-icon" /> <span>Workspace: Prod</span>
+                  <button
+                    onClick={() =>
+                      triggerToast("Connected: admin-api.neohexane.com")
+                    }
+                    className="cg-um-btn"
+                  >
+                    <DatabaseIcon size={13} className="cg-um-icon" />{" "}
+                    <span>Workspace: Prod</span>
                   </button>
-                  <button onClick={() => triggerToast("Preferences saved")} className="cg-um-btn">
-                    <SlidersIcon size={13} className="cg-um-icon" /> <span>Preferences</span>
+                  <button
+                    onClick={() => triggerToast("Preferences saved")}
+                    className="cg-um-btn"
+                  >
+                    <SlidersIcon size={13} className="cg-um-icon" />{" "}
+                    <span>Preferences</span>
                   </button>
                 </div>
 
@@ -403,8 +446,14 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
 
                 <div className="cg-um-footer">
-                  <button onClick={() => { setIsUserMenuOpen(false); triggerToast("Session terminated."); }} className="cg-um-logout">
-                    <LogOutIcon size={13} /> <span>Terminate</span>
+                  <button
+                    onClick={() => {
+                      setIsUserMenuOpen(false);
+                      onLogout();
+                    }}
+                    className="cg-um-logout"
+                  >
+                    <LogOutIcon size={13} /> <span>Terminate Session</span>
                   </button>
                   <span className="cg-um-version">v2.4.0-CORE</span>
                 </div>
@@ -413,7 +462,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Hamburger Button & Drawer */}
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: "relative" }}>
             <button
               ref={menuButtonRef}
               onClick={() => {
@@ -423,7 +472,7 @@ export const Header: React.FC<HeaderProps> = ({
               aria-expanded={isMenuOpen}
               className="cg-burger-btn"
             >
-              <div className={`cg-burger-icon ${isMenuOpen ? 'open' : ''}`}>
+              <div className={`cg-burger-icon ${isMenuOpen ? "open" : ""}`}>
                 <span className="cg-bar cg-bar-top" />
                 <span className="cg-bar cg-bar-bot" />
               </div>
@@ -442,8 +491,13 @@ export const Header: React.FC<HeaderProps> = ({
                       <a
                         key={item.name}
                         href={item.href}
-                        onClick={() => { setActiveNav(item.name); setIsMenuOpen(false); }}
-                        className={`cg-nav-item ${isCurrent ? 'active' : 'normal'}`}
+                        onClick={() => {
+                          setActiveNav(item.name);
+                          setIsMenuOpen(false);
+                        }}
+                        className={`cg-nav-item ${
+                          isCurrent ? "active" : "normal"
+                        }`}
                       >
                         <p className="cg-nav-item-text">{item.name}</p>
                         <span className="cg-nav-item-arrow">{item.arrow}</span>
@@ -456,8 +510,15 @@ export const Header: React.FC<HeaderProps> = ({
                   <h4 className="cg-nav-media-title">Powered By:</h4>
                   <div className="cg-nav-media-list">
                     {poweredByLinks.map((link) => (
-                      <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer" className="cg-nav-media-link">
-                        <span style={{ color: '#34d399' }}>↗</span> <span>{link.label}</span>
+                      <a
+                        key={link.label}
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="cg-nav-media-link"
+                      >
+                        <span style={{ color: "#34d399" }}>↗</span>{" "}
+                        <span>{link.label}</span>
                       </a>
                     ))}
                   </div>
@@ -465,7 +526,6 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             )}
           </div>
-
         </div>
       </header>
     </>

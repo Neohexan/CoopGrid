@@ -5,7 +5,7 @@ import gsap from "gsap";
 import { GlobeSvg } from "./GlobeSvg";
 import { OrbitalArcs } from "./OrbitalArcs";
 import { ScrambleText } from "./ScrambleText";
-import { LEFT_SKILLS, RIGHT_YEARS, TELEMETRY_MODULES } from "@/data/telemetryData";
+import { LEFT_SKILLS, RIGHT_YEARS, TELEMETRY_MODULES } from "../../data/telemetryData";
 
 interface PensatoriPreloaderProps {
   onComplete?: () => void;
