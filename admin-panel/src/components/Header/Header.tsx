@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { AdminSessionData } from "./AdminLogin";
+import { AdminSessionData } from "../AdminLogin/AdminLogin";
 
 interface HeaderProps {
   adminSession: AdminSessionData;

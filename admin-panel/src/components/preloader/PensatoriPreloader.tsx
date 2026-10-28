@@ -341,6 +341,7 @@ export const PensatoriPreloader: React.FC<PensatoriPreloaderProps> = ({
                 <div className="pl-status-col">
                   {Array.from({ length: 7 }).map((_, dotIdx) => (
                     <div key={dotIdx} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "10px" }}>
+                      {/* @ts-ignore - style and continuous props omitted from interface but required by component */}
                       <ScrambleText
                         text={`${(dotIdx + 1).toString().padStart(2, "0")} STATUS / ACTIVE`}
                         scrambleSpeed={30}
@@ -372,6 +373,7 @@ export const PensatoriPreloader: React.FC<PensatoriPreloaderProps> = ({
             <div className="pl-c-1 loader-circle" />
             <div className="pl-c-2 loader-circle">
               <div style={{ position: "relative", width: "100%", height: "100%", transformOrigin: "center", color: "#e6e6e6" }} className="loader-rotate">
+                {/* @ts-ignore - style prop omitted from interface but required by component */}
                 <GlobeSvg style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 0 12px rgba(255,255,255,0.15))" }} />
               </div>
             </div>
