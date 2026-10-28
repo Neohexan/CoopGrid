@@ -170,8 +170,8 @@ export const PensatoriPreloader: React.FC<PensatoriPreloaderProps> = ({
         .pl-grid {
           position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: grid; 
           grid-template-columns: 1fr; 
-          row-gap: 20px; /* Explicit vertical margin between blocks */
-          padding: 16px 4px; /* Reduced left and right margins for mobile */
+          row-gap: 20px;
+          padding: 16px 4px;
           z-index: 20; 
           pointer-events: none; opacity: 0.95; box-sizing: border-box; 
           align-content: space-between;
@@ -198,15 +198,15 @@ export const PensatoriPreloader: React.FC<PensatoriPreloaderProps> = ({
         /* Module Part B (Right side - Status LEDs) */
         .pl-mod-b {
           border: 1px solid rgba(40,40,40, 0.5); background-color: rgba(17, 17, 17, 0.80); backdrop-filter: blur(4px); 
-          padding: 12px 8px; /* Slightly reduced padding to help prevent overflow on mobile */
+          padding: 12px 8px;
           display: flex; flex-direction: row; justify-content: space-between; gap: 12px;
-          height: 100%; overflow: hidden; /* Prevents text bleeding out of the container */
+          height: 100%; overflow: hidden;
         }
         @media (min-width: 1280px) { 
           .pl-mod-b { grid-column: span 1 / span 1; padding: 16px; gap: 16px; } 
         }
 
-        /* Inner Text Typography (Expanded Font Sizes) */
+        /* Inner Text Typography */
         .pl-col-text { display: flex; flex-direction: column; justify-content: space-between; color: rgba(255,255,255,0.95); font-size: 13px; font-family: var(--font-tech-mono), monospace; width: 45%; height: 100%; }
         .pl-col-sub { display: flex; flex-direction: column; justify-content: space-between; width: 55%; font-size: 11px; font-family: var(--font-tech-mono), monospace; color: #737373; line-height: 1.4; height: 100%; }
         
@@ -280,13 +280,12 @@ export const PensatoriPreloader: React.FC<PensatoriPreloaderProps> = ({
         {/* 2. BACKGROUND TELEMETRY GRID MATRIX */}
         <div 
           className="pl-grid" 
-          // Uses minmax(min-content, 1fr) so boxes never compress smaller than their text on tiny screens
           style={{ gridTemplateRows: `repeat(${TELEMETRY_MODULES.length}, minmax(min-content, 1fr))` }}
         >
           {TELEMETRY_MODULES.map((module, idx) => (
             <React.Fragment key={idx}>
               
-              {/* PART A: Studio Spec (Desktop Only, takes up 2 columns) */}
+              {/* PART A: Studio Spec */}
               <div className="pl-mod-a loader-box">
                 <div className="pl-col-text">
                   {module.left.map((pair, pIdx) => (
@@ -318,7 +317,7 @@ export const PensatoriPreloader: React.FC<PensatoriPreloaderProps> = ({
                 </div>
               </div>
 
-              {/* PART B: Status Box (Takes up 1 column on desktop, 100% on mobile) */}
+              {/* PART B: Status Box */}
               <div className="pl-mod-b loader-box">
                 <div className="pl-spec-col">
                   <div>
@@ -340,14 +339,13 @@ export const PensatoriPreloader: React.FC<PensatoriPreloaderProps> = ({
 
                 <div className="pl-status-col">
                   {Array.from({ length: 7 }).map((_, dotIdx) => (
-                    <div key={dotIdx} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "10px" }}>
-                      {/* @ts-ignore - style and continuous props omitted from interface but required by component */}
+                    // Inherit the color here on the parent div instead of passing it to ScrambleText
+                    <div key={dotIdx} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "10px", color: "#a3a3a3" }}>
                       <ScrambleText
                         text={`${(dotIdx + 1).toString().padStart(2, "0")} STATUS / ACTIVE`}
                         scrambleSpeed={30}
                         delay={80 * dotIdx}
                         continuous={true}
-                        style={{ color: "#a3a3a3" }}
                       />
                       <div style={{ width: "9px", height: "9px", borderRadius: "50%", backgroundColor: "#282828", flexShrink: 0 }} className="loader-right-dot" />
                     </div>
@@ -372,9 +370,9 @@ export const PensatoriPreloader: React.FC<PensatoriPreloaderProps> = ({
 
             <div className="pl-c-1 loader-circle" />
             <div className="pl-c-2 loader-circle">
-              <div style={{ position: "relative", width: "100%", height: "100%", transformOrigin: "center", color: "#e6e6e6" }} className="loader-rotate">
-                {/* @ts-ignore - style prop omitted from interface but required by component */}
-                <GlobeSvg style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 0 12px rgba(255,255,255,0.15))" }} />
+              {/* Moved the filter and flex properties to the parent div instead of GlobeSvg */}
+              <div style={{ position: "relative", width: "100%", height: "100%", transformOrigin: "center", color: "#e6e6e6", filter: "drop-shadow(0 0 12px rgba(255,255,255,0.15))", display: "flex", alignItems: "center", justifyContent: "center" }} className="loader-rotate">
+                <GlobeSvg />
               </div>
             </div>
             <div className="pl-c-3 loader-circle" />
