@@ -136,7 +136,6 @@ export const Header: React.FC<HeaderProps> = ({
   const navItems = [
     { name: "Dashboard", href: "/" },
     { name: "Applications", href: "/applications" },
-    { name: "Worker Verification", href: "/workers" },
     { name: "Approved", href: "/approved" },
     { name: "Blacklisted", href: "/blacklist" },
     { name: "Broadcast", href: "/broadcast" },

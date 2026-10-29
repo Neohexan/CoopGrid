@@ -15,6 +15,7 @@ import {
   Info,
   ExternalLink,
   HelpCircle,
+  RefreshCw,
 } from "lucide-react";
 
 export interface ApiWorker {
@@ -24,179 +25,32 @@ export interface ApiWorker {
   categories: string[];
   is_active: "active" | "inactive" | "pending" | "rejected" | "suspended";
   created_at: string;
-  phone_number: string;
-  state: string;
-  pincode: string;
-  district: string;
+  // Filled locally with demo data since backend doesn't provide them yet
+  phone_number?: string;
+  state?: string;
+  pincode?: string;
+  district?: string;
   profile_picture?: string;
   rejection_reason?: string;
 }
 
-export const INITIAL_API_WORKERS: ApiWorker[] = [
-  {
-    user_id: "worker_001",
-    full_name: "Ramesh Kumar",
-    gender: "male",
-    categories: ["plumbing", "electrical"],
-    is_active: "pending",
-    created_at: "2026-01-15T10:30:00Z",
-    phone_number: "+91 87978 70443",
-    state: "Odisha",
-    district: "Rayagada",
-    pincode: "765022",
-    profile_picture: "/assets/image1.jpg",
-  },
-  {
-    user_id: "worker_002",
-    full_name: "Sita Devi",
-    gender: "female",
-    categories: ["agriculture", "handloom"],
-    is_active: "pending",
-    created_at: "2026-01-16T08:15:00Z",
-    phone_number: "+91 94381 02345",
-    state: "Odisha",
-    district: "Rayagada",
-    pincode: "765017",
-    profile_picture: "/assets/image2.jpeg",
-  },
-  {
-    user_id: "worker_003",
-    full_name: "Abhimanyu Kumar",
-    gender: "male",
-    categories: ["plumbing", "masonry"],
-    is_active: "active",
-    created_at: "2026-01-10T14:20:00Z",
-    phone_number: "+91 98765 43211",
-    state: "Odisha",
-    district: "Rayagada",
-    pincode: "765022",
-    profile_picture: "/assets/image3.jpeg",
-  },
-  {
-    user_id: "worker_004",
-    full_name: "Kavita Sahu",
-    gender: "female",
-    categories: ["pottery", "agriculture"],
-    is_active: "pending",
-    created_at: "2026-01-18T11:45:00Z",
-    phone_number: "+91 94378 90123",
-    state: "Odisha",
-    district: "Koraput",
-    pincode: "764020",
-    profile_picture: "/assets/image4.jpg",
-  },
-  {
-    user_id: "worker_005",
-    full_name: "Prakash Nayak",
-    gender: "male",
-    categories: ["carpentry", "electrical"],
-    is_active: "inactive",
-    created_at: "2026-01-08T09:00:00Z",
-    phone_number: "+91 98612 34567",
-    state: "Odisha",
-    district: "Ganjam",
-    pincode: "760001",
-    profile_picture: "/assets/image5.jpeg",
-  },
-  {
-    user_id: "worker_006",
-    full_name: "Lakshmi Majhi",
-    gender: "female",
-    categories: ["handloom", "tailoring"],
-    is_active: "active",
-    created_at: "2026-01-19T09:30:00Z",
-    phone_number: "+91 94371 11223",
-    state: "Odisha",
-    district: "Kalahandi",
-    pincode: "766001",
-    profile_picture: "/assets/image6.jpeg",
-  },
-  {
-    user_id: "worker_007",
-    full_name: "Bikramunda Sardar",
-    gender: "male",
-    categories: ["masonry", "agriculture"],
-    is_active: "pending",
-    created_at: "2026-01-20T12:10:00Z",
-    phone_number: "+91 82490 55432",
-    state: "Jharkhand",
-    district: "Seraikela",
-    pincode: "832108",
-  },
-  {
-    user_id: "worker_008",
-    full_name: "Meena Kumari",
-    gender: "female",
-    categories: ["agriculture", "bamboo craft"],
-    is_active: "active",
-    created_at: "2026-01-21T15:40:00Z",
-    phone_number: "+91 79785 66789",
-    state: "Jharkhand",
-    district: "East Singhbhum",
-    pincode: "831001",
-  },
-  {
-    user_id: "worker_009",
-    full_name: "Santosh Mahato",
-    gender: "male",
-    categories: ["electrical", "solar repair"],
-    is_active: "pending",
-    created_at: "2026-01-22T10:05:00Z",
-    phone_number: "+91 99370 44556",
-    state: "Jharkhand",
-    district: "Ranchi",
-    pincode: "834001",
-  },
-  {
-    user_id: "worker_010",
-    full_name: "Anita Behera",
-    gender: "female",
-    categories: ["pottery", "handloom"],
-    is_active: "active",
-    created_at: "2026-01-23T16:20:00Z",
-    phone_number: "+91 94385 99887",
-    state: "Odisha",
-    district: "Mayurbhanj",
-    pincode: "757001",
-  },
-  {
-    user_id: "worker_011",
-    full_name: "Debasis Mohanty",
-    gender: "male",
-    categories: ["carpentry", "plumbing"],
-    is_active: "pending",
-    created_at: "2026-01-24T11:00:00Z",
-    phone_number: "+91 98610 22334",
-    state: "Odisha",
-    district: "Cuttack",
-    pincode: "753001",
-  },
-  {
-    user_id: "worker_012",
-    full_name: "Sunita Murmu",
-    gender: "female",
-    categories: ["agriculture", "food processing"],
-    is_active: "pending",
-    created_at: "2026-01-25T13:45:00Z",
-    phone_number: "+91 88950 77665",
-    state: "Jharkhand",
-    district: "West Singhbhum",
-    pincode: "833201",
-  },
-];
-
 type FilterTab = "ALL" | "MALE" | "FEMALE";
 
-const LOCAL_STORAGE_WORKERS_KEY = "coopgrid_api_workers_v2";
+const LOCAL_STORAGE_WORKERS_KEY = "coopgrid_api_workers_v3";
 const LOCAL_STORAGE_VIEWED_KEY = "coopgrid_viewed_workers_v1";
 const WORKERS_PER_PAGE = 10;
+const API_BASE_URL = "https://app-api.neohexane.com";
 
 export const WorkerVerificationDesk: React.FC = () => {
-  // Hydration Fix: Start with default state, sync after mount
   const [isMounted, setIsMounted] = useState(false);
-  const [workers, setWorkers] = useState<ApiWorker[]>(INITIAL_API_WORKERS);
+  
+  // Data State
+  const [workers, setWorkers] = useState<ApiWorker[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Interaction State
   const [viewedWorkerIds, setViewedWorkerIds] = useState<string[]>([]);
-
   const [activeFilter, setActiveFilter] = useState<FilterTab>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -205,28 +59,16 @@ export const WorkerVerificationDesk: React.FC = () => {
   const [rejectionReasonText, setRejectionReasonText] = useState("Incomplete verification documentation");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Safely sync with localStorage only on the client
+  // Initialize and attach cross-tab listener for viewed workers
   useEffect(() => {
     setIsMounted(true);
-
     try {
-      const storedWorkers = localStorage.getItem(LOCAL_STORAGE_WORKERS_KEY);
-      if (storedWorkers) {
-        setWorkers(JSON.parse(storedWorkers));
-      } else {
-        localStorage.setItem(LOCAL_STORAGE_WORKERS_KEY, JSON.stringify(INITIAL_API_WORKERS));
-      }
-
       const storedViewed = localStorage.getItem(LOCAL_STORAGE_VIEWED_KEY);
-      if (storedViewed) {
-        setViewedWorkerIds(JSON.parse(storedViewed));
-      }
+      if (storedViewed) setViewedWorkerIds(JSON.parse(storedViewed));
     } catch {}
 
     const handleStorageSync = () => {
       try {
-        const sw = localStorage.getItem(LOCAL_STORAGE_WORKERS_KEY);
-        if (sw) setWorkers(JSON.parse(sw));
         const sv = localStorage.getItem(LOCAL_STORAGE_VIEWED_KEY);
         if (sv) setViewedWorkerIds(JSON.parse(sv));
       } catch {}
@@ -236,10 +78,70 @@ export const WorkerVerificationDesk: React.FC = () => {
     return () => window.removeEventListener("storage", handleStorageSync);
   }, []);
 
-  const updateWorkers = (newWorkers: ApiWorker[]) => {
-    setWorkers(newWorkers);
+  // Fetch Workers from API when pagination changes
+  useEffect(() => {
+    const fetchWorkers = async () => {
+      setIsLoading(true);
+      const skip = (currentPage - 1) * WORKERS_PER_PAGE;
+      const limit = WORKERS_PER_PAGE;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/profile/admin/summary/workers?skip=${skip}&limit=${limit}`, {
+          method: "GET",
+          headers: {
+            "Accept": "application/json",
+          },
+          credentials: "include", // Required if your backend uses cookie auth
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.workers) {
+          // Merge API data with Demo Data for missing fields
+          const enrichedWorkers: ApiWorker[] = data.workers.map((apiWorker: any, idx: number) => {
+            return {
+              ...apiWorker,
+              // Injecting Demo Data
+              phone_number: `+91 9${Math.floor(Math.random() * 900000000) + 100000000}`,
+              district: ["Rayagada", "Ranchi", "Seraikela", "Cuttack"][idx % 4],
+              state: ["Odisha", "Jharkhand"][idx % 2],
+              pincode: `76${Math.floor(Math.random() * 9000) + 1000}`,
+              profile_picture: idx % 2 === 0 ? "/assets/image1.jpg" : undefined,
+            };
+          });
+
+          // Check if we have local overrides (approvals/rejections) stored and apply them
+          const localStored = localStorage.getItem(LOCAL_STORAGE_WORKERS_KEY);
+          if (localStored) {
+            const localMap: Record<string, ApiWorker> = JSON.parse(localStored);
+            const finalWorkers = enrichedWorkers.map(w => localMap[w.user_id] ? { ...w, ...localMap[w.user_id] } : w);
+            setWorkers(finalWorkers);
+          } else {
+            setWorkers(enrichedWorkers);
+          }
+          
+          setTotalCount(data.total_count || 0);
+        }
+      } catch (error) {
+        console.error("Failed to fetch workers:", error);
+        showToast("Error connecting to server. Displaying empty state.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (isMounted) {
+      fetchWorkers();
+    }
+  }, [currentPage, isMounted]);
+
+  // Persist Action State (Approve/Reject) locally so it survives pagination/refreshes
+  const persistWorkerStateLocally = (updatedWorker: ApiWorker) => {
     try {
-      localStorage.setItem(LOCAL_STORAGE_WORKERS_KEY, JSON.stringify(newWorkers));
+      const currentStored = localStorage.getItem(LOCAL_STORAGE_WORKERS_KEY);
+      const storageMap: Record<string, ApiWorker> = currentStored ? JSON.parse(currentStored) : {};
+      storageMap[updatedWorker.user_id] = updatedWorker;
+      localStorage.setItem(LOCAL_STORAGE_WORKERS_KEY, JSON.stringify(storageMap));
     } catch {}
   };
 
@@ -248,12 +150,11 @@ export const WorkerVerificationDesk: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Counts
+  // Filter computations (applied on the currently fetched page data)
   const pendingCount = useMemo(() => workers.filter((w) => w.is_active === "pending").length, [workers]);
   const femaleCount = useMemo(() => workers.filter((w) => w.gender === "female").length, [workers]);
   const maleCount = useMemo(() => workers.filter((w) => w.gender === "male").length, [workers]);
 
-  // Filtered Workers
   const filteredWorkers = useMemo(() => {
     return workers.filter((worker) => {
       if (activeFilter === "FEMALE" && worker.gender !== "female") return false;
@@ -263,12 +164,8 @@ export const WorkerVerificationDesk: React.FC = () => {
         const q = searchQuery.toLowerCase().trim();
         const matchName = worker.full_name.toLowerCase().includes(q);
         const matchId = worker.user_id.toLowerCase().includes(q);
-        const matchPhone = worker.phone_number.includes(q);
-        const matchDistrict = worker.district.toLowerCase().includes(q);
-        const matchState = worker.state.toLowerCase().includes(q);
-        const matchPincode = worker.pincode.includes(q);
         const matchCategories = worker.categories.some((c) => c.toLowerCase().includes(q));
-        if (!matchName && !matchId && !matchPhone && !matchDistrict && !matchState && !matchPincode && !matchCategories) {
+        if (!matchName && !matchId && !matchCategories) {
           return false;
         }
       }
@@ -276,18 +173,10 @@ export const WorkerVerificationDesk: React.FC = () => {
     });
   }, [workers, activeFilter, searchQuery]);
 
-  // Reset to page 1 when filter or search changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeFilter, searchQuery]);
 
-  // Pagination Logic
-  const totalPages = Math.max(1, Math.ceil(filteredWorkers.length / WORKERS_PER_PAGE));
-  const paginatedWorkers = useMemo(() => {
-    const startIndex = (currentPage - 1) * WORKERS_PER_PAGE;
-    return filteredWorkers.slice(startIndex, startIndex + WORKERS_PER_PAGE);
-  }, [filteredWorkers, currentPage]);
+  const totalPages = Math.max(1, Math.ceil(totalCount / WORKERS_PER_PAGE));
 
+  // Action Handlers
   const handleViewWorker = (worker: ApiWorker) => {
     if (!viewedWorkerIds.includes(worker.user_id)) {
       const updatedViewed = [...viewedWorkerIds, worker.user_id];
@@ -301,23 +190,36 @@ export const WorkerVerificationDesk: React.FC = () => {
   };
 
   const handleApprove = (userId: string) => {
-    const updated = workers.map((w) => (w.user_id === userId ? { ...w, is_active: "active" as const } : w));
-    updateWorkers(updated);
+    const updatedWorkers = workers.map((w) => {
+      if (w.user_id === userId) {
+        const updated = { ...w, is_active: "active" as const };
+        persistWorkerStateLocally(updated);
+        return updated;
+      }
+      return w;
+    });
+    setWorkers(updatedWorkers);
     showToast(`✓ Worker ${userId} approved and activated.`);
   };
 
   const handleConfirmReject = () => {
     if (!rejectModalWorker) return;
     const targetId = rejectModalWorker.user_id;
-    const updated = workers.map((w) =>
-      w.user_id === targetId ? { ...w, is_active: "rejected" as const, rejection_reason: rejectionReasonText } : w
-    );
-    updateWorkers(updated);
+    
+    const updatedWorkers = workers.map((w) => {
+      if (w.user_id === targetId) {
+        const updated = { ...w, is_active: "rejected" as const, rejection_reason: rejectionReasonText };
+        persistWorkerStateLocally(updated);
+        return updated;
+      }
+      return w;
+    });
+    
+    setWorkers(updatedWorkers);
     showToast(`✕ Application for ${rejectModalWorker.full_name} rejected.`);
     setRejectModalWorker(null);
   };
 
-  // Prevents the hydration mismatch error entirely
   if (!isMounted) return null;
 
   return (
@@ -339,7 +241,7 @@ export const WorkerVerificationDesk: React.FC = () => {
             onClick={() => setActiveFilter("ALL")}
             className={`wvd-filter-btn ${activeFilter === "ALL" ? "active" : ""}`}
           >
-            <span>All</span>
+            <span>All Loaded</span>
             <span className="wvd-filter-badge">{workers.length}</span>
           </button>
 
@@ -368,7 +270,7 @@ export const WorkerVerificationDesk: React.FC = () => {
             <AlertTriangle size={20} className="wvd-alert-icon" />
             <div>
               <h3 className="wvd-alert-title">
-                {pendingCount} Worker Registration(s) Awaiting Federation Approval
+                {pendingCount} Worker Registration(s) on this page Awaiting Approval
               </h3>
               <p className="wvd-alert-desc">
                 Inspect their profile details via the eye icon to review and approve.
@@ -383,22 +285,14 @@ export const WorkerVerificationDesk: React.FC = () => {
             <Search size={16} className="wvd-search-icon" />
             <input
               type="text"
-              placeholder="Search by Full Name, User ID, Category, Phone, or District..."
+              placeholder="Search by Full Name, User ID, or Category..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="wvd-search-input"
             />
           </div>
           <span className="wvd-count-text">
-            Showing{" "}
-            <strong>
-              {filteredWorkers.length === 0
-                ? 0
-                : (currentPage - 1) * WORKERS_PER_PAGE + 1}
-              –
-              {Math.min(currentPage * WORKERS_PER_PAGE, filteredWorkers.length)}
-            </strong>{" "}
-            of <strong>{filteredWorkers.length}</strong> workers
+            Showing Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong> (Total <strong>{totalCount}</strong> registered)
           </span>
         </div>
 
@@ -432,143 +326,158 @@ export const WorkerVerificationDesk: React.FC = () => {
               </thead>
 
               <tbody>
-                {paginatedWorkers.map((worker) => {
-                  const isViewed = viewedWorkerIds.includes(worker.user_id);
-                  const formattedDate = new Date(worker.created_at).toLocaleDateString("en-IN", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  });
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={8} style={{ textAlign: 'center', padding: '40px' }}>
+                       <RefreshCw size={24} className="animate-spin text-emerald-600 mx-auto mb-2" />
+                       <p className="text-slate-500 font-medium text-sm">Fetching workforce data...</p>
+                    </td>
+                  </tr>
+                ) : filteredWorkers.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                       No workers found for this page or filter criteria.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredWorkers.map((worker) => {
+                    const isViewed = viewedWorkerIds.includes(worker.user_id);
+                    const formattedDate = new Date(worker.created_at).toLocaleDateString("en-IN", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    });
 
-                  return (
-                    <tr key={worker.user_id}>
-                      <td>
-                        <div className="wvd-worker-id-cell">
-                          <div className="wvd-avatar">
-                            {worker.profile_picture ? (
-                              <img src={worker.profile_picture} alt={worker.full_name} />
-                            ) : (
-                              <div className="wvd-avatar-fallback">
-                                {worker.user_id.slice(-3)}
-                              </div>
-                            )}
+                    return (
+                      <tr key={worker.user_id}>
+                        <td>
+                          <div className="wvd-worker-id-cell">
+                            <div className="wvd-avatar">
+                              {worker.profile_picture ? (
+                                <img src={worker.profile_picture} alt={worker.full_name} />
+                              ) : (
+                                <div className="wvd-avatar-fallback">
+                                  {worker.user_id.slice(-3)}
+                                </div>
+                              )}
+                            </div>
+                            <div className="wvd-id-meta">
+                              <span className="wvd-id-code">{worker.user_id}</span>
+                              <span className="wvd-reg-date">Reg: {formattedDate}</span>
+                            </div>
                           </div>
-                          <div className="wvd-id-meta">
-                            <span className="wvd-id-code">{worker.user_id}</span>
-                            <span className="wvd-reg-date">Reg: {formattedDate}</span>
-                          </div>
-                        </div>
-                      </td>
+                        </td>
 
-                      <td>
-                        <button
-                          type="button"
-                          onClick={() => handleViewWorker(worker)}
-                          className="wvd-name-btn"
-                        >
-                          <span>{worker.full_name}</span>
-                          <ExternalLink size={13} />
-                        </button>
-                      </td>
-
-                      <td>
-                        <span className={`wvd-gender-badge ${worker.gender}`}>
-                          {worker.gender === "female" ? "👩 Female" : "👨 Male"}
-                        </span>
-                      </td>
-
-                      <td>
-                        <div className="wvd-phone">
-                          <Phone size={13} />
-                          <span>{worker.phone_number}</span>
-                        </div>
-                      </td>
-
-                      <td>
-                        <div className="wvd-location">
-                          <span className="wvd-loc-main">
-                            <MapPin size={13} />
-                            <span>
-                              {worker.district}, {worker.state}
-                            </span>
-                          </span>
-                          <span className="wvd-loc-pin">PIN: {worker.pincode}</span>
-                        </div>
-                      </td>
-
-                      <td>
-                        <div className="wvd-categories">
-                          {worker.categories.map((cat) => (
-                            <span key={cat} className="wvd-cat-chip">
-                              {cat}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-
-                      <td>
-                        <span className={`wvd-status-badge ${worker.is_active}`}>
-                          {worker.is_active}
-                        </span>
-                      </td>
-
-                      <td>
-                        <div className="wvd-actions-cell">
+                        <td>
                           <button
                             type="button"
                             onClick={() => handleViewWorker(worker)}
-                            className={`wvd-view-btn ${isViewed ? "viewed" : "unviewed"}`}
+                            className="wvd-name-btn"
                           >
-                            <Eye size={14} />
-                            <span>{isViewed ? "Re-inspect" : "View"}</span>
+                            <span>{worker.full_name}</span>
+                            <ExternalLink size={13} />
                           </button>
+                        </td>
 
-                          {isViewed ? (
-                            <>
-                              {worker.is_active !== "active" && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleApprove(worker.user_id)}
-                                  className="wvd-approve-btn"
-                                >
-                                  <Check size={14} />
-                                  <span>Approve</span>
-                                </button>
-                              )}
+                        <td>
+                          <span className={`wvd-gender-badge ${worker.gender}`}>
+                            {worker.gender === "female" ? "👩 Female" : "👨 Male"}
+                          </span>
+                        </td>
 
-                              {worker.is_active !== "rejected" && (
-                                <button
-                                  type="button"
-                                  onClick={() => setRejectModalWorker(worker)}
-                                  className="wvd-reject-btn"
-                                >
-                                  <X size={14} />
-                                  <span>Reject</span>
-                                </button>
-                              )}
-                            </>
-                          ) : (
-                            <span className="wvd-unlock-hint">(View to unlock)</span>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                        <td>
+                          <div className="wvd-phone">
+                            <Phone size={13} />
+                            <span>{worker.phone_number}</span>
+                          </div>
+                        </td>
+
+                        <td>
+                          <div className="wvd-location">
+                            <span className="wvd-loc-main">
+                              <MapPin size={13} />
+                              <span>
+                                {worker.district}, {worker.state}
+                              </span>
+                            </span>
+                            <span className="wvd-loc-pin">PIN: {worker.pincode}</span>
+                          </div>
+                        </td>
+
+                        <td>
+                          <div className="wvd-categories">
+                            {worker.categories.map((cat) => (
+                              <span key={cat} className="wvd-cat-chip">
+                                {cat}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+
+                        <td>
+                          <span className={`wvd-status-badge ${worker.is_active}`}>
+                            {worker.is_active}
+                          </span>
+                        </td>
+
+                        <td>
+                          <div className="wvd-actions-cell">
+                            <button
+                              type="button"
+                              onClick={() => handleViewWorker(worker)}
+                              className={`wvd-view-btn ${isViewed ? "viewed" : "unviewed"}`}
+                            >
+                              <Eye size={14} />
+                              <span>{isViewed ? "Re-inspect" : "View"}</span>
+                            </button>
+
+                            {isViewed ? (
+                              <>
+                                {worker.is_active !== "active" && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleApprove(worker.user_id)}
+                                    className="wvd-approve-btn"
+                                  >
+                                    <Check size={14} />
+                                    <span>Approve</span>
+                                  </button>
+                                )}
+
+                                {worker.is_active !== "rejected" && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setRejectModalWorker(worker)}
+                                    className="wvd-reject-btn"
+                                  >
+                                    <X size={14} />
+                                    <span>Reject</span>
+                                  </button>
+                                )}
+                              </>
+                            ) : (
+                              <span className="wvd-unlock-hint">(View to unlock)</span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
 
-          {/* Pagination Footer (10 per page) */}
+          {/* Pagination Footer */}
           {totalPages > 1 && (
             <div className="wvd-pagination">
               <span className="wvd-page-info">
-                Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong> (Max {WORKERS_PER_PAGE} per page)
+                Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
               </span>
               <div className="wvd-page-controls">
                 <button
                   type="button"
-                  disabled={currentPage === 1}
+                  disabled={currentPage === 1 || isLoading}
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   className="wvd-page-btn"
                 >
@@ -578,6 +487,7 @@ export const WorkerVerificationDesk: React.FC = () => {
                   <button
                     key={pageNum}
                     type="button"
+                    disabled={isLoading}
                     onClick={() => setCurrentPage(pageNum)}
                     className={`wvd-page-btn ${currentPage === pageNum ? "active" : ""}`}
                   >
@@ -586,7 +496,7 @@ export const WorkerVerificationDesk: React.FC = () => {
                 ))}
                 <button
                   type="button"
-                  disabled={currentPage === totalPages}
+                  disabled={currentPage === totalPages || isLoading}
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   className="wvd-page-btn"
                 >
