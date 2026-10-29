@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link"; // 👈 IMPORT NEXT.JS LINK
 import { AdminSessionData } from "../AdminLogin/AdminLogin";
 
 interface HeaderProps {
@@ -285,7 +286,8 @@ export const Header: React.FC<HeaderProps> = ({
       <header className="cg-header">
         {/* 1. LEFT: Branding & Logo */}
         <div style={{ display: "flex", alignItems: "center", minWidth: 0, flex: 1, marginRight: "8px" }}>
-          <a href="/" className="cg-brand-link">
+          {/* Changed to Next.js Link */}
+          <Link href="/" className="cg-brand-link">
             <div style={{ position: "relative", flexShrink: 0 }}>
               <img
                 src="/logo.png"
@@ -304,7 +306,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               </div>
             </div>
-          </a>
+          </Link>
         </div>
 
         {/* 2. RIGHT: Controls Group */}
@@ -478,11 +480,11 @@ export const Header: React.FC<HeaderProps> = ({
 
                 <nav className="cg-nav-links">
                   {navItems.map((item) => {
-                    // Logic to check active page exactly
                     const isCurrent = pathname === item.href;
                     
                     return (
-                      <a
+                      // 👈 CHANGED <a> TO <Link> HERE
+                      <Link
                         key={item.name}
                         href={item.href}
                         onClick={() => setIsMenuOpen(false)}
@@ -491,11 +493,10 @@ export const Header: React.FC<HeaderProps> = ({
                         }`}
                       >
                         <p className="cg-nav-item-text">{item.name}</p>
-                        {/* Up arrow for active, right arrow for others */}
                         <span className="cg-nav-item-arrow">
-                          {isCurrent ? "↖" : "→"}
+                          {isCurrent ? "↗" : "→"}
                         </span>
-                      </a>
+                      </Link>
                     );
                   })}
                 </nav>
@@ -503,6 +504,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="cg-nav-media">
                   <h4 className="cg-nav-media-title">Powered By:</h4>
                   <div className="cg-nav-media-list">
+                    {/* External links stay as standard <a> tags */}
                     {poweredByLinks.map((link) => (
                       <a
                         key={link.label}
