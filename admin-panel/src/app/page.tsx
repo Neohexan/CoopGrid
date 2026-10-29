@@ -1,86 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { PensatoriPreloader } from "../components/preloader/PensatoriPreloader";
-import { AdminLogin, AdminSessionData } from "../components/AdminLogin/AdminLogin";
-import { Header } from "../components/Header/Header";
-
-const SESSION_STORAGE_KEY = "coopgrid_admin_session";
+import React from "react";
 
 export default function Home() {
-  const [adminSession, setAdminSession] = useState<AdminSessionData | null>(
-    null
-  );
-  const [isHydrated, setIsHydrated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [replayKey, setReplayKey] = useState(0);
-
-  // Restore session metadata across page refreshes
-  useEffect(() => {
-    try {
-      const saved = sessionStorage.getItem(SESSION_STORAGE_KEY);
-      if (saved) {
-        setAdminSession(JSON.parse(saved));
-      }
-    } catch {
-      // Ignore storage errors
-    } finally {
-      setIsHydrated(true);
-    }
-  }, []);
-
-  const handleLoginSuccess = (sessionData: AdminSessionData) => {
-    setAdminSession(sessionData);
-    try {
-      sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionData));
-    } catch {
-      // Ignore storage errors
-    }
-  };
-
-  const handleLogout = () => {
-    setAdminSession(null);
-    try {
-      sessionStorage.removeItem(SESSION_STORAGE_KEY);
-    } catch {
-      // Ignore storage errors
-    }
-  };
-
-  const handleReplay = () => {
-    setIsLoading(true);
-    setReplayKey((prev) => prev + 1);
-  };
-
-  if (!isHydrated) {
-    return null;
-  }
-
-  // BLOCK ACCESS: Render ONLY AdminLogin until the admin is authenticated
-  if (!adminSession) {
-    return <AdminLogin onLoginSuccess={handleLoginSuccess} />;
-  }
-
-  // ALLOW ACCESS: Dashboard and Header only render if adminSession exists
   return (
-    <main className="min-h-screen bg-[#f5f5f5] text-[#111111] font-sans selection:bg-black selection:text-white flex flex-col">
-      {/* 1. KINETIC PRELOADER COMPONENT */}
-      {isLoading && (
-        <PensatoriPreloader
-          replayTrigger={replayKey}
-          speedMultiplier={1}
-          onComplete={() => setIsLoading(false)}
-        />
-      )}
-
-      {/* 2. GLOBAL HEADER WITH FLOATING ADMIN PROFILE WINDOW */}
-      <Header
-        adminSession={adminSession}
-        onLogout={handleLogout}
-        onReplayPreloader={handleReplay}
-      />
-
-      {/* 3. MAIN COOPGRID ADMIN DASHBOARD CONTENT */}
+    <main className="font-sans selection:bg-black selection:text-white flex-1 flex flex-col">
       <div className="max-w-7xl w-full mx-auto px-6 py-10 flex-1 flex flex-col justify-between">
         <div>
           {/* Welcome Sub-banner */}
@@ -89,10 +13,7 @@ export default function Home() {
               CoopGrid Admin
             </h2>
             <p className="text-xs font-mono text-neutral-500 uppercase tracking-widest mt-0.5">
-              Decentralized Gig & Community Platform Core • Active Operator:{" "}
-              <span className="text-emerald-700 font-semibold">
-                {adminSession.adminId}
-              </span>
+              Decentralized Gig & Community Platform Core
             </p>
           </div>
 

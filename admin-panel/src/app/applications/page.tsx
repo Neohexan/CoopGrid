@@ -1,5 +1,5 @@
-import React from "react";
+import WorkerVerificationDesk from "@/components/WorkerVerificationDesk/WorkerVerificationDesk";
 
-export default function Page() {
-  return <div>Coming Soon</div>;
+export default function WorkersVerificationPage() {
+  return <WorkerVerificationDesk />;
 }

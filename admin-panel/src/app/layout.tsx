@@ -1,5 +1,6 @@
 import { Ballet, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { AppProvider } from "@/components/AppProvider";
 
 const ballet = Ballet({
   subsets: ["latin"],
@@ -23,9 +24,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${ballet.variable} ${jetbrainsMono.variable}`}>
-      <body className="bg-[#111111] text-[#f5f5f5] antialiased">
-        
-        {children}
+      <body className="bg-[#f5f5f5] text-[#111111] antialiased min-h-screen flex flex-col">
+        {/* The AppProvider wraps the whole site. If a user isn't logged in, 
+            it intercepts rendering and drops the Login page here. */}
+        <AppProvider>
+          {children}
+        </AppProvider>
       </body>
     </html>
   );

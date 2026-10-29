@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { AdminSessionData } from "../AdminLogin/AdminLogin";
 
 interface HeaderProps {
@@ -19,61 +20,51 @@ const UserIcon = ({ size = 24, color = "currentColor" }) => (
     <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
   </svg>
 );
-
 const Volume2Icon = ({ size = 24, color = "currentColor" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
   </svg>
 );
-
 const VolumeXIcon = ({ size = 24, color = "currentColor" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>
   </svg>
 );
-
 const RotateCcwIcon = ({ size = 24, color = "currentColor" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
   </svg>
 );
-
 const ShieldCheckIcon = ({ size = 24, color = "currentColor" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path>
   </svg>
 );
-
 const KeyIcon = ({ size = 24, color = "currentColor", className = "" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"></path><path d="m21 2-9.6 9.6"></path><circle cx="7.5" cy="15.5" r="5.5"></circle>
   </svg>
 );
-
 const ActivityIcon = ({ size = 24, color = "currentColor", className = "" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
   </svg>
 );
-
 const DatabaseIcon = ({ size = 24, color = "currentColor", className = "" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
   </svg>
 );
-
 const SlidersIcon = ({ size = 24, color = "currentColor", className = "" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line>
   </svg>
 );
-
 const LogOutIcon = ({ size = 24, color = "currentColor", className = "" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>
   </svg>
 );
-
 const CheckCircle2Icon = ({ size = 24, color = "currentColor" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path>
@@ -87,9 +78,9 @@ export const Header: React.FC<HeaderProps> = ({
   isAudioMuted = false,
   onToggleAudio,
 }) => {
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [activeNav, setActiveNav] = useState("Dashboard");
   const [sessionToast, setSessionToast] = useState<string | null>(null);
 
   const userDropdownRef = useRef<HTMLDivElement>(null);
@@ -142,12 +133,13 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   const navItems = [
-    { name: "Dashboard", arrow: "↘", href: "/" },
-    { name: "Applications", arrow: "→", href: "/applications" },
-    { name: "Approved", arrow: "→", href: "/approved" },
-    { name: "Blacklisted", arrow: "→", href: "/blacklist" },
-    { name: "Broadcast", arrow: "→", href: "/broadcast" },
-    { name: "Complains", arrow: "→", href: "/complains" },
+    { name: "Dashboard", href: "/" },
+    { name: "Applications", href: "/applications" },
+    { name: "Worker Verification", href: "/workers" },
+    { name: "Approved", href: "/approved" },
+    { name: "Blacklisted", href: "/blacklist" },
+    { name: "Broadcast", href: "/broadcast" },
+    { name: "Complains", href: "/complains" },
   ];
 
   const poweredByLinks = [
@@ -486,21 +478,23 @@ export const Header: React.FC<HeaderProps> = ({
 
                 <nav className="cg-nav-links">
                   {navItems.map((item) => {
-                    const isCurrent = activeNav === item.name;
+                    // Logic to check active page exactly
+                    const isCurrent = pathname === item.href;
+                    
                     return (
                       <a
                         key={item.name}
                         href={item.href}
-                        onClick={() => {
-                          setActiveNav(item.name);
-                          setIsMenuOpen(false);
-                        }}
+                        onClick={() => setIsMenuOpen(false)}
                         className={`cg-nav-item ${
                           isCurrent ? "active" : "normal"
                         }`}
                       >
                         <p className="cg-nav-item-text">{item.name}</p>
-                        <span className="cg-nav-item-arrow">{item.arrow}</span>
+                        {/* Up arrow for active, right arrow for others */}
+                        <span className="cg-nav-item-arrow">
+                          {isCurrent ? "↖" : "→"}
+                        </span>
                       </a>
                     );
                   })}
