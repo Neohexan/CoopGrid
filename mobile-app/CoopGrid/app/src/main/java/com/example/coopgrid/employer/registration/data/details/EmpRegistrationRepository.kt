@@ -33,11 +33,6 @@ class EmpRegistrationRepository @Inject constructor(
             Log.i(TAG, "==> [FINAL PAYLOAD JSON START] <<<\n$jsonPayload\n==> [FINAL PAYLOAD JSON END] <<<")
 
             Log.i(TAG, "Payload Prepared Successfully:")
-            Log.i(TAG, " -> Category: ${requestDto.category}")
-            Log.i(TAG, " -> Name: ${requestDto.fullName}")
-            Log.i(TAG, " -> Official Name: ${requestDto.officialName ?: "N/A (Non-Business Category)"}")
-            Log.i(TAG, " -> Location: ${requestDto.address.stateName}, ${requestDto.address.districtName}, ${requestDto.address.blockName}")
-            Log.i(TAG, " -> Pincode: ${requestDto.address.pincode}")
 
             // Step 2: Hitting backend service
             Log.d(TAG, "==> [NETWORK CALL] Dispatching POST request to /auth/employer/register...")
