@@ -2,6 +2,7 @@ package com.example.coopgrid.employer.dashboard.features.home.ui.screens
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.coopgrid.employer.dashboard.features.home.ui.components.WorkerPostItemState
 import com.example.coopgrid.employer.dashboard.features.home.ui.strings.EmployerHomeStrings
 import com.example.coopgrid.ui.theme.CoopGridTheme
@@ -52,6 +53,7 @@ private fun HomeScreenContentPreview() {
             onAccountClick = {},
             onSettingsClick = {},
             onPostJobClick = {},
+            bottomPadding =0.dp,
             onWorkerCardClick = {}
         )
     }
@@ -103,6 +105,7 @@ private fun HomeScreenContentDarkModePreview() {
             onAccountClick = {},
             onSettingsClick = {},
             onPostJobClick = {},
+            bottomPadding =0.dp,
             onWorkerCardClick = {}
         )
     }

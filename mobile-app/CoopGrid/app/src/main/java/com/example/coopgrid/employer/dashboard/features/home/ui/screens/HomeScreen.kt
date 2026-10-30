@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -82,6 +83,7 @@ fun HomeScreenRoute(
         onSettingsClick = onSettingsClick,
         onPostJobClick = onPostJobClick,
         workerPosts = dummyWorkerPosts,
+        bottomPadding = bottomPadding,
         onWorkerCardClick = onWorkerCardClick,
         modifier = Modifier.padding(bottom = bottomPadding)
     )
@@ -98,35 +100,31 @@ fun HomeScreenContent(
     onAccountClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onPostJobClick: () -> Unit,
+    bottomPadding: Dp,
     workerPosts: List<WorkerPostItemState>,
     onWorkerCardClick: (WorkerPostItemState) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            // FIXED: Ab yeh camera/status bar ke just baad se padding lagayega bina extra space ke!
-            .statusBarsPadding()
-    ) {
-        // Aapka alag kiya hua Top Bar yahan aayega
-        HomeTopBar(
-            userName = userName,
-            location = location,
-            onAccountClick = onAccountClick,
-            onSettingsClick = onSettingsClick,
-            // 3. Top padding ko 0.dp kiya taaki koi extra gap na bache
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 6.dp)
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        // Scrollable Area
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
+            // Top Bar automatically handles status bar spacing cleanly through Scaffold
+            HomeTopBar(
+                userName = userName,
+                location = location,
+                onAccountClick = onAccountClick,
+                onSettingsClick = onSettingsClick,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
+        }
+    ) { innerPadding ->
+        // innerPadding ensures content starts right below the TopBar with zero wasted space
         LazyColumn(
             modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            contentPadding = PaddingValues(bottom = 16.dp),
+                .fillMaxSize()
+                .padding(innerPadding),
+            contentPadding = PaddingValues(top = 4.dp, bottom = bottomPadding + 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {

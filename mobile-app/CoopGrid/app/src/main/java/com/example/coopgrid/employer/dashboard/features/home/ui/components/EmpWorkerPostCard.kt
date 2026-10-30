@@ -36,7 +36,7 @@ data class WorkerPostItemState(
     val offerValidity: String,     // Jaise "Valid for 4 days"
     val description: String,
     val location: String,
-    val imageUrl: String? = null
+    val imageID: String? = null
 )
 
 @Composable

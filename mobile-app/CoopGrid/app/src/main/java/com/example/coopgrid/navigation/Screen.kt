@@ -8,7 +8,7 @@ sealed class Screen(val route: String) {
     // Future screens ke routes yahan add honge:
     object Login : Screen("login_screen")
 
-    object WorkerHome : Screen("worker_home")
+    object WorkerDashboard : Screen("worker_home")
 
     object EmployerDashboard : Screen("employer_dashboard")
 
