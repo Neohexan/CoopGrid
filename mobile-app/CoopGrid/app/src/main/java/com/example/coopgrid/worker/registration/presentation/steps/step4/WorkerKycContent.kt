@@ -66,6 +66,7 @@ fun WorkerKycContent(
     onImageSelected: (KycDocFieldType) -> Unit,    // 👈 Dialog trigger karne ke liye
     isAgriLicenseUploading: Boolean = false,
     isShopUploading: Boolean = false,
+    isLoading: Boolean = false,
     onSubmitClick: () -> Unit                     // 👈 Submit validation trigger
 ) {
     Column(
@@ -283,7 +284,8 @@ fun WorkerKycContent(
         AppPrimaryButton(
             text = strings.submitKycButton,
             onClick = onSubmitClick,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isLoading = isLoading
         )
     }
 }

@@ -22,6 +22,7 @@ import com.example.coopgrid.worker.registration.presentation.steps.step4.viewmod
 import com.example.coopgrid.worker.registration.presentation.steps.step4.viewmodel.WorkerKycViewModel
 import com.example.coopgrid.worker.registration.viewmodel.WorkerFormViewModel
 import com.example.coopgrid.worker.registration.viewmodel.WorkerRegistrationEvent
+import com.example.coopgrid.worker.registration.viewmodel.WorkerRegistrationUiState
 import java.io.File
 
 
@@ -39,6 +40,7 @@ fun WorkerKycScreen(
     // 1. Central Single Source of Truth (Parent Form State)
     val formState by registrationViewModel.formState.collectAsStateWithLifecycle()
 
+    val uiState by registrationViewModel.uiState.collectAsStateWithLifecycle()
     // 2. Local KYC Media ViewModel States
     val kycUiState by kycViewModel.uiState.collectAsStateWithLifecycle()
     val uploadProgressMap = kycUiState.uploadProgressMap
@@ -150,7 +152,8 @@ fun WorkerKycScreen(
                     onKycComplete()
                 }
             )
-        }
+        },
+        isLoading = uiState is WorkerRegistrationUiState.Loading
     )
 
     // Option Dialog (Camera vs Gallery)

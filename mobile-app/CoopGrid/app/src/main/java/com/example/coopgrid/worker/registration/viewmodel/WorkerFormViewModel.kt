@@ -1,5 +1,6 @@
 package com.example.coopgrid.worker.registration.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.coopgrid.worker.registration.data.form.repository.WorkerFormRepository
@@ -26,6 +27,8 @@ class WorkerFormViewModel @Inject constructor(
     // UI & Network Status State
     private val _uiState = MutableStateFlow<WorkerRegistrationUiState>(WorkerRegistrationUiState.Idle)
     val uiState: StateFlow<WorkerRegistrationUiState> = _uiState.asStateFlow()
+
+    private var isRegistering = false
 
     // Central Event Handler
     fun onEvent(event: WorkerRegistrationEvent) {
@@ -141,22 +144,32 @@ class WorkerFormViewModel @Inject constructor(
     }
 
     private fun submitRegistrationData() {
+        if (isRegistering) return // Agar pehle se request chal rahi hai toh kuch mat karo
         viewModelScope.launch {
+            isRegistering = true
+            // 🔥 Yeh state UI ko batayegi ki loading shuru ho gayi hai,
             _uiState.value = WorkerRegistrationUiState.Loading
-            // Repository ke through formState ko pass karke API call lagayein
-            val result = workerRepository.registerWorker(_formState.value)
+            try {
+                val result = workerRepository.registerWorker(_formState.value)
 
-            result.onSuccess { response ->
-                // Success state handle karein (workerId ko save ya UI me show kar sakte hain)
-                _uiState.value = WorkerRegistrationUiState.Success(
-                    message = response.message,
-                    workerId = response.workerId ?: ""
-                )
-            }.onFailure { error ->
-                // Failure / Error state handle karein
-                _uiState.value = WorkerRegistrationUiState.Error(
-                    message = error.localizedMessage ?: "Something went wrong during registration"
-                )
+                result.onSuccess { response ->
+                    _uiState.value = WorkerRegistrationUiState.Success(
+                        message = response.message,
+                        workerId = response.workerId ?: ""
+                    )
+                }.onFailure { error ->
+                    if (error is kotlinx.coroutines.CancellationException) {
+                        // Agar cancellation hui hai toh handle karein
+                        Log.w("WorkerVM", "Job cancelled normally")
+                    } else {
+                        _uiState.value = WorkerRegistrationUiState.Error(
+                            message = error.localizedMessage ?: "Registration failed"
+                        )
+                    }
+                }
+            } finally {
+                // Request chahe success ho ya fail, guard ko wapas false kar dein
+                isRegistering = false
             }
         }
     }
