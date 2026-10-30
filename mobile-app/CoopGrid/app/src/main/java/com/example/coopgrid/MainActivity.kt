@@ -53,9 +53,9 @@ class MainActivity : ComponentActivity() {
                             .padding(innerPadding) // Status bar & Bottom bar ke liye exact safe margin
                     ) {
 //                        TestLocalizationScreen()
-//                        AppNavGraph()
+                        AppNavGraph()
 //                        EmployerDashboardScreen()
-                        WorkerDashboardContainer()
+//                        WorkerDashboardContainer()
                     }
                 }
             }
