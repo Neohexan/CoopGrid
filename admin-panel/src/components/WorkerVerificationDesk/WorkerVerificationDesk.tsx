@@ -179,7 +179,7 @@ type FilterTab = "ALL" | "MALE" | "FEMALE";
 const LOCAL_STORAGE_WORKERS_KEY = "coopgrid_api_workers_v3";
 const LOCAL_STORAGE_VIEWED_KEY = "coopgrid_viewed_workers_v1";
 const WORKERS_PER_PAGE = 10;
-const API_BASE_URL = "https://admin-api.neohexane.com";
+const API_BASE_URL = "https://app-api.neohexane.com";
 
 export const PRESET_REJECTION_REASONS = [
   "Incomplete verification documentation",
