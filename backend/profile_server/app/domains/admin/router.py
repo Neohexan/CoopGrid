@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, Header, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_admin_db
-from app.domains.admin import admin_crud as crud
+from app.domains.admin import crud
 from app.domains.admin.schemas import (
     AdminProfileCreateRequest, AdminCreateSuccessResponse,
     AdminProfileResponse,

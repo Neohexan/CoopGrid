@@ -125,3 +125,17 @@ class AdminWorkerDetailResponse(BaseModel):
     kyc: Optional[AdminKycResponseDto] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+"""
+Admin Worker Profile update 
+"""
+
+class WorkerVerificationUpdateRequest(BaseModel):
+    verification_status: str = Field(..., description="Must be VERIFIED or REJECTED")
+    rejection_reason: Optional[str] = Field(None, description="Reason required if status is REJECTED")
+
+class WorkerVerificationUpdateResponse(BaseModel):
+    success: bool = True
+    message: str
+    user_id: str
+    verification_status: str

@@ -5,17 +5,16 @@ Defines the schema for admin profiles and jurisdiction storage in admin.db
 
 from datetime import datetime
 from sqlalchemy import Column, String, DateTime, Boolean, Text
-from app.database import AdminBase  # ya jo bhi aapka admin base declarative class ho
+from app.database import BaseAdmin  # ya jo bhi aapka admin base declarative class ho
 
-
-class AdminProfile(AdminBase):
+class AdminProfile(BaseAdmin):
     __tablename__ = "admin_profiles"
 
-    user_id = Column(String(64), primary_key=True, index=True, description="Unique Admin ID mapped from Auth/Gateway")
+    user_id = Column(String(64), primary_key=True, index=True, comment="Unique Admin ID mapped from Auth/Gateway")
     full_name = Column(String(128), nullable=False)
     phone_number = Column(String(20), nullable=False, unique=True, index=True)
     email = Column(String(128), nullable=True, unique=True)
-    profile_image_media_id = Column(String(128), nullable=True, description="Media ID for uploaded profile picture")
+    profile_image_media_id = Column(String(128), nullable=True, comment="Media ID for uploaded profile picture")
     
     # Role & Status
     role = Column(String(32), default="ADMIN", nullable=False) # e.g., SUPER_ADMIN, DISTRICT_ADMIN, etc.

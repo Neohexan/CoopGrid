@@ -47,7 +47,7 @@ class WorkerProfile(BaseWorker):
     skills = relationship("WorkerSkill", back_populates="worker", cascade="all, delete-orphan")
     machinery_items = relationship("WorkerMachineryItem", back_populates="worker", cascade="all, delete-orphan")
     agri_supply_profile = relationship("WorkerAgriSupplyProfile", back_populates="worker", uselist=False, cascade="all, delete-orphan")
-    identity_kyc = relationship("WorkerIdentityKyc", back_populates="worker", uselist=False, cascade="all, delete-orphan")
+    identity_kyc = relationship("WorkerIdentityKyc", back_populates="worker", uselist=False, cascade="all, delete-orphan", primaryjoin="WorkerProfile.user_id == WorkerIdentityKyc.user_id")
     domain_kyc = relationship("WorkerDomainKyc", back_populates="worker", uselist=False, cascade="all, delete-orphan")
 
 
@@ -181,7 +181,10 @@ class WorkerIdentityKyc(BaseWorker):
     doc_number = Column(String(100), nullable=False)
     front_image_id = Column(String(255), nullable=True)
     back_image_id = Column(String(255), nullable=True)
-    verification_status = Column(String(30), default="PENDING", comment="PENDING, VERIFIED, REJECTED")
+    # WorkerProfile model ke andar ye fields add kar lijiye:
+    verification_status = Column(String(30), default="PENDING", nullable=False, comment="PENDING, VERIFIED, REJECTED")
+    rejection_reason = Column(String, nullable=True, comment="Reason provided by admin if KYC/verification is rejected")
+    verified_by_admin_id = Column(String(64), nullable=True, comment="Admin ID who verified or rejected this worker")
     created_at = Column(DateTime, default=datetime.utcnow)
 
     worker = relationship("WorkerProfile", back_populates="identity_kyc")

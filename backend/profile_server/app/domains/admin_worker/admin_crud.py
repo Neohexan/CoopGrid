@@ -6,8 +6,10 @@ import logging
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, joinedload
-
-from app.domains.worker.models import WorkerProfile, WorkerAddress
+from app.domains.worker.crud import get_worker_by_user_id
+from fastapi import HTTPException, status
+from typing import Optional
+from app.domains.worker.models import WorkerProfile, WorkerAddress, WorkerIdentityKyc
 from app.domains.admin_worker.admin_schemas import (
     AdminWorkerDetailResponse,
     AdminAddressResponseDto,
@@ -264,3 +266,59 @@ async def get_worker_full_profile_dto(
         agri_supply_profile=agri_data,
         kyc=kyc_data,
     )
+
+async def update_worker_verification_status(
+    db: AsyncSession,
+    worker_user_id: str,
+    admin_id: str,
+    status_val: str,
+    reason: Optional[str] = None
+) -> WorkerProfile:
+    """
+    Updates worker identity KYC verification status and stores rejection reason.
+    """
+    logger.info(f"[Admin CRUD] Updating KYC status for worker '{worker_user_id}' to '{status_val}' by Admin '{admin_id}'")
+
+    # 1. Pehle worker profile check karein ki exist karta hai ya nahi
+    worker = await get_worker_by_user_id(db, worker_user_id)
+    if not worker:
+        logger.warning(f"[Not Found] Worker profile not found for user_id: {worker_user_id}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"success": False, "message": f"Worker profile not found for ID '{worker_user_id}'."},
+        )
+
+    # 2. Directly query WorkerIdentityKyc asynchronously (Bypasses lazy-loading error)
+    kyc_query = select(WorkerIdentityKyc).where(WorkerIdentityKyc.user_id == worker_user_id)
+    kyc_result = await db.execute(kyc_query)
+    kyc_record = kyc_result.scalar_one_or_none()
+
+    if not kyc_record:
+        logger.warning(f"[Not Found] Worker Identity KYC record not found for user_id: {worker_user_id}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"success": False, "message": f"KYC details not found for worker ID '{worker_user_id}'."},
+        )
+
+    # 3. Validation: If status is REJECTED, reason is mandatory
+    normalized_status = status_val.upper()
+    if normalized_status == "REJECTED" and not reason:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"success": False, "message": "Rejection reason is mandatory when rejecting a worker's KYC."},
+        )
+
+    # 4. Update KYC fields
+    kyc_record.verification_status = normalized_status
+    kyc_record.verified_by_admin_id = admin_id
+    
+    if normalized_status == "REJECTED":
+        kyc_record.rejection_reason = reason
+    elif normalized_status == "VERIFIED":
+        kyc_record.rejection_reason = None  # Clear old reason if approved now
+
+    await db.commit()
+    await db.refresh(worker)
+    
+    logger.info(f"[Admin CRUD] Worker KYC status successfully updated to {normalized_status}")
+    return worker

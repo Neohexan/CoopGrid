@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_worker_db
 from app.domains.admin_worker import admin_crud
-from app.domains.admin_worker.admin_schemas import AdminWorkerListResponse, WorkerSummaryDto, AdminWorkerDetailResponse
+from app.domains.admin_worker.admin_schemas import AdminWorkerListResponse, WorkerSummaryDto, AdminWorkerDetailResponse, WorkerVerificationUpdateResponse, WorkerVerificationUpdateRequest
 
 
 """
@@ -110,3 +110,40 @@ async def get_worker_detail_for_admin(
         )
 
     return profile_dto
+
+@router.put(
+    "/admin/workers/{worker_id}/verify",
+    response_model=WorkerVerificationUpdateResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Verify or Reject Worker KYC/Profile",
+)
+async def update_worker_verification(
+    worker_id: str,
+    payload: WorkerVerificationUpdateRequest,
+    x_user_id: str = Header(..., alias="X-User-ID", description="Admin User ID from Gateway"),
+    x_user_role: str | None = Header(None, alias="X-User-Role", description="User Role from Gateway"),
+    db: AsyncSession = Depends(get_worker_db),  # Note: Worker database session since worker table is there
+):
+    logger.info(f"[PUT /admin/workers/{worker_id}/verify] Admin ID: {x_user_id} updating status to {payload.verification_status}")
+
+    # Role Guard
+    if not x_user_role or x_user_role.upper() != "ADMIN":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"success": False, "message": "Access denied. Only ADMIN role can verify workers."},
+        )
+
+    # Delegate to CRUD
+    updated_worker = await admin_crud.update_worker_verification_status(
+        db=db,
+        worker_user_id=worker_id,
+        admin_id=x_user_id,
+        status_val=payload.verification_status,
+        reason=payload.rejection_reason,
+    )
+    return WorkerVerificationUpdateResponse(
+        success=True,
+        message=f"Worker status updated to {payload.verification_status.upper()} successfully.",
+        user_id=updated_worker.user_id,
+        verification_status=payload.verification_status.upper(),
+    )
