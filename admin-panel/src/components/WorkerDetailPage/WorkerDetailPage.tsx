@@ -21,9 +21,9 @@ import {
   FileCheck,
 } from "lucide-react";
 import {
-  INITIAL_API_WORKERS,
   ApiWorker as BasicApiWorker,
   PRESET_REJECTION_REASONS,
+  DEMO_PHOTOS,
   getDemoPhone,
 } from "../WorkerVerificationDesk/WorkerVerificationDesk";
 
@@ -109,11 +109,18 @@ export interface DetailedApiWorker {
   } | null;
 }
 
-// Helper: checks if a value is present (not null, undefined, empty string, or empty array)
 const hasValue = (val: unknown): boolean => {
   if (val === null || val === undefined || val === "") return false;
   if (Array.isArray(val) && val.length === 0) return false;
   return true;
+};
+
+const getDemoPhotoById = (id: string): string => {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash + id.charCodeAt(i)) % DEMO_PHOTOS.length;
+  }
+  return DEMO_PHOTOS[hash];
 };
 
 interface ColumnDef<T> {
@@ -170,12 +177,13 @@ export const WorkerDetailPage: React.FC<WorkerDetailPageProps> = ({ workerId, on
 
         if (response.ok && data.success && (data.worker_id || data.user_id)) {
           const resolvedId = String(data.worker_id || data.user_id || workerId);
-          let finalWorker: DetailedApiWorker = {
+          const finalWorker: DetailedApiWorker = {
             ...data,
             worker_id: resolvedId,
             user_id: resolvedId,
+            // Keep demo photo placeholder and random mobile number
             phone_number: data.phone_number || getDemoPhone(resolvedId),
-            profile_picture: data.profile_picture || "/assets/image1.jpg",
+            profile_picture: data.profile_picture || getDemoPhotoById(resolvedId),
           };
 
           try {
@@ -191,107 +199,11 @@ export const WorkerDetailPage: React.FC<WorkerDetailPageProps> = ({ workerId, on
 
           setWorker(finalWorker);
         } else {
-          throw new Error("Worker profile not found on API");
+          setWorker(null);
         }
       } catch (error) {
-        console.warn("API detail fetch failed, building fallback detail profile:", error);
-
-        const baseMatch =
-          INITIAL_API_WORKERS.find((w) => w.user_id === workerId) || INITIAL_API_WORKERS[0];
-
-        const fallbackDetail: DetailedApiWorker = {
-          worker_id: workerId,
-          user_id: workerId,
-          full_name: baseMatch ? baseMatch.full_name : "Ramesh Kumar",
-          gender: baseMatch ? baseMatch.gender : "male",
-          dob_millis: 631152000000,
-          alt_phone_number: "9876543210",
-          email: "ramesh@example.com",
-          categories: baseMatch ? baseMatch.categories : ["plumbing", "electrical"],
-          is_active: baseMatch ? baseMatch.is_active : "pending",
-          created_at: baseMatch ? baseMatch.created_at : "2026-01-15T10:30:00Z",
-          phone_number: baseMatch?.phone_number || getDemoPhone(workerId),
-          profile_picture: baseMatch?.profile_picture || "/assets/image1.jpg",
-          address: {
-            address_type: "home",
-            house_or_building_no: "12A",
-            street_locality: "MG Road",
-            pincode: "560001",
-            state_code: "KA",
-            state_name: "Karnataka",
-            district_code: "BLR",
-            district_name: "Bengaluru Urban",
-            block_code: "BLR_N",
-            block_name: "North Bengaluru",
-            latitude: 12.9716,
-            longitude: 77.5946,
-          },
-          skills: [
-            {
-              category_code: "PLUMBING",
-              trade_code: "PIPE_FITTING",
-              sub_skill: "Water pipe fitting",
-              primary_category: "Plumbing",
-              specific_skill: "Pipe installation",
-              sub_specific_skill: "PVC pipe installation",
-              experience_years: "5",
-              expected_wage: "800",
-              wage_type: "daily",
-              work_radius_km: 25.0,
-              availability_type: "full_time",
-            },
-          ],
-          machinery_items: [
-            {
-              category_id: "machinery",
-              sub_category_id: "tractor",
-              custom_machine_name: "Mahindra Tractor",
-              rate: "1500",
-              rate_unit: "per_day",
-              service_radius_km: 30.0,
-              is_driver_and_fuel_included: true,
-            },
-          ],
-          agri_supply_profile: {
-            business_name: "Ramesh Agro Store",
-            category_ids: ["seeds"],
-            sub_category_ids: ["vegetable_seeds"],
-            offers_delivery: true,
-            offers_store_pickup: true,
-            service_radius_km: 10.0,
-            offers_wholesale: false,
-          },
-          kyc: {
-            doc_type: "voter_id",
-            doc_number: "[Aadhaar Redacted]",
-            front_image_id: "img_front_001",
-            back_image_id: null,
-            verification_status: "verified",
-            skill_cert_name_or_number: "CERT-123",
-            skill_cert_image_id: "img_cert_001",
-            machinery_rc_number: null,
-            machinery_fitness_cert_number: null,
-            machinery_license_photo_id: null,
-            machinery_photo_id: null,
-            agri_business_license_number: null,
-            agri_business_name: null,
-            agri_license_doc_id: null,
-            agri_shop_photo_id: null,
-          },
-        };
-
-        try {
-          const rawWorkers = localStorage.getItem(LOCAL_STORAGE_WORKERS_KEY);
-          if (rawWorkers) {
-            const localMap: Record<string, BasicApiWorker> = JSON.parse(rawWorkers);
-            if (localMap[workerId]) {
-              fallbackDetail.is_active = localMap[workerId].is_active;
-              fallbackDetail.rejection_reason = localMap[workerId].rejection_reason;
-            }
-          }
-        } catch {}
-
-        setWorker(fallbackDetail);
+        console.error("Failed to fetch worker profile from API:", error);
+        setWorker(null);
       } finally {
         setIsLoading(false);
       }
@@ -363,13 +275,8 @@ export const WorkerDetailPage: React.FC<WorkerDetailPageProps> = ({ workerId, on
         kyc: worker.kyc ? { ...worker.kyc, verification_status: "VERIFIED" } : worker.kyc,
       });
       showToast(data?.message || `✓ Worker ${worker.full_name} verified!`);
-    } catch {
-      syncLocalWorkerStatus({
-        is_active: "active",
-        rejection_reason: null,
-        kyc: worker.kyc ? { ...worker.kyc, verification_status: "VERIFIED" } : worker.kyc,
-      });
-      showToast(`✓ Worker ${worker.full_name} marked as VERIFIED!`);
+    } catch (error: any) {
+      showToast(error?.message || "Failed to verify worker.");
     } finally {
       setIsSubmitting(false);
     }
@@ -419,15 +326,8 @@ export const WorkerDetailPage: React.FC<WorkerDetailPageProps> = ({ workerId, on
       setShowRejectModal(false);
       setCustomReasonText("");
       showToast(data?.message || `✕ Worker ${worker.full_name} rejected.`);
-    } catch {
-      syncLocalWorkerStatus({
-        is_active: "rejected",
-        rejection_reason: finalReason,
-        kyc: worker.kyc ? { ...worker.kyc, verification_status: "REJECTED" } : worker.kyc,
-      });
-      setShowRejectModal(false);
-      setCustomReasonText("");
-      showToast(`✕ Application for ${worker.full_name} rejected.`);
+    } catch (error: any) {
+      showToast(error?.message || "Failed to reject worker.");
     } finally {
       setIsSubmitting(false);
     }
@@ -484,7 +384,7 @@ export const WorkerDetailPage: React.FC<WorkerDetailPageProps> = ({ workerId, on
     { label: "Full Name", value: worker.full_name },
     { label: "Gender", value: worker.gender },
     { label: "Date of Birth", value: formattedDob },
-    { label: "Primary Phone (Demo)", value: worker.phone_number },
+    { label: "Mobile Number", value: worker.phone_number },
     { label: "Alt Phone Number", value: worker.alt_phone_number },
     { label: "Email Address", value: worker.email },
     { label: "Account Status", value: worker.is_active },
@@ -509,7 +409,7 @@ export const WorkerDetailPage: React.FC<WorkerDetailPageProps> = ({ workerId, on
       ].filter((item) => hasValue(item.value))
     : [];
 
-  // 3. Skills Dynamic Columns (Only columns that have at least one non-null value across skills[])
+  // 3. Skills Dynamic Columns
   const skillsList = worker.skills ?? [];
   const allSkillColumns: ColumnDef<(typeof skillsList)[number]>[] = [
     { key: "primary_category", label: "Primary Category" },
@@ -595,7 +495,7 @@ export const WorkerDetailPage: React.FC<WorkerDetailPageProps> = ({ workerId, on
       ].filter((item) => hasValue(item.value))
     : [];
 
-  // 6. KYC Details Dynamic Columns (Strictly filters out all null KYC fields)
+  // 6. KYC Details Dynamic Columns
   const kycEntries = worker.kyc
     ? [
         { label: "Document Type", value: worker.kyc.doc_type },

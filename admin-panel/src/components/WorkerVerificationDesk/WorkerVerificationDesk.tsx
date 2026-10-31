@@ -30,7 +30,7 @@ export interface ApiWorker {
   rejection_reason?: string;
 }
 
-const DEMO_PHOTOS = [
+export const DEMO_PHOTOS = [
   "/assets/image1.jpg",
   "/assets/image2.jpeg",
   "/assets/image3.jpeg",
@@ -49,130 +49,6 @@ export const getDemoPhone = (id: string, idx: number = 0): string => {
   const str = String(num);
   return `+91 ${str.slice(0, 5)} ${str.slice(5, 10)}`;
 };
-
-// Exported Demo Data Fallback (12 workers matching summary contract + demo photo/phone)
-export const INITIAL_API_WORKERS: ApiWorker[] = [
-  {
-    user_id: "worker_001",
-    full_name: "Ramesh Kumar",
-    gender: "male",
-    categories: ["plumbing", "electrical"],
-    is_active: "pending",
-    created_at: "2026-01-15T10:30:00Z",
-    phone_number: "+91 87978 70443",
-    profile_picture: "/assets/image1.jpg",
-  },
-  {
-    user_id: "worker_002",
-    full_name: "Sita Devi",
-    gender: "female",
-    categories: ["agriculture", "handloom"],
-    is_active: "pending",
-    created_at: "2026-01-16T08:15:00Z",
-    phone_number: "+91 94381 02345",
-    profile_picture: "/assets/image2.jpeg",
-  },
-  {
-    user_id: "worker_003",
-    full_name: "Abhimanyu Kumar",
-    gender: "male",
-    categories: ["plumbing", "masonry"],
-    is_active: "active",
-    created_at: "2026-01-10T14:20:00Z",
-    phone_number: "+91 98765 43211",
-    profile_picture: "/assets/image3.jpeg",
-  },
-  {
-    user_id: "worker_004",
-    full_name: "Kavita Sahu",
-    gender: "female",
-    categories: ["pottery", "agriculture"],
-    is_active: "pending",
-    created_at: "2026-01-18T11:45:00Z",
-    phone_number: "+91 94378 90123",
-    profile_picture: "/assets/image4.jpg",
-  },
-  {
-    user_id: "worker_005",
-    full_name: "Prakash Nayak",
-    gender: "male",
-    categories: ["carpentry", "electrical"],
-    is_active: "inactive",
-    created_at: "2026-01-08T09:00:00Z",
-    phone_number: "+91 98612 34567",
-    profile_picture: "/assets/image5.jpeg",
-  },
-  {
-    user_id: "worker_006",
-    full_name: "Lakshmi Majhi",
-    gender: "female",
-    categories: ["handloom", "tailoring"],
-    is_active: "active",
-    created_at: "2026-01-19T09:30:00Z",
-    phone_number: "+91 94371 11223",
-    profile_picture: "/assets/image6.jpeg",
-  },
-  {
-    user_id: "worker_007",
-    full_name: "Bikramunda Sardar",
-    gender: "male",
-    categories: ["masonry", "agriculture"],
-    is_active: "pending",
-    created_at: "2026-01-20T12:10:00Z",
-    phone_number: "+91 82490 55432",
-    profile_picture: "/assets/image1.jpg",
-  },
-  {
-    user_id: "worker_008",
-    full_name: "Meena Kumari",
-    gender: "female",
-    categories: ["agriculture", "bamboo craft"],
-    is_active: "active",
-    created_at: "2026-01-21T15:40:00Z",
-    phone_number: "+91 79785 66789",
-    profile_picture: "/assets/image2.jpeg",
-  },
-  {
-    user_id: "worker_009",
-    full_name: "Santosh Mahato",
-    gender: "male",
-    categories: ["electrical", "solar repair"],
-    is_active: "pending",
-    created_at: "2026-01-22T10:05:00Z",
-    phone_number: "+91 99370 44556",
-    profile_picture: "/assets/image3.jpeg",
-  },
-  {
-    user_id: "worker_010",
-    full_name: "Anita Behera",
-    gender: "female",
-    categories: ["pottery", "handloom"],
-    is_active: "active",
-    created_at: "2026-01-23T16:20:00Z",
-    phone_number: "+91 94385 99887",
-    profile_picture: "/assets/image4.jpg",
-  },
-  {
-    user_id: "worker_011",
-    full_name: "Debasis Mohanty",
-    gender: "male",
-    categories: ["carpentry", "plumbing"],
-    is_active: "pending",
-    created_at: "2026-01-24T11:00:00Z",
-    phone_number: "+91 98610 22334",
-    profile_picture: "/assets/image5.jpeg",
-  },
-  {
-    user_id: "worker_012",
-    full_name: "Sunita Murmu",
-    gender: "female",
-    categories: ["agriculture", "food processing"],
-    is_active: "pending",
-    created_at: "2026-01-25T13:45:00Z",
-    phone_number: "+91 88950 77665",
-    profile_picture: "/assets/image6.jpeg",
-  },
-];
 
 type FilterTab = "ALL" | "MALE" | "FEMALE";
 
@@ -267,9 +143,9 @@ export const WorkerVerificationDesk: React.FC = () => {
             categories: Array.isArray(apiWorker.categories) ? apiWorker.categories : [],
             is_active: String(apiWorker.is_active || "pending"),
             created_at: String(apiWorker.created_at || new Date().toISOString()),
-            // Demo photo placeholder & random phone number
-            phone_number: getDemoPhone(String(apiWorker.user_id || `w_${idx}`), idx),
-            profile_picture: DEMO_PHOTOS[(skip + idx) % DEMO_PHOTOS.length],
+            // Keep demo photo placeholder & random phone number
+            phone_number: apiWorker.phone_number || getDemoPhone(String(apiWorker.user_id || `w_${idx}`), skip + idx),
+            profile_picture: apiWorker.profile_picture || DEMO_PHOTOS[(skip + idx) % DEMO_PHOTOS.length],
           }));
 
           const localStored = localStorage.getItem(LOCAL_STORAGE_WORKERS_KEY);
@@ -284,23 +160,14 @@ export const WorkerVerificationDesk: React.FC = () => {
 
           setTotalCount(typeof data.total_count === "number" ? data.total_count : enrichedWorkers.length);
         } else {
-          throw new Error("Invalid or empty summary response");
+          setWorkers([]);
+          setTotalCount(0);
         }
       } catch (error) {
-        console.warn("API Fetch failed, falling back to demo dataset:", error);
-        const demoDataPage = INITIAL_API_WORKERS.slice(skip, skip + limit);
-
-        const localStored = localStorage.getItem(LOCAL_STORAGE_WORKERS_KEY);
-        if (localStored) {
-          const localMap: Record<string, ApiWorker> = JSON.parse(localStored);
-          setWorkers(
-            demoDataPage.map((w) => (localMap[w.user_id] ? { ...w, ...localMap[w.user_id] } : w))
-          );
-        } else {
-          setWorkers(demoDataPage);
-        }
-
-        setTotalCount(INITIAL_API_WORKERS.length);
+        console.error("Failed to fetch workers from API:", error);
+        setWorkers([]);
+        setTotalCount(0);
+        showToast("Unable to load workers from server.");
       } finally {
         setIsLoading(false);
       }
@@ -409,18 +276,8 @@ export const WorkerVerificationDesk: React.FC = () => {
       });
       setWorkers(updatedWorkers);
       showToast(data?.message || `✓ Worker ${userId} verified successfully.`);
-    } catch (error) {
-      // Fallback local update if backend is offline during demo
-      const updatedWorkers = workers.map((w) => {
-        if (w.user_id === userId) {
-          const updated = { ...w, is_active: "active", rejection_reason: undefined };
-          persistWorkerStateLocally(updated);
-          return updated;
-        }
-        return w;
-      });
-      setWorkers(updatedWorkers);
-      showToast(`✓ Worker ${userId} marked as VERIFIED.`);
+    } catch (error: any) {
+      showToast(error?.message || `Failed to verify worker ${userId}.`);
     } finally {
       setActionLoadingId(null);
     }
@@ -474,23 +331,13 @@ export const WorkerVerificationDesk: React.FC = () => {
       });
 
       setWorkers(updatedWorkers);
-      showToast(data?.message || `✕ Worker ${rejectModalWorker.full_name} rejected.`);
-    } catch (error) {
-      // Fallback local update if backend is offline during demo
-      const updatedWorkers = workers.map((w) => {
-        if (w.user_id === targetId) {
-          const updated = { ...w, is_active: "rejected", rejection_reason: finalReason };
-          persistWorkerStateLocally(updated);
-          return updated;
-        }
-        return w;
-      });
-      setWorkers(updatedWorkers);
-      showToast(`✕ Application for ${rejectModalWorker.full_name} rejected.`);
-    } finally {
-      setActionLoadingId(null);
       setRejectModalWorker(null);
       setCustomReasonText("");
+      showToast(data?.message || `✕ Worker ${rejectModalWorker.full_name} rejected.`);
+    } catch (error: any) {
+      showToast(error?.message || `Failed to reject worker ${rejectModalWorker.full_name}.`);
+    } finally {
+      setActionLoadingId(null);
     }
   };
 
