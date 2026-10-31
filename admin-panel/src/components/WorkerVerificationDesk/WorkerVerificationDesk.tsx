@@ -348,7 +348,7 @@ export const WorkerVerificationDesk: React.FC = () => {
       <div className="wvd-container">
         {/* Header */}
         <div className="wvd-header">
-          <h1 className="wvd-title">Worker Verification & Safety Desk</h1>
+          <h1 className="wvd-title">Worker Verification </h1>
           <p className="wvd-subtitle">
             Verify credentials, inspect profile details, and approve cooperative membership.
           </p>
