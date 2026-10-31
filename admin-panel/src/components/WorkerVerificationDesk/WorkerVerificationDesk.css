@@ -23,6 +23,20 @@
   }
 }
 
+/* Keyframe Animations */
+@keyframes wvd-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: wvd-spin 1s linear infinite;
+}
+
 /* Header */
 .wvd-header {
   padding-bottom: 16px;
@@ -355,7 +369,7 @@
   border: 1px solid #bfdbfe;
 }
 
-/* Column 4 & 5: Phone & Location */
+/* Column 4: Phone & Location */
 .wvd-phone {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 12px;
@@ -387,7 +401,7 @@
   margin-top: 2px;
 }
 
-/* Column 6: Categories */
+/* Column 5: Categories */
 .wvd-categories {
   display: flex;
   flex-wrap: wrap;
@@ -417,7 +431,8 @@
   white-space: nowrap;
 }
 
-.wvd-status-badge.active {
+.wvd-status-badge.active,
+.wvd-status-badge.verified {
   background-color: #d1fae5;
   color: #065f46;
   border: 1px solid #6ee7b7;
@@ -495,10 +510,17 @@
   align-items: center;
   gap: 4px;
   cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
 }
 
-.wvd-approve-btn:hover {
+.wvd-approve-btn:hover:not(:disabled) {
   background-color: #15803d;
+}
+
+.wvd-approve-btn:disabled,
+.wvd-reject-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .wvd-reject-btn {
@@ -513,9 +535,10 @@
   align-items: center;
   gap: 4px;
   cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
 }
 
-.wvd-reject-btn:hover {
+.wvd-reject-btn:hover:not(:disabled) {
   background-color: #fff1f2;
 }
 
@@ -648,6 +671,31 @@
   font-size: 13px;
   color: #1e293b;
   cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.wvd-reason-item:hover {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.wvd-custom-reason-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 13px;
+  color: #0f172a;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+  outline: none;
+  margin-top: 4px;
+}
+
+.wvd-custom-reason-input:focus {
+  border-color: #e11d48;
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
 }
 
 .wvd-modal-actions {
@@ -667,6 +715,10 @@
   cursor: pointer;
 }
 
+.wvd-btn-secondary:hover {
+  background-color: #f8fafc;
+}
+
 .wvd-btn-primary {
   padding: 8px 16px;
   border-radius: 8px;
@@ -678,6 +730,10 @@
   cursor: pointer;
 }
 
+.wvd-btn-primary:hover {
+  background-color: #065f46;
+}
+
 .wvd-btn-danger {
   padding: 8px 16px;
   border-radius: 8px;
@@ -687,6 +743,16 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.wvd-btn-danger:hover:not(:disabled) {
+  background-color: #be123c;
+}
+
+.wvd-btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Toast Notification */
