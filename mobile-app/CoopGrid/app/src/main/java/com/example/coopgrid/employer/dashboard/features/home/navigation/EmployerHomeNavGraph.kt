@@ -16,6 +16,7 @@ import com.example.coopgrid.employer.dashboard.features.job_post.ui.CreateJobPos
 import com.example.coopgrid.employer.dashboard.features.profile.navigation.employerProfileNavGraph
 import com.example.coopgrid.employer.dashboard.features.settings.navigation.employerSettingsNavGraph
 import com.example.coopgrid.employer.dashboard.navigation.EmployerDestination
+import com.example.coopgrid.navigation.Screen
 
 fun NavGraphBuilder.employerHomeNavGraph(
     navController: NavController,
@@ -77,7 +78,6 @@ fun NavGraphBuilder.employerHomeNavGraph(
         // 🌟 5. Settings Dedicated NavGraph Integration
         employerSettingsNavGraph(
             navController = navController,
-            parentRoute = EmployerHomeNavigation.SettingsGraph.route
         )
     }
 }

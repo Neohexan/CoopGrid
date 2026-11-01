@@ -20,7 +20,8 @@ import com.example.coopgrid.worker.dashboard.container.WorkerDashboardContainer
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(
+) {
     override fun attachBaseContext(newBase: Context) {
         val overrideConfig = Configuration(newBase.resources.configuration).apply {
             fontScale = 0.85f // 0.85f se text size XS (Extra Small) par lock ho jayega

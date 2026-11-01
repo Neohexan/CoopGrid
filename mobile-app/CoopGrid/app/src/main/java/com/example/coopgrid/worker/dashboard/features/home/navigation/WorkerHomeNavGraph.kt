@@ -73,7 +73,6 @@ fun NavGraphBuilder.workerHomeNavGraph(
 
         workerSettingsNavGraph(
             navController = navController,
-            bottomPadding = bottomPadding,
         )
     }
 }

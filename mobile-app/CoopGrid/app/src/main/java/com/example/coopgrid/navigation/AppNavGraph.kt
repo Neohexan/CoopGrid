@@ -2,9 +2,11 @@ package com.example.coopgrid.navigation
 
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -13,6 +15,7 @@ import com.example.coopgrid.common.roleselection.AuthSelectionRoute
 import com.example.coopgrid.common.splash.AuthState
 import com.example.coopgrid.common.splash.SplashScreen
 import com.example.coopgrid.common.splash.SplashViewModel
+import com.example.coopgrid.data.datastore.UserPreferences
 import com.example.coopgrid.employer.dashboard.container.EmployerDashboardScreen
 
 import com.example.coopgrid.employer.registration.navigation.EmployerRoute
@@ -31,6 +34,28 @@ fun AppNavGraph(
     val currentLanguage by splashViewModel.currentLanguage.collectAsState()
     val authState by splashViewModel.authState.collectAsState()
 
+    val isLoggedIn by splashViewModel.isLoggedIn.collectAsStateWithLifecycle(initialValue = false)
+    val userRole by splashViewModel.userRole.collectAsStateWithLifecycle(initialValue = null)
+
+    // Jaise hi state change hogi, yeh automatic navigate kar dega!
+    LaunchedEffect(isLoggedIn, userRole) {
+        if (!isLoggedIn) {
+            // User logout ho gaya -> Seedha AuthSelection par bhej do
+            navController.navigate(Screen.AuthSelection.route) {
+                popUpTo(0) { inclusive = true }
+            }
+        } else if (userRole == "WORKER") {
+            navController.navigate(Screen.WorkerDashboard.route) {
+                popUpTo(0) { inclusive = true }
+            }
+        } else if (userRole == "EMPLOYER") {
+            navController.navigate(Screen.EmployerDashboard.route) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
+
+    // WorkerSettingsViewModel ko employer ke jaisa karna hai
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route
