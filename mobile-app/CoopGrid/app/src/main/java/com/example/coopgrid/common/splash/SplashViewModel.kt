@@ -16,6 +16,7 @@ import javax.inject.Inject
 sealed class AuthState {
     object Loading : AuthState()
     object Unauthenticated : AuthState()
+    data class NeedsRegistration(val role: String) : AuthState()
     data class Authenticated(val role: String) : AuthState()
 }
 
@@ -40,12 +41,33 @@ class SplashViewModel @Inject constructor(
 
     val authState: StateFlow<AuthState> = combine(
         userPreferences.isLoggedIn,
-        userPreferences.userRole
-    ) { isLoggedIn, role ->
-        if (isLoggedIn && !role.isNullOrEmpty()) {
-            AuthState.Authenticated(role)
-        } else {
+        userPreferences.userRole,
+        userPreferences.isWorkerProfileComplete,
+        userPreferences.isEmployerProfileComplete
+    ) { isLoggedIn, role, isWorkerComplete, isEmployerComplete ->
+
+        // 1. Agar logged in hi nahi hai ya role nahi hai
+        if (!isLoggedIn || role.isNullOrEmpty()) {
             AuthState.Unauthenticated
+        } else {
+            // 2. Agar logged in hai, toh check karo active role ke hisab se profile complete hai ya nahi
+            when (role) {
+                "WORKER" -> {
+                    if (isWorkerComplete) {
+                        AuthState.Authenticated("WORKER") // Seedha Home
+                    } else {
+                        AuthState.NeedsRegistration("WORKER") // Pehle Registration Form bharo
+                    }
+                }
+                "EMPLOYER" -> {
+                    if (isEmployerComplete) {
+                        AuthState.Authenticated("EMPLOYER") // Seedha Home
+                    } else {
+                        AuthState.NeedsRegistration("EMPLOYER") // Pehle Registration Form bharo
+                    }
+                }
+                else -> AuthState.Unauthenticated
+            }
         }
     }.stateIn(
         scope = viewModelScope,

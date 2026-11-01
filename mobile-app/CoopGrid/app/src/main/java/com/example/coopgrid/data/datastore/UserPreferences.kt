@@ -18,21 +18,26 @@ class UserPreferences @Inject constructor(
     companion object {
         private val KEY_IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
         private val KEY_USER_ID = stringPreferencesKey("user_id")
-        private val KEY_USER_ROLE = stringPreferencesKey("user_role") // "WORKER" ya "EMPLOYER"
+        private val KEY_USER_ROLE = stringPreferencesKey("user_role") // "WORKER" ya "EMPLOYER" (Active Role)
         private val KEY_SELECTED_LANGUAGE = stringPreferencesKey("selected_language")
+
+        // 🔥 Nayi keys jo profile completion track karengi
+        private val KEY_IS_WORKER_PROFILE_COMPLETE = booleanPreferencesKey("is_worker_profile_complete")
+        private val KEY_IS_EMPLOYER_PROFILE_COMPLETE = booleanPreferencesKey("is_employer_profile_complete")
     }
 
-    // 1. Saved Language Flow (Default: HINGLISH)
+    // 1. Saved Language Flow
     val selectedLanguage: Flow<String> = dataStore.data.map { prefs ->
-        val langString = prefs[KEY_SELECTED_LANGUAGE]  // Default value -> ENGLISH
+        val langString = prefs[KEY_SELECTED_LANGUAGE]
         AppLanguage.fromString(langString).isoCode
     }
-    // 2. Language Save Method
+
     suspend fun saveLanguage(languageCode: AppLanguage) {
         dataStore.edit { prefs ->
             prefs[KEY_SELECTED_LANGUAGE] = languageCode.isoCode
         }
     }
+
     val isLoggedIn: Flow<Boolean> = dataStore.data.map { prefs ->
         prefs[KEY_IS_LOGGED_IN] ?: false
     }
@@ -45,7 +50,16 @@ class UserPreferences @Inject constructor(
         prefs[KEY_USER_ID]
     }
 
-    // Login/OTP Verify par User Session Save Karein
+    // 🔥 New Flows for Profile Completion Status
+    val isWorkerProfileComplete: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[KEY_IS_WORKER_PROFILE_COMPLETE] ?: false
+    }
+
+    val isEmployerProfileComplete: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[KEY_IS_EMPLOYER_PROFILE_COMPLETE] ?: false
+    }
+
+    // 2. Login/OTP Verify par User Session Save Karein
     suspend fun saveUserSession(userId: String, role: String) {
         dataStore.edit { prefs ->
             prefs[KEY_IS_LOGGED_IN] = true
@@ -54,7 +68,28 @@ class UserPreferences @Inject constructor(
         }
     }
 
-    // Logout karne par session clear karein
+    // 🔥 Worker Registration successful hone par call hoga
+    suspend fun setWorkerProfileComplete(isComplete: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[KEY_IS_WORKER_PROFILE_COMPLETE] = isComplete
+        }
+    }
+
+    // 🔥 Employer Registration successful hone par call hoga
+    suspend fun setEmployerProfileComplete(isComplete: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[KEY_IS_EMPLOYER_PROFILE_COMPLETE] = isComplete
+        }
+    }
+
+    // 🔥 Account Switch karte waqt active role change karne ke liye
+    suspend fun setActiveRole(role: String) {
+        dataStore.edit { prefs ->
+            prefs[KEY_USER_ROLE] = role
+        }
+    }
+
+    // 3. Logout karne par sab kuch clear karein
     suspend fun clearSession() {
         dataStore.edit { prefs ->
             prefs.clear()

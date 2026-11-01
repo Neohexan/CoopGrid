@@ -16,6 +16,7 @@ import androidx.core.content.FileProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.coopgrid.common.language.LanguageViewModel
+import com.example.coopgrid.employer.registration.viewmodel.RegistrationUiState
 import com.example.coopgrid.worker.registration.presentation.steps.step2.model.ServiceOfferingType
 import com.example.coopgrid.worker.registration.presentation.steps.step4.viewmodel.KycDocFieldType
 import com.example.coopgrid.worker.registration.presentation.steps.step4.viewmodel.WorkerKycEvent
@@ -38,18 +39,16 @@ fun WorkerKycScreen(
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
 
     // 1. Central Single Source of Truth (Parent Form State)
-    val formState by registrationViewModel.formState.collectAsStateWithLifecycle()
-
     val uiState by registrationViewModel.uiState.collectAsStateWithLifecycle()
     // 2. Local KYC Media ViewModel States
     val kycUiState by kycViewModel.uiState.collectAsStateWithLifecycle()
     val uploadProgressMap = kycUiState.uploadProgressMap
     val identityErrors = kycUiState.identityErrors
 
-    // 🟢 Step: Local ViewModel me Services Sync karein
-    LaunchedEffect(formState.selectedServices) {
-        if (formState.selectedServices.isNotEmpty()) {
-            kycViewModel.onEvent(WorkerKycEvent.InitializeServices(formState.selectedServices))
+    // 🔒 Server Success Observe karna: Jab tak Success nahi aayega, navigation lock rahega
+    LaunchedEffect(uiState) {
+        if (uiState is WorkerRegistrationUiState.Success) {
+            onKycComplete()
         }
     }
 
@@ -106,7 +105,6 @@ fun WorkerKycScreen(
             ).show()
         }
     }
-
     // 4. Passing all required arguments to WorkerKycContent
     WorkerKycContent(
         selectedServices = selectedServices,
@@ -148,8 +146,6 @@ fun WorkerKycScreen(
                     registrationViewModel.onEvent(
                         WorkerRegistrationEvent.SubmitRegistration
                     )
-                    // Move to next step
-                    onKycComplete()
                 }
             )
         },

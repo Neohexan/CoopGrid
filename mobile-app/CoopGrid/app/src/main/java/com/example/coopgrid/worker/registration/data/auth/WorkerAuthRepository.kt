@@ -1,6 +1,7 @@
 package com.example.coopgrid.worker.registration.data.auth
 
 import android.util.Log
+import com.example.coopgrid.data.datastore.UserPreferences
 import com.example.coopgrid.worker.data.local.WorkerTokenManager
 import com.example.coopgrid.worker.registration.data.auth.dto.WorkerPhoneOtpRequest
 import com.example.coopgrid.worker.registration.data.auth.dto.WorkerPhoneOtpResponse
@@ -15,7 +16,8 @@ private const val TAG = "WorkerAuthRepo"
 @Singleton
 class WorkerAuthRepository @Inject constructor(
     private val apiService: WorkerAuthApiService,
-    private val tokenManager: WorkerTokenManager
+    private val tokenManager: WorkerTokenManager,
+    private val userPreferences: UserPreferences
 ) {
 
     /**
@@ -85,6 +87,12 @@ class WorkerAuthRepository @Inject constructor(
                         refreshToken = body.refreshToken,
                         userId = body.userId
                     )
+                    // 2. UserPreferences mein session save karo (Role direct "EMPLOYER" bhej do)
+                    userPreferences.saveUserSession(
+                        userId = body.userId,
+                        role = "WORKER" // 🔥 Kyunki ye Employer flow hai!
+                    )
+                    Log.i(TAG, "WORKER tokens and session successfully saved!")
                     Log.i(TAG, "Tokens successfully saved to KeyStore via TokenManager")
                 } else {
                     Log.w(TAG, "OTP verified but missing token or userId in response payload")

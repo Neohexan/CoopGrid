@@ -2,6 +2,7 @@ package com.example.coopgrid.employer.registration.data.auth
 
 
 import android.util.Log
+import com.example.coopgrid.data.datastore.UserPreferences
 import com.example.coopgrid.employer.data.local.EmployerTokenManager
 import com.example.coopgrid.employer.registration.data.auth.dto.EmpPhoneOtpRequest
 import com.example.coopgrid.employer.registration.data.auth.dto.EmpPhoneOtpResponse
@@ -16,7 +17,8 @@ private const val TAG = "EmployerAuthRepo"
 @Singleton
 class EmployerAuthRepository @Inject constructor(
     private val apiService: EmployerAuthApiService,
-    private val tokenManager: EmployerTokenManager
+    private val tokenManager: EmployerTokenManager,
+    private val userPreferences: UserPreferences
 ) {
 
     /**
@@ -79,6 +81,14 @@ class EmployerAuthRepository @Inject constructor(
                         refreshToken = body.refreshToken,
                         userId = body.userId
                     )
+
+                    // 🔥 2. UserPreferences mein session save karo (isLoggedIn = true, userId, role)
+                    // (Dhyan rahe: server response `body` se aapko role bhi milna chahiye, jaise body.role)
+                    userPreferences.saveUserSession(
+                        userId = body.userId,
+                        role = "EMPLOYER"
+                    )
+                    Log.i(TAG, "Employer tokens and session successfully saved!")
                     Log.i(TAG, "Tokens successfully saved to KeyStore via TokenManager")
                 } else {
                     Log.w(TAG, "OTP verified but missing token or userId in response payload")

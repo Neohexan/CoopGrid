@@ -5,6 +5,7 @@ import com.example.coopgrid.employer.registration.viewmodel.EmployerFormState
 import javax.inject.Inject
 import javax.inject.Singleton
 import android.util.Log
+import com.example.coopgrid.data.datastore.UserPreferences
 import com.example.coopgrid.employer.registration.data.details.local.dao.EmployerDao
 import com.example.coopgrid.employer.registration.data.details.local.entity.EmployerAddressEntity
 import com.example.coopgrid.employer.registration.data.details.local.entity.EmployerBusinessEntity
@@ -17,7 +18,8 @@ private const val TAG = "REG_FLOW_REPO"
 @Singleton
 class EmpRegistrationRepository @Inject constructor(
     private val apiService: EmpApiRgtService,
-    private val employerDao: EmployerDao
+    private val employerDao: EmployerDao,
+    private val userPreferences: UserPreferences
 ) {
 
     private val prettyJson = Json {
@@ -119,7 +121,8 @@ class EmpRegistrationRepository @Inject constructor(
                 )
 
                 Log.i(TAG, "<== [LOCAL DB SUCCESS] Employer profile, business, address and status saved successfully in Room DB!")
-
+                // 🔥 Yahin par Employer ke liye bhi mark kar do ki profile complete ho gayi hai!
+                userPreferences.setEmployerProfileComplete(true)
                 response
             } else {
                 Log.e(TAG, "<== [SERVER REJECTED] Message: ${response.message}")

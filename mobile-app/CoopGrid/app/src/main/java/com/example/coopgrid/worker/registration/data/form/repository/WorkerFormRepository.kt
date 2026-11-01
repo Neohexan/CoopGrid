@@ -6,6 +6,7 @@ import com.example.coopgrid.worker.registration.data.form.dto.toRegistrationRequ
 import com.example.coopgrid.worker.registration.viewmodel.WorkerFormState
 
 import android.util.Log
+import com.example.coopgrid.data.datastore.UserPreferences
 import com.example.coopgrid.worker.registration.data.form.local.dao.WorkerDao
 import com.example.coopgrid.worker.registration.data.form.local.entity.AgriSupplyProfileEntity
 import com.example.coopgrid.worker.registration.data.form.local.entity.MachineryRentalItemEntity
@@ -22,7 +23,8 @@ import kotlinx.serialization.json.Json
 
 class WorkerFormRepository @Inject constructor(
     private val apiService: WorkerFormApiService,
-    private val workerDao: WorkerDao
+    private val workerDao: WorkerDao,
+    private val userPreferences : UserPreferences
 ) {
     companion object {
         private const val TAG = "WorkerRepository"
@@ -66,10 +68,10 @@ class WorkerFormRepository @Inject constructor(
                 apiService.registerWorker(requestDto)
             }
             if (response.success && response.workerId != null) {
-                try {
-                    val workerId = response.workerId ?: response.workerId
-                    Log.i(TAG, "<== [SUCCESS] Server Worker Registration Approved: ID = $workerId")
+                val workerId = response.workerId ?: response.workerId
+                Log.i(TAG, "<== [SUCCESS] Server Worker Registration Approved: ID = $workerId")
 
+                try {
                     // 4. Mapping DTO to Local Entities for Room DB
                     Log.d(TAG, "==> [LOCAL DB] Preparing entities to save worker data locally...")
 
@@ -191,13 +193,14 @@ class WorkerFormRepository @Inject constructor(
                         status = statusEntity
                     )
                     Log.i(TAG, "<== [LOCAL DB SUCCESS] Worker profile and related entities saved successfully!")
+                    // Jaise hi local DB save success ho, preferences mein profile complete mark kar do
+                    userPreferences.setWorkerProfileComplete(true)
                 } catch (e: kotlinx.coroutines.CancellationException) {
                     throw e // 🔥 Inner cancellation pass-through
                 } catch (dbException: Exception) {
                     Log.e(TAG, "Local DB insertion failed due to actual error: ${dbException.localizedMessage}", dbException)
                     // Aap chahein toh yahan DB fail hone par bhi Result.failure bhej sakte hain ya flow continue kar sakte hain
                 }
-
                 Result.success(response)
             } else {
                 val errorMsg = response.message ?: "Registration failed on server"

@@ -43,21 +43,15 @@ fun AppNavGraph(
                     // Check karein ki user Logged In hai ya Unauthenticated
                     when (val state = authState) {
                         is AuthState.Authenticated -> {
-                            // User ke role ke hisab se Home Screen par navigate karein
-                            val targetHomeRoute = if (state.role == "WORKER") {
-                                Screen.WorkerDashboard.route // Ya worker home route
-                            } else {
-                                Screen.EmployerDashboard.route // Ya employer home route
-                            }
-
-                            navController.navigate(targetHomeRoute) {
-                                popUpTo(Screen.Splash.route) { inclusive = true }
-                            }
+                            val targetHome = if (state.role == "WORKER") Screen.WorkerDashboard.route else Screen.EmployerDashboard.route
+                            navController.navigate(targetHome) { popUpTo(Screen.Splash.route) { inclusive = true } }
+                        }
+                        is AuthState.NeedsRegistration -> {
+                            val targetForm = if (state.role == "WORKER") WorkerRoute.Step1PersonalDetails else EmployerRoute.PersonalDetails
+                            navController.navigate(targetForm) { popUpTo(Screen.Splash.route) { inclusive = true } }
                         }
                         is AuthState.Unauthenticated -> {
-                            navController.navigate(Screen.AuthSelection.route) {
-                                popUpTo(Screen.Splash.route) { inclusive = true }
-                            }
+                            navController.navigate(Screen.AuthSelection.route) { popUpTo(Screen.Splash.route) { inclusive = true } }
                         }
 
                         else -> {
