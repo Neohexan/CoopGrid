@@ -15,7 +15,7 @@ import javax.inject.Inject
 @HiltViewModel
 class WorkerSettingsViewModel @Inject constructor( // employer jaisa karna hai
     private val userPreferences: UserPreferences,
-    private val workerTokenManager: WorkerTokenManager
+    private val workerTokenManager: WorkerTokenManager,
 ) : ViewModel() {
 
     // Optional: UI state agar loading ya error handle karna ho
@@ -25,7 +25,7 @@ class WorkerSettingsViewModel @Inject constructor( // employer jaisa karna hai
     /**
      * 1. Logout Action: Saare tokens aur user session wipe kar deta hai
      */
-    fun logout(onLogoutComplete: () -> Unit) {
+    fun logout() {
         viewModelScope.launch {
             try {
                 _uiState.value = WorkerSettingsUiState.Loading
@@ -37,7 +37,7 @@ class WorkerSettingsViewModel @Inject constructor( // employer jaisa karna hai
                 userPreferences.clearSession() // Agar aapke method ka naam alag ho toh wahi likhein
 
                 _uiState.value = WorkerSettingsUiState.Idle
-                onLogoutComplete()
+
             } catch (e: Exception) {
                 _uiState.value = WorkerSettingsUiState.Error(e.localizedMessage ?: "Unknown error")
             }
@@ -45,24 +45,9 @@ class WorkerSettingsViewModel @Inject constructor( // employer jaisa karna hai
     }
 
     /**
-     * 2. Switch Role Action: Worker se Employer ya Employer se Worker switch karein
-     */
-    fun switchRole(targetRole: String, onSwitchComplete: () -> Unit) {
-        viewModelScope.launch {
-            try {
-                // UserPreferences mein role update karein
-                userPreferences.setActiveRole(targetRole)
-                onSwitchComplete()
-            } catch (e: Exception) {
-                _uiState.value = WorkerSettingsUiState.Error(e.localizedMessage ?: "Failed to switch role")
-            }
-        }
-    }
-
-    /**
      * 3. Delete Account Action
      */
-    fun deleteAccount(onDeleteComplete: () -> Unit) {
+    fun deleteAccount() {
         viewModelScope.launch {
             try {
                 _uiState.value = WorkerSettingsUiState.Loading
@@ -72,7 +57,6 @@ class WorkerSettingsViewModel @Inject constructor( // employer jaisa karna hai
                 userPreferences.clearSession()
 
                 _uiState.value = WorkerSettingsUiState.Idle
-                onDeleteComplete()
             } catch (e: Exception) {
                 _uiState.value = WorkerSettingsUiState.Error(e.localizedMessage ?: "Failed to delete account")
             }

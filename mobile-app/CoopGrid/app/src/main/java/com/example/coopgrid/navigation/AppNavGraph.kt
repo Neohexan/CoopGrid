@@ -37,20 +37,44 @@ fun AppNavGraph(
     val isLoggedIn by splashViewModel.isLoggedIn.collectAsStateWithLifecycle(initialValue = false)
     val userRole by splashViewModel.userRole.collectAsStateWithLifecycle(initialValue = null)
 
-    // Jaise hi state change hogi, yeh automatic navigate kar dega!
-    LaunchedEffect(isLoggedIn, userRole) {
-        if (!isLoggedIn) {
-            // User logout ho gaya -> Seedha AuthSelection par bhej do
-            navController.navigate(Screen.AuthSelection.route) {
-                popUpTo(0) { inclusive = true }
+    // 🔥 FIX: Sirf tab trigger ho jab user RUNTIME par logout kare (App start ke waqt nahi)
+    // Hum check kar sakte hain ki current destination kya hai.
+    LaunchedEffect(authState) {
+        val currentRoute = navController.currentBackStackEntry?.destination?.route
+
+        // Agar hum abhi Splash screen par hain, toh onTimeout ko apna kaam karne do
+        if (currentRoute == Screen.Splash.route) return@LaunchedEffect
+
+        when (val state = authState) {
+            is AuthState.Unauthenticated -> {
+                // Agar switch karte waqt session nahi mila ya logout hua, toh AuthSelection par bhej do
+                if (currentRoute != Screen.AuthSelection.route) {
+                    navController.navigate(Screen.AuthSelection.route) {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
             }
-        } else if (userRole == "WORKER") {
-            navController.navigate(Screen.WorkerDashboard.route) {
-                popUpTo(0) { inclusive = true }
+            is AuthState.Authenticated -> {
+                val targetHome = if (state.role == "WORKER") Screen.WorkerDashboard.route else Screen.EmployerDashboard.route
+                if (currentRoute != targetHome) {
+                    navController.navigate(targetHome) {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
             }
-        } else if (userRole == "EMPLOYER") {
-            navController.navigate(Screen.EmployerDashboard.route) {
-                popUpTo(0) { inclusive = true }
+            is AuthState.NeedsRegistration -> {
+                val targetForm = if (state.role == "WORKER") WorkerRoute.Step1PersonalDetails else EmployerRoute.PersonalDetails
+                if (currentRoute != targetForm) {
+                    navController.navigate(targetForm) {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            }
+            is AuthState.Loading -> {
+                // Kuch nahi karna
             }
         }
     }

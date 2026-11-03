@@ -14,33 +14,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.coopgrid.common.roleselection.SwitchAccountViewModel
 import com.example.coopgrid.worker.dashboard.features.settings.string.WorkerSettingsStrings
 import com.example.coopgrid.worker.dashboard.features.settings.ui.components.WorkerSettingsItem
 import com.example.coopgrid.worker.dashboard.features.settings.ui.viewmodel.WorkerSettingsViewModel
 
 @Composable
 fun WorkerSettingsScreen(
-    onNavigateToAuth: () -> Unit,
+    onBackClick: () -> Unit,
+    switchViewModel: SwitchAccountViewModel = hiltViewModel(),
     viewModel: WorkerSettingsViewModel = hiltViewModel()
 ) {
     WorkerSettingsContent(
-        onBackClick = {},
+        onBackClick = onBackClick,
         onSwitchRoleClick = {
             // Worker role par switch karne ka logic
-            viewModel.switchRole("EMPLOYER") {
-                // Jaise hi role update hoga, NavGraph khud-b-khud Worker dashboard par le jayega
-            }
+            switchViewModel.switchRole("EMPLOYER")
         },
         onLogoutClick = {
-            viewModel.logout {
-                // Session clear hote hi Auth / Login screen par navigate karein
-                onNavigateToAuth()
-            }
+            viewModel.logout ()
         },
         onDeleteAccountClick = {
-            viewModel.deleteAccount {
-                onNavigateToAuth()
-            }
+            viewModel.deleteAccount ()
         },
         strings = WorkerSettingsStrings()
     )

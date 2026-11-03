@@ -61,25 +61,17 @@ class SplashViewModel @Inject constructor(
         userPreferences.isEmployerProfileComplete
     ) { isLoggedIn, role, isWorkerComplete, isEmployerComplete ->
 
-        // 1. Agar logged in hi nahi hai ya role nahi hai
         if (!isLoggedIn || role.isNullOrEmpty()) {
             AuthState.Unauthenticated
         } else {
-            // 2. Agar logged in hai, toh check karo active role ke hisab se profile complete hai ya nahi
             when (role) {
                 "WORKER" -> {
-                    if (isWorkerComplete) {
-                        AuthState.Authenticated("WORKER") // Seedha Home
-                    } else {
-                        AuthState.NeedsRegistration("WORKER") // Pehle Registration Form bharo
-                    }
+                    if (isWorkerComplete) AuthState.Authenticated("WORKER")
+                    else AuthState.NeedsRegistration("WORKER")
                 }
                 "EMPLOYER" -> {
-                    if (isEmployerComplete) {
-                        AuthState.Authenticated("EMPLOYER") // Seedha Home
-                    } else {
-                        AuthState.NeedsRegistration("EMPLOYER") // Pehle Registration Form bharo
-                    }
+                    if (isEmployerComplete) AuthState.Authenticated("EMPLOYER")
+                    else AuthState.NeedsRegistration("EMPLOYER")
                 }
                 else -> AuthState.Unauthenticated
             }

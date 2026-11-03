@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.coopgrid.common.roleselection.SwitchAccountViewModel
 import com.example.coopgrid.employer.dashboard.features.settings.strings.EmpSettingsStrings
 import com.example.coopgrid.employer.dashboard.features.settings.ui.components.EmpSettingsItem
 import com.example.coopgrid.employer.dashboard.features.settings.ui.viewmodel.EmpSettingsViewModel
@@ -43,6 +44,7 @@ import com.example.coopgrid.employer.dashboard.features.settings.ui.viewmodel.Em
 @Composable
 fun EmployerSettingsRoute(
     onBackClick: () -> Unit,
+    switchViewModel: SwitchAccountViewModel = hiltViewModel(),
     viewModel: EmpSettingsViewModel = hiltViewModel()
 ) {
     val strings = EmpSettingsStrings()
@@ -50,7 +52,7 @@ fun EmployerSettingsRoute(
     EmployerSettingsContent(
         onBackClick = onBackClick,
         onSwitchRoleClick = {
-            viewModel.switchRole("WORKER")
+            switchViewModel.switchRole("WORKER")
         },
         onLogoutClick = {
             viewModel.logout() // 🔥 Bas itna sa kaam! Root NavGraph khud bhej dega Auth screen par.

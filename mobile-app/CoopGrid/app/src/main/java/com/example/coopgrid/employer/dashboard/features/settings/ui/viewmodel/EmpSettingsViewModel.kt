@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.coopgrid.data.datastore.UserPreferences
 import com.example.coopgrid.employer.data.local.EmployerTokenManager
-import com.example.coopgrid.worker.data.local.WorkerTokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +14,7 @@ import javax.inject.Inject
 @HiltViewModel
 class EmpSettingsViewModel @Inject constructor(
     private val userPreferences: UserPreferences,
-    private val employerTokenManager: EmployerTokenManager
+    private val employerTokenManager: EmployerTokenManager,
 ) : ViewModel() {
 
     // Optional: UI state agar loading ya error handle karna ho
@@ -40,20 +39,6 @@ class EmpSettingsViewModel @Inject constructor(
                 _uiState.value = EmpSettingsUiState.Idle
             } catch (e: Exception) {
                 _uiState.value = EmpSettingsUiState.Error(e.localizedMessage ?: "Unknown error")
-            }
-        }
-    }
-
-    /**
-     * 2. Switch Role Action: Worker se Employer ya Employer se Worker switch karein
-     */
-    fun switchRole(targetRole: String) {
-        viewModelScope.launch {
-            try {
-                // UserPreferences mein role update karein
-                userPreferences.setActiveRole(targetRole)
-            } catch (e: Exception) {
-                _uiState.value = EmpSettingsUiState.Error(e.localizedMessage ?: "Failed to switch role")
             }
         }
     }

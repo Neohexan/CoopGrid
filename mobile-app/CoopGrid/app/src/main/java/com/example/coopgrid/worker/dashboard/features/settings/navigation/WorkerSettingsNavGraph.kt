@@ -19,13 +19,7 @@ fun NavGraphBuilder.workerSettingsNavGraph(
     ) {
         composable(WorkerSettingsDestination.MainSettings.route) {
             WorkerSettingsScreen(
-                onNavigateToAuth = {
-                    navController.navigate(Screen.AuthSelection.route) {
-                        // 🔥 Backstack se saari screens ko hata do taaki back dabane par wapas Settings na aaye
-                        popUpTo(0) { inclusive = true }
-                        launchSingleTop = true
-                    }
-                }
+                onBackClick = { navController.popBackStack()}
             )
         }
     }
