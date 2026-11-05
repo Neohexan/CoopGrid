@@ -8,54 +8,65 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.coopgrid.employer.dashboard.features.profile.ui.components.ProfileAddressCard
 import com.example.coopgrid.employer.dashboard.features.profile.ui.components.ProfileBusinessCard
+import com.example.coopgrid.employer.dashboard.features.profile.ui.viewmodel.EmployerProfileUiState
+import com.example.coopgrid.employer.dashboard.features.profile.ui.viewmodel.EmployerProfileViewModel
+import com.example.coopgrid.employer.registration.data.details.local.EmployerWithDetails
 
-
-// UI State holder for Employer Profile Data
-data class EmployerProfileUiState(
-    val fullName: String,
-    val gender: String,
-    val dobMillis: Long? = null,
-    val email: String? = null,
-    val category: String, // FARMER, HOUSEHOLD, WHOLESALER, COMPANY
-    val officialName: String? = null,
-    val gstNumber: String? = null,
-    val categoryName: String? = null,
-    val subCategories: String? = null,
-    val fullAddress: String? = null
-)
 
 @Composable
 fun EmployerProfileRoute(
+    viewModel: EmployerProfileViewModel = hiltViewModel(),
     onEditProfileClick: () -> Unit = {}
 ) {
-    // Dummy Data Example according to DTO
-    val profileState = EmployerProfileUiState(
-        fullName = "Vikram Singh",
-        gender = "MALE",
-        email = "vikram.singh@company.com",
-        category = "WHOLESALER", // Change to FARMER or HOUSEHOLD to test conditional rendering
-        officialName = "Singh Agro & Wholesalers",
-        gstNumber = "07AAAAA0000A1Z5",
-        categoryName = "Agriculture Wholesaler",
-        subCategories = "Grains, Seeds",
-        fullAddress = "Plot 42, Mandi Area, Sector 63, Noida, UP - 201301"
-    )
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    EmployerProfileContent(
-        profile = profileState,
-        onEditProfileClick = onEditProfileClick
-    )
+    // Sealed interface ki wajah se saari states ek hi `when` block mein elegantly handle ho jayengi
+    when (val state = uiState) {
+        is EmployerProfileUiState.Loading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+
+        is EmployerProfileUiState.Success -> {
+            // Real Database ka `EmployerWithDetails` data seedha pass ho gaya
+            EmployerProfileContent(
+                profile = state.profile,
+                onEditProfileClick = onEditProfileClick
+            )
+        }
+
+        is EmployerProfileUiState.Error -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = state.message,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+    }
 }
 
 @Composable
 fun EmployerProfileContent(
-    profile: EmployerProfileUiState,
+    profile: EmployerWithDetails,
     onEditProfileClick: () -> Unit
 ) {
     Column(
@@ -82,9 +93,9 @@ fun EmployerProfileContent(
             // Card 1: Header (Always Visible)
             item {
                 ProfileHeaderCard(
-                    userName = profile.fullName,
-                    roleTitle = profile.category, // Category badge (FARMER, WHOLESALER, etc.)
-                    location = profile.fullAddress ?: "Location not updated",
+                    userName = profile.profile.fullName,
+                    roleTitle = profile.profile.category,
+                    location = profile.address?.fullAddress ?: "Location not updated",
                     onEditProfileClick = onEditProfileClick
                 )
             }
@@ -93,70 +104,29 @@ fun EmployerProfileContent(
             item {
                 ProfileContactCard(
                     phoneNumber = "+91 98765 43210", // Phone number from Auth State
-                    email = profile.email ?: "Not Provided"
+                    email = profile.profile.email ?: "Not Provided"
                 )
             }
 
             // Card 3: Business Details (Conditional: Only for WHOLESALER & COMPANY)
-            if (profile.category == "WHOLESALER" || profile.category == "COMPANY") {
+            val category = profile.profile.category // Ya jahan bhi category save hai
+            // Card 3: Business Details (Conditional: Only for WHOLESALER & COMPANY)
+            if (category == "WHOLESALER" || category == "COMPANY") {
                 item {
                     ProfileBusinessCard(
-                        officialName = profile.officialName,
-                        gstNumber = profile.gstNumber,
-                        categoryName = profile.categoryName,
-                        subCategories = profile.subCategories
+                        officialName = profile.business?.officialName ?: "N/A",
+                        gstNumber = profile.business?.gstNumber ?: "N/A",
+                        categoryName = profile.business?.categoryName ?: "N/A",
+                        subCategories = profile.business?.subCategories ?: "N/A"
                     )
                 }
             }
             // Card 4: Address Details (Always Visible for everyone)
             item {
                 ProfileAddressCard(
-                    fullAddress = profile.fullAddress ?: "Plot 42, Mandi Area, Sector 63, Noida, UP - 201301"
+                    fullAddress = profile.address?.fullAddress ?: "Address not updated"
                 )
             }
         }
-    }
-}
-
-
-@Preview(showBackground = true, name = "Profile Screen - Wholesaler Mode")
-@Composable
-private fun EmployerProfileContentPreview() {
-    MaterialTheme {
-        val sampleProfile = EmployerProfileUiState(
-            fullName = "Vikram Singh",
-            gender = "MALE",
-            email = "vikram.singh@company.com",
-            category = "WHOLESALER",
-            officialName = "Singh Agro & Wholesalers",
-            gstNumber = "07AAAAA0000A1Z5",
-            categoryName = "Agriculture Wholesaler",
-            subCategories = "Grains, Seeds",
-            fullAddress = "Plot 42, Mandi Area, Sector 63, Noida, UP - 201301"
-        )
-
-        EmployerProfileContent(
-            profile = sampleProfile,
-            onEditProfileClick = {}
-        )
-    }
-}
-
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Profile Screen - Dark Mode")
-@Composable
-private fun EmployerProfileContentDarkModePreview() {
-    MaterialTheme {
-        val sampleProfile = EmployerProfileUiState(
-            fullName = "Rahul Sharma",
-            gender = "MALE",
-            email = "rahul@farmer.com",
-            category = "FARMER", // Farmer mode (Business card hide rahega)
-            fullAddress = "Village & Post Office, Dadri, Gautam Buddha Nagar, UP"
-        )
-
-        EmployerProfileContent(
-            profile = sampleProfile,
-            onEditProfileClick = {}
-        )
     }
 }

@@ -58,7 +58,7 @@ fun WorkerSettingsContent(
             TopAppBar(
                 title = {
                     Text(
-                        text = strings.accountSectionTitle ?: "Settings", // Aap yahan apne strings se title de sakte hain
+                        text = strings.accountSectionTitle ?: "Settings",
                         style = MaterialTheme.typography.titleLarge
                     )
                 },

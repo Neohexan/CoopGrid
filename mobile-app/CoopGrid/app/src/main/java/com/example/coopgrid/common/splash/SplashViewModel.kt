@@ -39,21 +39,6 @@ class SplashViewModel @Inject constructor(
             initialValue = AppLanguage.ENGLISH // Initial state -> English
         )
 
-    // UserPreferences se state observe karein
-    val isLoggedIn: StateFlow<Boolean> = userPreferences.isLoggedIn
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = false
-        )
-
-    val userRole: StateFlow<String?> = userPreferences.userRole
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = null
-        )
-
     val authState: StateFlow<AuthState> = combine(
         userPreferences.isLoggedIn,
         userPreferences.userRole,

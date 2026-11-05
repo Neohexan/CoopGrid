@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class WorkerSettingsViewModel @Inject constructor( // employer jaisa karna hai
+class WorkerSettingsViewModel @Inject constructor(
     private val userPreferences: UserPreferences,
     private val workerTokenManager: WorkerTokenManager,
 ) : ViewModel() {

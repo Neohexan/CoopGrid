@@ -34,9 +34,6 @@ fun AppNavGraph(
     val currentLanguage by splashViewModel.currentLanguage.collectAsState()
     val authState by splashViewModel.authState.collectAsState()
 
-    val isLoggedIn by splashViewModel.isLoggedIn.collectAsStateWithLifecycle(initialValue = false)
-    val userRole by splashViewModel.userRole.collectAsStateWithLifecycle(initialValue = null)
-
     // 🔥 FIX: Sirf tab trigger ho jab user RUNTIME par logout kare (App start ke waqt nahi)
     // Hum check kar sakte hain ki current destination kya hai.
     LaunchedEffect(authState) {
@@ -79,7 +76,6 @@ fun AppNavGraph(
         }
     }
 
-    // WorkerSettingsViewModel ko employer ke jaisa karna hai
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route

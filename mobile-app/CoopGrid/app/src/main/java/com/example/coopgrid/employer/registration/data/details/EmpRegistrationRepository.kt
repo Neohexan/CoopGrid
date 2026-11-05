@@ -100,6 +100,7 @@ class EmpRegistrationRepository @Inject constructor(
                     areaOrVillage = requestDto.address.areaOrVillage,
                     landmark = requestDto.address.landmark,
                     pincode = requestDto.address.pincode,
+                    fullAddress = "requestDto.address.",
                     latitude = requestDto.address.latitude,
                     longitude = requestDto.address.longitude
                 )
