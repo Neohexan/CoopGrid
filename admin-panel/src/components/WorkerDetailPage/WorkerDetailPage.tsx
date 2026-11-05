@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "./WorkerDetailPage.css";
 import "../WorkerVerificationDesk/WorkerVerificationDesk.css";
 import {
@@ -19,6 +19,9 @@ import {
   Tractor,
   Truck,
   FileCheck,
+  Download,
+  Eye,
+  Image as ImageIcon,
 } from "lucide-react";
 import {
   ApiWorker as BasicApiWorker,
@@ -123,6 +126,228 @@ const getDemoPhotoById = (id: string): string => {
   return DEMO_PHOTOS[hash];
 };
 
+// ============================================================================
+// MEDIA STREAM & DOWNLOAD HELPERS (/api/media/stream/{mediaId})
+// ============================================================================
+
+export function getMediaUrl(mediaId: string): string {
+  return `${API_BASE_URL}/api/media/stream/${encodeURIComponent(mediaId)}`;
+}
+
+const getExtensionFromMime = (mimeType: string | null): string => {
+  if (!mimeType) return "";
+  const lower = mimeType.toLowerCase();
+  if (lower.includes("jpeg") || lower.includes("jpg")) return ".jpg";
+  if (lower.includes("png")) return ".png";
+  if (lower.includes("webp")) return ".webp";
+  if (lower.includes("pdf")) return ".pdf";
+  return "";
+};
+
+const getMediaErrorMessage = (status: number): string => {
+  if (status === 400) return "400 Bad Request: Invalid mediaId.";
+  if (status === 401) return "401 Unauthorized: Session expired. Please log in again.";
+  if (status === 404) return "404 Not Found: Media file is unavailable on server.";
+  if (status >= 500) return "500 Server Error: Storage or database error.";
+  return `Media fetch failed (HTTP ${status})`;
+};
+
+export async function loadMedia(mediaId: string): Promise<{ objectUrl: string; mimeType: string }> {
+  const response = await fetch(getMediaUrl(mediaId), {
+    method: "GET",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error(getMediaErrorMessage(response.status));
+  }
+
+  const blob = await response.blob();
+  const mimeType = response.headers.get("Content-Type") || blob.type || "image/jpeg";
+  const objectUrl = URL.createObjectURL(blob);
+  return { objectUrl, mimeType };
+}
+
+export async function downloadMedia(mediaId: string, fileName = "download"): Promise<void> {
+  const response = await fetch(getMediaUrl(mediaId), {
+    method: "GET",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error(getMediaErrorMessage(response.status));
+  }
+
+  const blob = await response.blob();
+  const ext = getExtensionFromMime(response.headers.get("Content-Type") || blob.type);
+  const finalFileName = ext && !fileName.toLowerCase().endsWith(ext) ? `${fileName}${ext}` : fileName;
+
+  const downloadUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = downloadUrl;
+  link.download = finalFileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(downloadUrl);
+}
+
+// ============================================================================
+// KYC MEDIA STREAM CARD COMPONENT
+// ============================================================================
+
+interface KycMediaCardProps {
+  label: string;
+  mediaId: string;
+  workerId: string;
+  onPreview: (url: string, label: string, mediaId: string) => void;
+  onToast: (msg: string) => void;
+}
+
+const KycMediaCard: React.FC<KycMediaCardProps> = ({
+  label,
+  mediaId,
+  workerId,
+  onPreview,
+  onToast,
+}) => {
+  const [objectUrl, setObjectUrl] = useState<string | null>(null);
+  const [mimeType, setMimeType] = useState<string>("image/jpeg");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState<boolean>(false);
+
+  const fetchStream = useCallback(async () => {
+    setIsLoading(true);
+    setErrorMsg(null);
+
+    try {
+      const result = await loadMedia(mediaId);
+      setObjectUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return result.objectUrl;
+      });
+      setMimeType(result.mimeType);
+    } catch (err: any) {
+      console.error(`Error streaming media (${mediaId}):`, err);
+      setErrorMsg(err?.message || "Media fetch failed");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [mediaId]);
+
+  useEffect(() => {
+    let activeUrl: string | null = null;
+    let isCancelled = false;
+
+    const run = async () => {
+      setIsLoading(true);
+      setErrorMsg(null);
+      try {
+        const result = await loadMedia(mediaId);
+        if (isCancelled) {
+          URL.revokeObjectURL(result.objectUrl);
+          return;
+        }
+        activeUrl = result.objectUrl;
+        setObjectUrl(result.objectUrl);
+        setMimeType(result.mimeType);
+      } catch (err: any) {
+        if (!isCancelled) {
+          setErrorMsg(err?.message || "Media fetch failed");
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    run();
+
+    return () => {
+      isCancelled = true;
+      if (activeUrl) {
+        URL.revokeObjectURL(activeUrl);
+      }
+    };
+  }, [mediaId]);
+
+  const handleDownloadClick = async () => {
+    setIsDownloading(true);
+    try {
+      const safeLabel = label.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+      await downloadMedia(mediaId, `${workerId}_${safeLabel}_${mediaId}`);
+      onToast(`✓ Downloaded ${label}`);
+    } catch (err: any) {
+      onToast(`✕ ${err?.message || "Media download failed"}`);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const isPdf = mimeType.toLowerCase().includes("pdf");
+
+  return (
+    <div className="wdp-media-card">
+      <div className="wdp-media-card-header">
+        <div>
+          <span className="wdp-media-label">{label}</span>
+          <span className="wdp-media-id" title={mediaId}>
+            ID: {mediaId}
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={handleDownloadClick}
+          disabled={isDownloading}
+          className="wdp-media-dl-btn"
+          title="Download original media file"
+        >
+          <Download size={14} />
+          <span>{isDownloading ? "..." : "Download"}</span>
+        </button>
+      </div>
+
+      <div className="wdp-media-preview-box">
+        {isLoading ? (
+          <div className="wdp-media-state">
+            <RefreshCw size={22} className="animate-spin" style={{ color: "#059669" }} />
+            <span>Streaming media...</span>
+          </div>
+        ) : errorMsg ? (
+          <div className="wdp-media-state wdp-media-error">
+            <AlertCircle size={22} color="#e11d48" />
+            <span>{errorMsg}</span>
+            <button type="button" onClick={fetchStream} className="wdp-media-retry-btn">
+              Retry Stream
+            </button>
+          </div>
+        ) : objectUrl ? (
+          isPdf ? (
+            <iframe src={objectUrl} title={label} className="wdp-media-iframe" />
+          ) : (
+            <div
+              className="wdp-media-img-wrap"
+              onClick={() => onPreview(objectUrl, label, mediaId)}
+            >
+              <img src={objectUrl} alt={label} className="wdp-media-img" />
+              <div className="wdp-media-zoom-overlay">
+                <Eye size={16} />
+                <span>Click to Enlarge</span>
+              </div>
+            </div>
+          )
+        ) : null}
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// MAIN WORKER DETAIL PAGE COMPONENT
+// ============================================================================
+
 interface ColumnDef<T> {
   key: keyof T;
   label: string;
@@ -141,10 +366,17 @@ export const WorkerDetailPage: React.FC<WorkerDetailPageProps> = ({ workerId, on
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Reject Modal State (Select preset or write custom reason)
+  // Reject Modal State
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedReasonMode, setSelectedReasonMode] = useState<string>(PRESET_REJECTION_REASONS[0]);
   const [customReasonText, setCustomReasonText] = useState<string>("");
+
+  // Lightbox Modal State for streamed KYC media
+  const [lightboxMedia, setLightboxMedia] = useState<{
+    url: string;
+    label: string;
+    mediaId: string;
+  } | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -181,7 +413,6 @@ export const WorkerDetailPage: React.FC<WorkerDetailPageProps> = ({ workerId, on
             ...data,
             worker_id: resolvedId,
             user_id: resolvedId,
-            // Keep demo photo placeholder and random mobile number
             phone_number: data.phone_number || getDemoPhone(resolvedId),
             profile_picture: data.profile_picture || getDemoPhotoById(resolvedId),
           };
@@ -212,10 +443,10 @@ export const WorkerDetailPage: React.FC<WorkerDetailPageProps> = ({ workerId, on
     fetchWorkerDetails();
   }, [workerId]);
 
-  const showToast = (msg: string) => {
+  const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
-  };
+  }, []);
 
   const syncLocalWorkerStatus = (updates: Partial<DetailedApiWorker>) => {
     if (!worker) return;
@@ -391,7 +622,7 @@ export const WorkerDetailPage: React.FC<WorkerDetailPageProps> = ({ workerId, on
     { label: "Registered On", value: formattedCreatedDate },
   ].filter((item) => hasValue(item.value));
 
-  // 2. Address Dynamic Columns (Only if worker.address is not null)
+  // 2. Address Dynamic Columns
   const addressEntries = worker.address
     ? [
         { label: "Address Type", value: worker.address.address_type },
@@ -495,25 +726,31 @@ export const WorkerDetailPage: React.FC<WorkerDetailPageProps> = ({ workerId, on
       ].filter((item) => hasValue(item.value))
     : [];
 
-  // 6. KYC Details Dynamic Columns
-  const kycEntries = worker.kyc
+  // 6. KYC Metadata Dynamic Columns (Text/Number fields)
+  const kycMetadataEntries = worker.kyc
     ? [
         { label: "Document Type", value: worker.kyc.doc_type },
         { label: "Document Number", value: worker.kyc.doc_number },
         { label: "Verification Status", value: worker.kyc.verification_status },
-        { label: "Front Image ID", value: worker.kyc.front_image_id },
-        { label: "Back Image ID", value: worker.kyc.back_image_id },
         { label: "Skill Cert Name / No", value: worker.kyc.skill_cert_name_or_number },
-        { label: "Skill Cert Image ID", value: worker.kyc.skill_cert_image_id },
         { label: "Machinery RC Number", value: worker.kyc.machinery_rc_number },
         { label: "Machinery Fitness Cert No", value: worker.kyc.machinery_fitness_cert_number },
-        { label: "Machinery License Photo ID", value: worker.kyc.machinery_license_photo_id },
-        { label: "Machinery Photo ID", value: worker.kyc.machinery_photo_id },
         { label: "Agri Business Name", value: worker.kyc.agri_business_name },
         { label: "Agri Business License No", value: worker.kyc.agri_business_license_number },
-        { label: "Agri License Doc ID", value: worker.kyc.agri_license_doc_id },
-        { label: "Agri Shop Photo ID", value: worker.kyc.agri_shop_photo_id },
       ].filter((item) => hasValue(item.value))
+    : [];
+
+  // 7. KYC Streamable Media Items (All 7 image/doc ID fields highlighted from kyc)
+  const kycMediaItems = worker.kyc
+    ? [
+        { label: "ID Front Image", mediaId: worker.kyc.front_image_id },
+        { label: "ID Back Image", mediaId: worker.kyc.back_image_id },
+        { label: "Skill Certificate Image", mediaId: worker.kyc.skill_cert_image_id },
+        { label: "Machinery License Photo", mediaId: worker.kyc.machinery_license_photo_id },
+        { label: "Machinery Photo", mediaId: worker.kyc.machinery_photo_id },
+        { label: "Agri License Document", mediaId: worker.kyc.agri_license_doc_id },
+        { label: "Agri Shop Photo", mediaId: worker.kyc.agri_shop_photo_id },
+      ].filter((item): item is { label: string; mediaId: string } => hasValue(item.mediaId))
     : [];
 
   return (
@@ -555,8 +792,8 @@ export const WorkerDetailPage: React.FC<WorkerDetailPageProps> = ({ workerId, on
           <ShieldCheck size={20} style={{ flexShrink: 0, marginTop: "2px" }} />
           <div>
             <strong>Official Verification File:</strong> Inspecting in-depth profile for{" "}
-            <strong>{worker.full_name}</strong> ({displayId}). Only sections and table columns
-            with available non-null data are displayed below.
+            <strong>{worker.full_name}</strong> ({displayId}). Only sections, table columns, and
+            uploaded media streams with available non-null data are displayed below.
           </div>
         </div>
 
@@ -826,35 +1063,118 @@ export const WorkerDetailPage: React.FC<WorkerDetailPageProps> = ({ workerId, on
         )}
 
         {/* ====================================================================
-            DYNAMIC SECTION 5: KYC DETAILS TABLE (Hidden if kyc is null)
+            DYNAMIC SECTION 5: KYC DETAILS & STREAMED MEDIA GALLERY
            ==================================================================== */}
-        {kycEntries.length > 0 && (
+        {(kycMetadataEntries.length > 0 || kycMediaItems.length > 0) && (
           <section className="wdp-card">
             <h2 className="wdp-section-heading">
               <FileCheck size={18} color="#059669" />
               <span>KYC & Compliance Documentation</span>
             </h2>
-            <div className="wdp-dyn-table-wrap">
-              <table className="wdp-dyn-table">
-                <thead>
-                  <tr>
-                    {kycEntries.map((item) => (
-                      <th key={item.label}>{item.label}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    {kycEntries.map((item) => (
-                      <td key={item.label}>{String(item.value)}</td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+
+            {/* KYC Metadata Table */}
+            {kycMetadataEntries.length > 0 && (
+              <div className="wdp-dyn-table-wrap" style={{ marginBottom: kycMediaItems.length > 0 ? "24px" : "0" }}>
+                <table className="wdp-dyn-table">
+                  <thead>
+                    <tr>
+                      {kycMetadataEntries.map((item) => (
+                        <th key={item.label}>{item.label}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      {kycMetadataEntries.map((item) => (
+                        <td key={item.label}>{String(item.value)}</td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Streamed Media Gallery (/api/media/stream/{mediaId}) */}
+            {kycMediaItems.length > 0 && (
+              <div className="wdp-media-section">
+                <h3 className="wdp-dyn-title" style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "12px" }}>
+                  <ImageIcon size={15} color="#059669" />
+                  <span>Uploaded Verification Media ({kycMediaItems.length})</span>
+                </h3>
+                <div className="wdp-media-grid">
+                  {kycMediaItems.map((item) => (
+                    <KycMediaCard
+                      key={`${item.label}-${item.mediaId}`}
+                      label={item.label}
+                      mediaId={item.mediaId}
+                      workerId={displayId}
+                      onPreview={(url, label, mediaId) =>
+                        setLightboxMedia({ url, label, mediaId })
+                      }
+                      onToast={showToast}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </section>
         )}
       </main>
+
+      {/* Lightbox Modal for Fullscreen Media Inspection */}
+      {lightboxMedia && (
+        <div
+          className="wvd-modal-overlay"
+          onClick={() => setLightboxMedia(null)}
+        >
+          <div
+            className="wdp-lightbox-box"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="wdp-lightbox-header">
+              <div>
+                <h3 className="wvd-modal-title">{lightboxMedia.label}</h3>
+                <span className="wdp-media-id">Media ID: {lightboxMedia.mediaId}</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const safeLabel = lightboxMedia.label.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+                      await downloadMedia(
+                        lightboxMedia.mediaId,
+                        `${displayId}_${safeLabel}_${lightboxMedia.mediaId}`
+                      );
+                      showToast(`✓ Downloaded ${lightboxMedia.label}`);
+                    } catch (err: any) {
+                      showToast(`✕ ${err?.message || "Media download failed"}`);
+                    }
+                  }}
+                  className="wdp-media-dl-btn"
+                >
+                  <Download size={14} />
+                  <span>Download</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLightboxMedia(null)}
+                  className="wvd-btn-secondary"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+            <div className="wdp-lightbox-body">
+              <img
+                src={lightboxMedia.url}
+                alt={lightboxMedia.label}
+                className="wdp-lightbox-img"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Reject Modal (Select Preset OR Write Custom Reason) */}
       {showRejectModal && (
