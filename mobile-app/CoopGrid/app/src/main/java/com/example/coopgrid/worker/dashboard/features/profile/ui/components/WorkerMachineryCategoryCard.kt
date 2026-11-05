@@ -12,10 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.coopgrid.worker.dashboard.features.profile.viewmodel.MachineryRentalUiModel
+import com.example.coopgrid.worker.registration.data.form.local.entity.MachineryRentalItemEntity
 
 @Composable
 fun WorkerMachineryCategoryCard(
-    machineryItems: List<MachineryRentalUiModel>,
+    machineryItems: List<MachineryRentalItemEntity>,
     modifier: Modifier = Modifier
 ) {
     if (machineryItems.isEmpty()) return
@@ -58,12 +59,12 @@ fun WorkerMachineryCategoryCard(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = machine.machineName,
+                            text = machine.customMachineName,
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = machine.rateWithUnit,
+                            text = machine.rateUnit,
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -74,12 +75,12 @@ fun WorkerMachineryCategoryCard(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = if (machine.includesDriverAndFuel) "Driver & Fuel Included" else "Machine Only",
+                            text = if (machine.isDriverAndFuelIncluded) "Driver & Fuel Included" else "Machine Only",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "Service Radius: ${machine.serviceRadiusText}",
+                            text = "Service Radius: ${machine.serviceRadiusKm}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

@@ -24,6 +24,7 @@ data class WorkerAddressEntity(
     val houseOrBuildingNo: String,
     val streetLocality: String,
     val pincode: String,
+    val fullAddress: String,
     val stateCode: String,
     val stateName: String,
     val districtCode: String,

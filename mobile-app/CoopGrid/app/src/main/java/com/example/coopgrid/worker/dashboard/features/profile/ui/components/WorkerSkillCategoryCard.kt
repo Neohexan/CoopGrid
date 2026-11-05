@@ -12,10 +12,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.coopgrid.worker.registration.data.form.local.entity.WorkerSkillEntity
 
 @Composable
 fun WorkerSkillCategoryCard(
-    skills: List<WorkerSkillUiModel>,
+    skills: List<WorkerSkillEntity>,
     modifier: Modifier = Modifier
 ) {
     if (skills.isEmpty()) return
@@ -63,7 +64,7 @@ fun WorkerSkillCategoryCard(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = skill.expectedWageWithUnit,
+                            text = skill.expectedWage,
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -79,7 +80,7 @@ fun WorkerSkillCategoryCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "Radius: ${skill.workRadiusText}",
+                            text = "Radius: ${skill.workRadiusKm}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

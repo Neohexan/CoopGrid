@@ -10,13 +10,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun WorkerAddressCard(
-    addressText: String,
-    stateAndDistrictText: String,
-    pincode: String,
+    street: String?,
+    stateAndDistrict: String?,
+    pincode: String?,
     strings: WorkerAddressStrings = WorkerAddressStrings(),
     modifier: Modifier = Modifier
 ) {
@@ -52,19 +54,19 @@ fun WorkerAddressCard(
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-            // Address Details Grid
+            // Address Details Grid with safe null/blank handling
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 AddressDetailRow(
                     label = strings.streetLabel,
-                    value = addressText.ifEmpty { strings.notAvailableText }
+                    value = street?.ifBlank { null } ?: strings.notAvailableText
                 )
                 AddressDetailRow(
                     label = strings.areaLabel,
-                    value = stateAndDistrictText.ifEmpty { strings.notAvailableText }
+                    value = stateAndDistrict?.ifBlank { null } ?: strings.notAvailableText
                 )
                 AddressDetailRow(
                     label = strings.pincodeLabel,
-                    value = pincode.ifEmpty { strings.notAvailableText }
+                    value = pincode?.ifBlank { null } ?: strings.notAvailableText
                 )
             }
         }
@@ -75,17 +77,24 @@ fun WorkerAddressCard(
 private fun AddressDetailRow(label: String, value: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(0.4f)
         )
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.End,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(0.6f)
         )
     }
 }

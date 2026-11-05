@@ -7,23 +7,39 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.coopgrid.worker.dashboard.features.profile.string.WorkerProfileStrings
-
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 @Composable
 fun WorkerProfileHeaderCard(
     fullName: String,
     gender: String,
-    formattedDob: String,
-    email: String,
-    altPhoneNumber: String,
+    dobMillis: Long?,          // 🔥 Type corrected: Long timestamp receive karega
+    email: String?,           // Nullable safe handling
+    altPhoneNumber: String?,  // Nullable safe handling
     categories: List<String>,
     strings: WorkerProfileStrings,
     modifier: Modifier = Modifier
 ) {
+    // 🔥 Safe formatting inside the component or pre-formatted passed from parent
+    val formattedDob = remember(dobMillis) {
+        dobMillis?.let {
+            if (it > 0L) {
+                SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(dobMillis))
+            } else {
+                ""
+            }
+        }
+    }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -58,7 +74,7 @@ fun WorkerProfileHeaderCard(
 
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
-                        text = fullName,
+                        text = fullName.ifBlank { strings.notProvidedText },
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -74,32 +90,52 @@ fun WorkerProfileHeaderCard(
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-            // Details List
+            // Details List with safe fallbacks
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                ProfileDetailRow(label = strings.genderLabel, value = gender.ifEmpty { strings.notProvidedText })
-                ProfileDetailRow(label = strings.dobLabel, value = formattedDob.ifEmpty { strings.notProvidedText })
-                ProfileDetailRow(label = strings.emailLabel, value = email.ifEmpty { strings.notProvidedText })
-                ProfileDetailRow(label = strings.altPhoneLabel, value = altPhoneNumber.ifEmpty { strings.notProvidedText })
+                ProfileDetailRow(
+                    label = strings.genderLabel,
+                    value = gender.ifBlank { strings.notProvidedText }
+                )
+                ProfileDetailRow(
+                    label = strings.dobLabel,
+                    value = formattedDob?.ifBlank { strings.notProvidedText } ?: "Check logic worker profile to card"
+                )
+                ProfileDetailRow(
+                    label = strings.emailLabel,
+                    value = email?.ifBlank { null } ?: strings.notProvidedText
+                )
+                ProfileDetailRow(
+                    label = strings.altPhoneLabel,
+                    value = altPhoneNumber?.ifBlank { null } ?: strings.notProvidedText
+                )
             }
         }
     }
 }
 
+// 🔥 Robust ProfileDetailRow with text wrapping support
 @Composable
 private fun ProfileDetailRow(label: String, value: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(0.4f)
         )
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.End,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(0.6f)
         )
     }
 }

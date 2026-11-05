@@ -1,5 +1,7 @@
 package com.example.coopgrid.worker.dashboard.features.profile.viewmodel
 
+import com.example.coopgrid.worker.registration.data.form.local.WorkerWithDetails
+
 data class WorkerProfileUiState(
     val fullName: String = "",
     val gender: String = "",
@@ -41,3 +43,9 @@ data class AgriSupplyUiModel(
     val offersWholesale: Boolean,
     val serviceRadiusText: String
 )
+
+sealed interface WorkerProfileUiStates{
+    object Loading :  WorkerProfileUiStates
+    data class Success(val profile: WorkerWithDetails) : WorkerProfileUiStates
+    data class Error(val message: String) : WorkerProfileUiStates
+}

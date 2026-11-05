@@ -23,7 +23,7 @@ data class WorkerStatusEntity(
 
     // Status: PENDING, APPROVED, REJECTED, CHANGES_REQUIRED
     val verificationStatus: String,
-
+     val isKycVerified: Boolean,
     // Admin info jo verify karega
     val verifiedByAdminId: String? = null,
 

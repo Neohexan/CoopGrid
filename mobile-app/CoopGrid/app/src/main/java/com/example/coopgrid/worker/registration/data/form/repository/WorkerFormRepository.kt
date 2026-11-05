@@ -93,6 +93,7 @@ class WorkerFormRepository @Inject constructor(
                         houseOrBuildingNo = requestDto.address.houseOrBuildingNo,
                         streetLocality = requestDto.address.streetLocality,
                         pincode = requestDto.address.pincode,
+                        fullAddress = "abhi kcuhh nahi hai ",
                         stateCode = requestDto.address.stateCode,
                         stateName = requestDto.address.stateName,
                         districtCode = requestDto.address.districtCode,
@@ -176,6 +177,7 @@ class WorkerFormRepository @Inject constructor(
                     val statusEntity = WorkerStatusEntity(
                         workerId = workerId,
                         verificationStatus = "PENDING",
+                        isKycVerified = false,
                         verifiedByAdminId = null,
                         rejectionMessage = null,
                         createdAt = response.timestamp.takeIf { it > 0L } ?: System.currentTimeMillis(),
