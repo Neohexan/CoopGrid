@@ -14,7 +14,7 @@ import javax.inject.Singleton
 private const val TAG = "WorkerTokenManager"
 private const val SECURE_PREF_NAME = "secure_worker_tokens"
 private const val FALLBACK_PREF_NAME = "fallback_worker_tokens"
-
+private const val USER_NAME = "user_name"
 private const val KEY_ACCESS_TOKEN = "access_token"
 private const val KEY_REFRESH_TOKEN = "refresh_token"
 private const val KEY_USER_ID = "user_id"

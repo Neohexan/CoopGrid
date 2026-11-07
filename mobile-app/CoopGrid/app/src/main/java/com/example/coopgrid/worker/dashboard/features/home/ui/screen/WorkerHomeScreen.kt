@@ -1,7 +1,6 @@
 package com.example.coopgrid.worker.dashboard.features.home.ui.screen
 
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,6 +12,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.coopgrid.worker.dashboard.common.WorkerSearchBar
 import com.example.coopgrid.worker.dashboard.features.home.ui.components.WorkerHomeTopBar
 import com.example.coopgrid.worker.dashboard.features.home.ui.components.WorkerPromoBannerCarousel
@@ -21,6 +22,7 @@ import com.example.coopgrid.worker.dashboard.features.home.ui.models.WorkerJobPo
 import com.example.coopgrid.worker.dashboard.features.home.ui.models.dummyWorkerJobPosts
 import com.example.coopgrid.worker.dashboard.features.home.ui.string.WorkerHomeStrings
 import com.example.coopgrid.worker.dashboard.features.home.ui.string.WorkerPromoItemState
+import com.example.coopgrid.worker.dashboard.features.home.ui.viewmodel.WorkerHomeViewModel
 
 @Composable
 fun WorkerHomeScreenRoute(
@@ -28,13 +30,13 @@ fun WorkerHomeScreenRoute(
     onProfileClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onJobCardClick: (WorkerJobPostModel) -> Unit,
-    // ViewModel ya State holder aage yahan connect hoga
+    viewModel: WorkerHomeViewModel = hiltViewModel(),
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val strings = WorkerHomeStrings()
-
+    val workerName by viewModel.workerName.collectAsStateWithLifecycle()
     WorkerHomeScreenContent(
-        workerName = "Ramesh Kumar",
+        workerName = workerName,
         searchQuery = searchQuery,
         onQueryChange = { searchQuery = it },
         strings = strings,

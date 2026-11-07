@@ -1,15 +1,11 @@
 package com.example.coopgrid.employer.dashboard.features.home.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +29,7 @@ import com.example.coopgrid.employer.dashboard.features.home.ui.components.HomeP
 import com.example.coopgrid.employer.dashboard.features.home.ui.components.HomeTopBar
 import com.example.coopgrid.employer.dashboard.features.home.ui.components.WorkerPostItemState
 import com.example.coopgrid.employer.dashboard.features.home.ui.strings.EmployerHomeStrings
+import com.example.coopgrid.employer.dashboard.features.home.ui.viewmodel.EmployerHomeViewModel
 
 @Composable
 fun HomeScreenRoute(
@@ -41,11 +38,12 @@ fun HomeScreenRoute(
     onAccountClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onPostJobClick: () -> Unit,
-    languageViewModel: LanguageViewModel = hiltViewModel()
+    languageViewModel: LanguageViewModel = hiltViewModel(),
+    viewModel: EmployerHomeViewModel = hiltViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()
-
+    val employerName by viewModel.employerName.collectAsStateWithLifecycle()
     // Dummy Worker Posts Data
     val dummyWorkerPosts = listOf(
         WorkerPostItemState(
@@ -73,7 +71,7 @@ fun HomeScreenRoute(
     )
 
     HomeScreenContent(
-        userName = "Rahul Sharma",
+        userName = employerName,
         location = "Noida, Sector 62",
         searchQuery = searchQuery,
         onSearchQueryChange = { searchQuery = it },

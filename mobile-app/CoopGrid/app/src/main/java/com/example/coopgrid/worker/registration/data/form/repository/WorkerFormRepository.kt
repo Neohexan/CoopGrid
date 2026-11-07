@@ -4,9 +4,9 @@ import com.example.coopgrid.worker.registration.data.form.WorkerFormApiService
 import com.example.coopgrid.worker.registration.data.form.dto.WorkerRegistrationResponse
 import com.example.coopgrid.worker.registration.data.form.dto.toRegistrationRequest
 import com.example.coopgrid.worker.registration.viewmodel.WorkerFormState
-
 import android.util.Log
 import com.example.coopgrid.data.datastore.UserPreferences
+import com.example.coopgrid.worker.data.local.WorkerUserPreferences
 import com.example.coopgrid.worker.registration.data.form.local.dao.WorkerDao
 import com.example.coopgrid.worker.registration.data.form.local.entity.AgriSupplyProfileEntity
 import com.example.coopgrid.worker.registration.data.form.local.entity.MachineryRentalItemEntity
@@ -18,13 +18,13 @@ import com.example.coopgrid.worker.registration.data.form.local.entity.WorkerSta
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 class WorkerFormRepository @Inject constructor(
     private val apiService: WorkerFormApiService,
     private val workerDao: WorkerDao,
-    private val userPreferences : UserPreferences
+    private val userPreferences : UserPreferences,
+    private val workerPreferences: WorkerUserPreferences
 ) {
     companion object {
         private const val TAG = "WorkerRepository"
@@ -196,7 +196,10 @@ class WorkerFormRepository @Inject constructor(
                     )
                     Log.i(TAG, "<== [LOCAL DB SUCCESS] Worker profile and related entities saved successfully!")
                     // Jaise hi local DB save success ho, preferences mein profile complete mark kar do
-                    userPreferences.setWorkerProfileComplete(true)
+                    withContext(Dispatchers.IO) {
+                        userPreferences.setWorkerProfileComplete(true)
+                        workerPreferences.saveWorkerName(requestDto.fullName)
+                    }
                 } catch (e: kotlinx.coroutines.CancellationException) {
                     throw e // 🔥 Inner cancellation pass-through
                 } catch (dbException: Exception) {
