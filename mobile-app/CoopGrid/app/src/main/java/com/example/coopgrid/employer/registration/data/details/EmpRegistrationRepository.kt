@@ -104,7 +104,6 @@ class EmpRegistrationRepository @Inject constructor(
                     areaOrVillage = requestDto.address.areaOrVillage,
                     landmark = requestDto.address.landmark,
                     pincode = requestDto.address.pincode,
-                    fullAddress = "requestDto.address.",
                     latitude = requestDto.address.latitude,
                     longitude = requestDto.address.longitude
                 )
@@ -129,7 +128,15 @@ class EmpRegistrationRepository @Inject constructor(
                 // 🔥 Yahin par Employer ke liye bhi mark kar do ki profile complete ho gayi hai!
                 withContext(Dispatchers.IO) {
                     userPreferences.setEmployerProfileComplete(true)
-                    empPreferences.saveEmployerName(requestDto.fullName)
+                    empPreferences.saveEmployerDetails(
+                        name = requestDto.fullName,
+                        state = requestDto.address.stateName,
+                        district = requestDto.address.districtName,
+                        block = requestDto.address.blockName,
+                        pincode = requestDto.address.pincode,
+                        areaOrVillage = requestDto.address.areaOrVillage,
+                        landmark = requestDto.address.landmark
+                    )
                 }
                 response
             } else {

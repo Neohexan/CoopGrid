@@ -23,6 +23,7 @@ import com.example.coopgrid.worker.dashboard.features.home.ui.models.dummyWorker
 import com.example.coopgrid.worker.dashboard.features.home.ui.string.WorkerHomeStrings
 import com.example.coopgrid.worker.dashboard.features.home.ui.string.WorkerPromoItemState
 import com.example.coopgrid.worker.dashboard.features.home.ui.viewmodel.WorkerHomeViewModel
+import com.example.coopgrid.worker.dashboard.features.profile.viewmodel.SharedWorkerProfileViewModel
 
 @Composable
 fun WorkerHomeScreenRoute(
@@ -30,7 +31,7 @@ fun WorkerHomeScreenRoute(
     onProfileClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onJobCardClick: (WorkerJobPostModel) -> Unit,
-    viewModel: WorkerHomeViewModel = hiltViewModel(),
+    viewModel: SharedWorkerProfileViewModel = hiltViewModel(),
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val strings = WorkerHomeStrings()

@@ -17,11 +17,4 @@ class EmployerHomeViewModel @Inject constructor(
     private val employerPreferences: EmployerUserPreferences
 ) : ViewModel() {
 
-    val employerName: StateFlow<String> = employerPreferences.employerName
-        .map { it?.ifBlank { "Employer" } ?: "Employer" }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = "Employer"
-        )
 }

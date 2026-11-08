@@ -30,6 +30,7 @@ import com.example.coopgrid.employer.dashboard.features.home.ui.components.HomeT
 import com.example.coopgrid.employer.dashboard.features.home.ui.components.WorkerPostItemState
 import com.example.coopgrid.employer.dashboard.features.home.ui.strings.EmployerHomeStrings
 import com.example.coopgrid.employer.dashboard.features.home.ui.viewmodel.EmployerHomeViewModel
+import com.example.coopgrid.employer.dashboard.features.profile.ui.viewmodel.SharedEmpProfileViewModel
 
 @Composable
 fun HomeScreenRoute(
@@ -39,7 +40,7 @@ fun HomeScreenRoute(
     onSettingsClick: () -> Unit,
     onPostJobClick: () -> Unit,
     languageViewModel: LanguageViewModel = hiltViewModel(),
-    viewModel: EmployerHomeViewModel = hiltViewModel()
+    viewModel: SharedEmpProfileViewModel = hiltViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val appStrings by languageViewModel.appStrings.collectAsStateWithLifecycle()

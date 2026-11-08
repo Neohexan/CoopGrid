@@ -4,6 +4,7 @@ package com.example.coopgrid.employer.registration.data.auth
 import android.util.Log
 import com.example.coopgrid.data.datastore.UserPreferences
 import com.example.coopgrid.employer.data.local.EmployerTokenManager
+import com.example.coopgrid.employer.data.local.EmployerUserPreferences
 import com.example.coopgrid.employer.registration.data.auth.dto.EmpPhoneOtpRequest
 import com.example.coopgrid.employer.registration.data.auth.dto.EmpPhoneOtpResponse
 import com.example.coopgrid.employer.registration.data.auth.dto.EmpVerifyOtpRequest
@@ -18,7 +19,8 @@ private const val TAG = "EmployerAuthRepo"
 class EmployerAuthRepository @Inject constructor(
     private val apiService: EmployerAuthApiService,
     private val tokenManager: EmployerTokenManager,
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    private val empUserPreferences: EmployerUserPreferences
 ) {
 
     /**
@@ -88,6 +90,9 @@ class EmployerAuthRepository @Inject constructor(
                         userId = body.userId,
                         role = "EMPLOYER"
                     )
+                    // yaha par phone number save kar lete hai
+                    empUserPreferences.saveEmployerPhone(phoneNumber)
+
                     Log.i(TAG, "Employer tokens and session successfully saved!")
                     Log.i(TAG, "Tokens successfully saved to KeyStore via TokenManager")
                 } else {

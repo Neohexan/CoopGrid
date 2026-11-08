@@ -2,7 +2,9 @@ package com.example.coopgrid.worker.registration.data.auth
 
 import android.util.Log
 import com.example.coopgrid.data.datastore.UserPreferences
+import com.example.coopgrid.worker.dashboard.features.profile.viewmodel.SharedWorkerProfileViewModel
 import com.example.coopgrid.worker.data.local.WorkerTokenManager
+import com.example.coopgrid.worker.data.local.WorkerUserPreferences
 import com.example.coopgrid.worker.registration.data.auth.dto.WorkerPhoneOtpRequest
 import com.example.coopgrid.worker.registration.data.auth.dto.WorkerPhoneOtpResponse
 import com.example.coopgrid.worker.registration.data.auth.dto.WorkerVerifyOtpRequest
@@ -17,7 +19,8 @@ private const val TAG = "WorkerAuthRepo"
 class WorkerAuthRepository @Inject constructor(
     private val apiService: WorkerAuthApiService,
     private val tokenManager: WorkerTokenManager,
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    private val workerUserPreferences: WorkerUserPreferences
 ) {
 
     /**
@@ -92,6 +95,8 @@ class WorkerAuthRepository @Inject constructor(
                         userId = body.userId,
                         role = "WORKER" // 🔥 Kyunki ye Employer flow hai!
                     )
+                    // yaha par hum log phone number ko save kar lete hai taki bina heavy query ke nikal sake
+                    workerUserPreferences.saveWorkerPhone(phoneNumber)
                     Log.i(TAG, "WORKER tokens and session successfully saved!")
                     Log.i(TAG, "Tokens successfully saved to KeyStore via TokenManager")
                 } else {

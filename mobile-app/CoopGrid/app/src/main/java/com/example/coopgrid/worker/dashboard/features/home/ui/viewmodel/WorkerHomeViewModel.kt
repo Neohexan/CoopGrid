@@ -18,12 +18,5 @@ class WorkerHomeViewModel @Inject constructor(
     private val workerUserPreferences: WorkerUserPreferences
 ) : ViewModel() {
 
-    val workerName: StateFlow<String> = workerUserPreferences.workerName
-        .map { it?.ifBlank { "Worker" } ?: "Worker" }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = "Worker"
-        )
 
 }

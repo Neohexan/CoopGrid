@@ -29,7 +29,6 @@ data class EmployerAddressEntity(
     val areaOrVillage: String,
     val landmark: String? = null,
     val pincode: String,
-    val fullAddress: String?,
     val latitude: Double? = null,
     val longitude: Double? = null,
 )

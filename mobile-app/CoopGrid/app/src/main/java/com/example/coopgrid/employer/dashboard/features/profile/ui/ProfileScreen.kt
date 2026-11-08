@@ -20,16 +20,20 @@ import com.example.coopgrid.employer.dashboard.features.profile.ui.components.Pr
 import com.example.coopgrid.employer.dashboard.features.profile.ui.components.ProfileBusinessCard
 import com.example.coopgrid.employer.dashboard.features.profile.ui.viewmodel.EmployerProfileUiState
 import com.example.coopgrid.employer.dashboard.features.profile.ui.viewmodel.EmployerProfileViewModel
+import com.example.coopgrid.employer.dashboard.features.profile.ui.viewmodel.SharedEmpProfileViewModel
 import com.example.coopgrid.employer.registration.data.details.local.EmployerWithDetails
 
 
 @Composable
 fun EmployerProfileRoute(
     viewModel: EmployerProfileViewModel = hiltViewModel(),
-    onEditProfileClick: () -> Unit = {}
+    onEditProfileClick: () -> Unit = {},
+    profileViewModel: SharedEmpProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
+    val phoneNumber by profileViewModel.employerPhone.collectAsStateWithLifecycle()
+    val fullAddress by profileViewModel.fullAddress.collectAsStateWithLifecycle()
+    val halfAddress by profileViewModel.halfAddress.collectAsStateWithLifecycle()
     // Sealed interface ki wajah se saari states ek hi `when` block mein elegantly handle ho jayengi
     when (val state = uiState) {
         is EmployerProfileUiState.Loading -> {
@@ -45,6 +49,9 @@ fun EmployerProfileRoute(
             // Real Database ka `EmployerWithDetails` data seedha pass ho gaya
             EmployerProfileContent(
                 profile = state.profile,
+                phoneNumber = phoneNumber,
+                fullAddress = fullAddress,
+                halfAddress = halfAddress,
                 onEditProfileClick = onEditProfileClick
             )
         }
@@ -67,6 +74,9 @@ fun EmployerProfileRoute(
 @Composable
 fun EmployerProfileContent(
     profile: EmployerWithDetails,
+    phoneNumber: String,
+    fullAddress: String,
+    halfAddress: String,
     onEditProfileClick: () -> Unit
 ) {
     Column(
@@ -95,7 +105,7 @@ fun EmployerProfileContent(
                 ProfileHeaderCard(
                     userName = profile.profile.fullName,
                     roleTitle = profile.profile.category,
-                    location = profile.address?.fullAddress ?: "Location not updated",
+                    location = halfAddress,
                     onEditProfileClick = onEditProfileClick
                 )
             }
@@ -103,7 +113,7 @@ fun EmployerProfileContent(
             // Card 2: Contact Details (Always Visible)
             item {
                 ProfileContactCard(
-                    phoneNumber = "+91 98765 43210", // Phone number from Auth State
+                    phoneNumber = phoneNumber, // Phone number from Auth State
                     email = profile.profile.email ?: "Not Provided"
                 )
             }
@@ -124,7 +134,7 @@ fun EmployerProfileContent(
             // Card 4: Address Details (Always Visible for everyone)
             item {
                 ProfileAddressCard(
-                    fullAddress = profile.address?.fullAddress ?: "Address not updated"
+                    fullAddress = fullAddress
                 )
             }
         }

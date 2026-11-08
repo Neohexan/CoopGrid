@@ -198,7 +198,15 @@ class WorkerFormRepository @Inject constructor(
                     // Jaise hi local DB save success ho, preferences mein profile complete mark kar do
                     withContext(Dispatchers.IO) {
                         userPreferences.setWorkerProfileComplete(true)
-                        workerPreferences.saveWorkerName(requestDto.fullName)
+                        workerPreferences.saveWorkerDetails(
+                            name = requestDto.fullName,
+                            state = requestDto.address.stateName,
+                            district = requestDto.address.districtName,
+                            block = requestDto.address.blockName,
+                            pincode = requestDto.address.pincode,
+                            areaOrVillage = requestDto.address.houseOrBuildingNo,
+                            landmark = requestDto.address.streetLocality
+                        )
                     }
                 } catch (e: kotlinx.coroutines.CancellationException) {
                     throw e // 🔥 Inner cancellation pass-through
