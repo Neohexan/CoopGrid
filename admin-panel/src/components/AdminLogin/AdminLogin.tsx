@@ -24,7 +24,6 @@ import {
 } from "lucide-react";
 
 const API_BASE_URL = "https://admin-api.neohexane.com";
-const FALLBACK_API_BASE_URL = "https://app-api.neohexane.com";
 
 export interface AdminSessionData {
   adminId: string;
@@ -83,7 +82,6 @@ const STATE_CODE_MAP: Record<string, string> = {
   chandigarh: "CH",
 };
 
-// Offline Pincode 2-digit prefix to State fallback if India Post API is down
 const PIN_PREFIX_STATE_MAP: Record<string, string> = {
   "11": "Delhi",
   "12": "Haryana",
@@ -175,10 +173,18 @@ const generateBlockCode = (blockName: string): string => {
   return `BLK-${cleanBlock || "01"}`;
 };
 
-// Strictly generates RFC 4122 UUID v4 required by /api/media/upload
-const createUniqueMediaId = (): string => {
+// Strictly generates a valid lowercase RFC 4122 UUID v4 across HTTP and HTTPS
+const generateUuidV4 = (): string => {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
+    return crypto.randomUUID().toLowerCase();
+  }
+  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    bytes[6] = (bytes[6] & 0x0f) | 0x40; // UUID version 4
+    bytes[8] = (bytes[8] & 0x3f) | 0x80; // RFC 4122 variant
+    const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`;
   }
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
@@ -188,69 +194,61 @@ const createUniqueMediaId = (): string => {
 };
 
 // ============================================================================
-// UPLOAD MEDIA HELPER (Strictly follows media.txt specification)
+// UPLOAD MEDIA HELPER (POST /api/media/upload with UUID v4 & camelCase fields)
 // ============================================================================
 async function uploadMedia(
   file: File,
   mediaId: string
-): Promise<{ success: boolean; media_id: string; message?: string }> {
-  const endpoints = [
-    `${API_BASE_URL}/api/media/upload`,
-    `${FALLBACK_API_BASE_URL}/api/media/upload`,
-    "/api/media/upload",
-  ];
+): Promise<{ success: boolean; mediaId: string; message: string }> {
+  const contentType =
+    file.type && file.type.trim() !== "" ? file.type : "image/jpeg";
 
-  let lastError = "Media upload failed";
+  const defaultExt = contentType.includes("png")
+    ? ".png"
+    : contentType.includes("webp")
+    ? ".webp"
+    : contentType.includes("pdf")
+    ? ".pdf"
+    : ".jpg";
 
-  for (const url of endpoints) {
-    try {
-      // Create a fresh FormData instance per attempt
-      const formData = new FormData();
-      formData.append("mediaId", mediaId);
-      formData.append("fileName", file.name);
-      formData.append("contentType", file.type || "application/octet-stream");
-      formData.append("file", file);
+  const rawName =
+    file.name && file.name.trim() !== "" ? file.name.trim() : `profile${defaultExt}`;
+  const fileName = rawName.includes(".") ? rawName : `${rawName}${defaultExt}`;
 
-      const response = await fetch(url, {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-        // Note: Do NOT set Content-Type header manually with FormData
-      });
+  const formData = new FormData();
+  formData.append("mediaId", mediaId);
+  formData.append("fileName", fileName);
+  formData.append("contentType", contentType);
+  formData.append("file", file, fileName);
 
-      const data = await response.json().catch(() => null);
+  const response = await fetch(`${API_BASE_URL}/api/media/upload`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
 
-      if (response.ok && data && data.success === true) {
-        return {
-          success: true,
-          media_id: data.media_id || data.mediaId || mediaId,
-          message: data.message,
-        };
-      }
+  const data = await response.json().catch(() => null);
 
-      if (data?.message) {
-        lastError = data.message;
-      } else {
-        lastError = `Media upload failed (HTTP ${response.status})`;
-      }
-
-      // If 400 or 401, stop retrying other gateways and surface the exact message
-      if (response.status === 400 || response.status === 401) {
-        break;
-      }
-    } catch (err: unknown) {
-      lastError = err instanceof Error ? err.message : "Network error during media upload";
-    }
+  if (!response.ok || !data || data.success !== true) {
+    throw new Error(
+      data?.message || data?.error || `Media upload failed (HTTP ${response.status})`
+    );
   }
 
-  throw new Error(lastError);
+  // Server responds back with the same UUID v4 (in media_id or mediaId)
+  const returnedMediaId = String(data.mediaId || data.media_id || mediaId);
+
+  return {
+    success: true,
+    mediaId: returnedMediaId,
+    message: String(data.message || "Media uploaded and indexed successfully"),
+  };
 }
 
 // ============================================================================
 // PINCODE LOOKUP HELPER (Direct India Post API + Proxy Fallback)
 // ============================================================================
 async function fetchPostOfficeByPincode(pincode: string): Promise<any[] | null> {
-  // 1. Direct fetch from api.postalpincode.in
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 6000);
@@ -274,10 +272,9 @@ async function fetchPostOfficeByPincode(pincode: string): Promise<any[] | null> 
       }
     }
   } catch {
-    // Proceed to fallback proxy if direct request fails due to CORS or timeout
+    // Proceed to fallback proxy if direct request is blocked or times out
   }
 
-  // 2. Fallback via AllOrigins CORS proxy
   try {
     const targetUrl = encodeURIComponent(`https://api.postalpincode.in/pincode/${pincode}`);
     const response = await fetch(`https://api.allorigins.win/get?url=${targetUrl}`);
@@ -358,13 +355,13 @@ const CAROUSEL_IMAGES = [
   { url: "/assets/image6.jpeg", alt: "Logistics and masonry cooperative worker" },
 ];
 
-type OnboardingStep = "login" | "password_change" | "profile_completion";
+type OnboardingStep = "login" | "passwordChange" | "profileCompletion";
 
 export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("login");
   const [mustChangePassword, setMustChangePassword] = useState<boolean>(true);
 
-  // Page 1: Login Form State
+  // Page 1: Login Form State (camelCase)
   const [adminId, setAdminId] = useState("");
   const [password, setPassword] = useState("");
   const [adminUuid, setAdminUuid] = useState<string | undefined>(undefined);
@@ -372,7 +369,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Page 2: Dedicated Password Change Page State
+  // Page 2: Dedicated Password Change Page State (camelCase)
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
@@ -381,14 +378,14 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [changePasswordSuccess, setChangePasswordSuccess] = useState(false);
 
-  // Page 3: Dedicated Profile Completion Page State
-  const [role] = useState("ADMIN"); // Kept as-is per specification
+  // Page 3: Dedicated Profile Completion Page State (camelCase)
+  const [role] = useState("ADMIN");
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [profileSaveSuccess, setProfileSaveSuccess] = useState(false);
 
-  // Profile Image Upload State (from media.txt)
+  // Profile Image Upload State (camelCase)
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [profilePreviewUrl, setProfilePreviewUrl] = useState<string | null>(null);
@@ -397,7 +394,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   const [mediaUploadStatus, setMediaUploadStatus] = useState<string>("No file chosen");
   const [mediaUploadError, setMediaUploadError] = useState<boolean>(false);
 
-  // Dynamic Pincode & Address State
+  // Dynamic Pincode & Address State (camelCase)
   const [pincode, setPincode] = useState("");
   const [isFetchingPincode, setIsFetchingPincode] = useState(false);
   const [stateName, setStateName] = useState("");
@@ -502,7 +499,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         setCurrentPassword(password);
         setPassword("");
         setErrorMessage(null);
-        setCurrentStep("password_change");
+        setCurrentStep("passwordChange");
         return;
       }
 
@@ -518,7 +515,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         });
 
         if (profileCheck.status === 404) {
-          setCurrentStep("profile_completion");
+          setCurrentStep("profileCompletion");
           return;
         }
 
@@ -611,7 +608,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         throw new Error(data.message || "Password change failed");
       }
 
-      // Refresh auth session cookie with the new password so must_change_password === false on the backend cookie
+      // Refresh auth session cookie with the new password so must_change_password === false
       const trimmedAdminId = adminId.trim();
       const verifyLoginRes = await fetch(`${API_BASE_URL}/api/auth/admin/login`, {
         method: "POST",
@@ -638,16 +635,14 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         setAdminUuid(verifyLoginData.uuid);
       }
 
-      // Confirmed must_change_password === false!
       setMustChangePassword(false);
       setChangePasswordSuccess(true);
       playAudioFeedback("success");
 
-      // Redirect to the separate Profile Completion Page
       setTimeout(() => {
         setChangePasswordSuccess(false);
         setErrorMessage(null);
-        setCurrentStep("profile_completion");
+        setCurrentStep("profileCompletion");
       }, 800);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Password change failed";
@@ -658,25 +653,27 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   };
 
   // ==========================================================================
-  // STEP 3: DEDICATED PROFILE COMPLETION PAGE HANDLERS (FIXED)
+  // STEP 3: DEDICATED PROFILE COMPLETION PAGE HANDLERS
   // ==========================================================================
 
-  // Media Upload Handler (POST /api/media/upload)
-  const executeMediaUpload = async (file: File) => {
+  // Upload Media using UUID v4 and save returned UUID v4 into profileImageMediaId
+  const executeMediaUpload = async (file: File): Promise<string> => {
     setIsUploadingMedia(true);
     setMediaUploadError(false);
-    setMediaUploadStatus("Uploading image to media server...");
+    const clientMediaId = generateUuidV4();
+    setMediaUploadStatus(`Uploading photo (UUID: ${clientMediaId.slice(0, 8)}...)`);
 
     try {
-      const generatedMediaId = createUniqueMediaId();
-      const result = await uploadMedia(file, generatedMediaId);
-      setProfileImageMediaId(result.media_id);
-      setMediaUploadStatus(`Uploaded ✓ (media_id: ${result.media_id})`);
+      const result = await uploadMedia(file, clientMediaId);
+      setProfileImageMediaId(result.mediaId);
+      setMediaUploadStatus(`Uploaded ✓ (mediaId: ${result.mediaId})`);
       setMediaUploadError(false);
+      return result.mediaId;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Media upload failed";
       setMediaUploadError(true);
-      setMediaUploadStatus(`Upload error: ${msg}`);
+      setMediaUploadStatus(`Upload failed: ${msg}`);
+      throw err;
     } finally {
       setIsUploadingMedia(false);
     }
@@ -684,7 +681,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
 
   const handleProfilePictureChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    // Reset input value so selecting the same file again still triggers onChange
     e.target.value = "";
     if (!file) return;
 
@@ -697,15 +693,17 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
     }
     setProfilePreviewUrl(URL.createObjectURL(file));
 
-    await executeMediaUpload(file);
+    try {
+      await executeMediaUpload(file);
+    } catch {
+      // Error state is displayed inside mediaUploadStatus with a Retry button
+    }
   };
 
-  // Pincode Change Handler with Multi-Tier Fallback
   const handlePincodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value.replace(/\D/g, "").slice(0, 6);
     setPincode(rawValue);
 
-    // Reset fields if pincode is < 6 digits
     if (rawValue.length < 6) {
       setStateName("");
       setStateCode("");
@@ -739,7 +737,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         setStateCode(autoStateCode);
         setDistrictCode(autoDistrictCode);
 
-        // Extract unique 'Block' names, filtering out NA / N/A / None / empty
         let uniqueBlocks: string[] = Array.from(
           new Set(
             postOffices
@@ -755,7 +752,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
           )
         );
 
-        // Fallback: If Block is "NA" or empty, use Post Office 'Name' (Locality)
         if (uniqueBlocks.length === 0) {
           uniqueBlocks = Array.from(
             new Set(
@@ -770,7 +766,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         setBlockPlaceholder("Select Block");
         setIsBlockDisabled(false);
 
-        // Auto-select the first block so the user doesn't accidentally leave it blank
         if (uniqueBlocks.length > 0) {
           setBlockName(uniqueBlocks[0]);
           setBlockCode(generateBlockCode(uniqueBlocks[0]));
@@ -779,7 +774,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
           setBlockCode("");
         }
       } else if (postOffices && postOffices.length === 0) {
-        // Invalid Pincode returned by India Post API
         setErrorMessage("Invalid Pincode. Please check the 6-digit Pincode again.");
         setStateName("");
         setStateCode("");
@@ -791,7 +785,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         setBlockPlaceholder("Invalid Pincode");
         setIsBlockDisabled(true);
       } else {
-        // Post Office API is unreachable/timed out -> use offline State prefix fallback & unlock fields
         const prefix2 = rawValue.slice(0, 2);
         const fallbackState = PIN_PREFIX_STATE_MAP[prefix2] || "";
         const autoStateCode = generateStateCode(fallbackState);
@@ -808,13 +801,12 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
     }
   };
 
-  // Manual State/District edits (if Post Office API was unreachable) auto-update hidden _code fields
   const handleStateManualChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setStateName(val);
-    const sCode = generateStateCode(val);
-    setStateCode(sCode);
-    setDistrictCode(generateDistrictCode(sCode, districtName));
+    const computedStateCode = generateStateCode(val);
+    setStateCode(computedStateCode);
+    setDistrictCode(generateDistrictCode(computedStateCode, districtName));
   };
 
   const handleDistrictManualChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -829,14 +821,13 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
     setBlockCode(selected ? generateBlockCode(selected) : "");
   };
 
-  // Submit Profile to POST /api/profile/admin/profile
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
     if (mustChangePassword) {
       setErrorMessage("Password must be updated before completing your profile.");
-      setCurrentStep("password_change");
+      setCurrentStep("passwordChange");
       return;
     }
 
@@ -862,16 +853,13 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
     setIsLoading(true);
 
     try {
-      // 1. If a profile image file was selected but not yet uploaded, upload it now
+      // 1. If a file is selected and not yet uploaded, upload with a fresh UUID v4
       let finalMediaId = profileImageMediaId;
       if (profileImageFile && !finalMediaId) {
-        const generatedId = createUniqueMediaId();
-        const uploadRes = await uploadMedia(profileImageFile, generatedId);
-        finalMediaId = uploadRes.media_id;
-        setProfileImageMediaId(finalMediaId);
+        finalMediaId = await executeMediaUpload(profileImageFile);
       }
 
-      // 2. Construct payload matching admin_profile.txt
+      // 2. Construct payload for POST /api/profile/admin/profile
       const resolvedStateCode = stateCode || generateStateCode(stateName);
       const resolvedDistrictCode =
         districtCode || generateDistrictCode(resolvedStateCode, districtName);
@@ -895,52 +883,22 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         house_or_building_no: houseOrBuildingNo.trim() || null,
       };
 
-      // 3. Send POST /api/profile/admin/profile (with gateway fallback)
-      const profileEndpoints = [
-        `${API_BASE_URL}/api/profile/admin/profile`,
-        `${FALLBACK_API_BASE_URL}/api/profile/admin/profile`,
-        "/api/profile/admin/profile",
-      ];
+      const profileResponse = await fetch(`${API_BASE_URL}/api/profile/admin/profile`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(profilePayload),
+      });
 
-      let profileSaved = false;
-      let lastProfileError = "Failed to create admin profile";
+      const profileData = await profileResponse.json().catch(() => null);
 
-      for (const endpoint of profileEndpoints) {
-        try {
-          const profileResponse = await fetch(endpoint, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify(profilePayload),
-          });
-
-          const profileData = await profileResponse.json().catch(() => null);
-
-          if (profileResponse.ok && profileData && profileData.success === true) {
-            profileSaved = true;
-            break;
-          }
-
-          if (profileData?.message) {
-            lastProfileError = profileData.message;
-          } else {
-            lastProfileError = `Profile update failed (HTTP ${profileResponse.status})`;
-          }
-
-          if (profileResponse.status === 400 || profileResponse.status === 422) {
-            break;
-          }
-        } catch (err: unknown) {
-          lastProfileError =
-            err instanceof Error ? err.message : "Network error while saving profile";
-        }
-      }
-
-      if (!profileSaved) {
-        throw new Error(lastProfileError);
+      if (!profileResponse.ok || !profileData || profileData.success !== true) {
+        throw new Error(
+          profileData?.message || `Failed to create admin profile (HTTP ${profileResponse.status})`
+        );
       }
 
       setProfileSaveSuccess(true);
@@ -972,13 +930,11 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
 
   // ==========================================================================
   // SEPARATE FULL-PAGE RENDER: PROFILE COMPLETION PAGE
-  // (Rendered ONLY when currentStep === "profile_completion" && !mustChangePassword)
   // ==========================================================================
-  if (currentStep === "profile_completion" && !mustChangePassword) {
+  if (currentStep === "profileCompletion" && !mustChangePassword) {
     return (
       <div className="al-profile-page">
         <div className="al-profile-card">
-          {/* Top Brand & Stepper Header */}
           <div className="al-profile-topbar">
             <div className="al-brand">
               <div className="al-logo-box al-logo-sm">
@@ -1006,8 +962,8 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
           <div className="al-profile-header-block">
             <h2 className="al-profile-main-title">Complete Your Administrator Profile</h2>
             <p className="al-profile-subtitle">
-              Your password has been verified (<code>must_change_password: false</code>). Please
-              complete your profile and jurisdiction details below to enter the dashboard.
+              Your password has been verified. Upload your profile photo and enter your
+              jurisdiction details below to access the dashboard.
             </p>
           </div>
 
@@ -1026,7 +982,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
           )}
 
           <form onSubmit={handleProfileSubmit} className="al-profile-form">
-            {/* Fixed User ID & Role (Kept as-is) */}
+            {/* Fixed User ID & Role */}
             <div className="al-grid-2">
               <div className="al-field">
                 <label className="al-label">User ID</label>
@@ -1061,7 +1017,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
               </div>
             </div>
 
-            {/* Profile Picture Upload (media.txt integration) */}
+            {/* Profile Picture Upload (UUID v4 flow) */}
             <div className="al-field">
               <label className="al-label">Profile Picture</label>
               <div className="al-avatar-upload">
@@ -1074,7 +1030,14 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                 </div>
 
                 <div className="al-avatar-meta">
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      flexWrap: "wrap",
+                    }}
+                  >
                     <button
                       type="button"
                       disabled={isLoading || profileSaveSuccess || isUploadingMedia}
@@ -1097,7 +1060,9 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                     {mediaUploadError && profileImageFile && !isUploadingMedia && (
                       <button
                         type="button"
-                        onClick={() => executeMediaUpload(profileImageFile)}
+                        onClick={() => {
+                          executeMediaUpload(profileImageFile).catch(() => {});
+                        }}
                         className="al-file-btn"
                         style={{ borderColor: "#fecaca", color: "#dc2626" }}
                       >
@@ -1118,9 +1083,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                   />
 
                   <span
-                    className={`al-upload-status ${
-                      profileImageMediaId ? "uploaded" : ""
-                    }`}
+                    className={`al-upload-status ${profileImageMediaId ? "uploaded" : ""}`}
                     style={mediaUploadError ? { color: "#dc2626", fontWeight: 600 } : undefined}
                   >
                     {mediaUploadStatus}
@@ -1367,7 +1330,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   return (
     <div className="al-wrapper">
       <div className="al-container">
-        {/* Left Column: Carousel */}
         <div className="al-carousel-section">
           {CAROUSEL_IMAGES.map((item, idx) => {
             const isActive = idx === currentIndex;
@@ -1402,7 +1364,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
           </div>
         </div>
 
-        {/* Right Column: Login OR Password Change */}
         <div className="al-form-section al-center-mode">
           <div className="al-form-wrapper">
             <div className="al-brand">
@@ -1430,8 +1391,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
               <div className="al-alert al-alert-success">
                 <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
                 <span>
-                  Password updated (must_change_password = false)! Redirecting to Profile
-                  Completion...
+                  Password updated! Redirecting to Profile Completion...
                 </span>
               </div>
             )}
@@ -1501,7 +1461,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
             )}
 
             {/* PAGE 2: Dedicated Password Change Page */}
-            {currentStep === "password_change" && (
+            {currentStep === "passwordChange" && (
               <div className="al-form">
                 <div className="al-ft-header">
                   <span className="al-ft-badge">Mandatory Security Step</span>
