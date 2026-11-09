@@ -235,7 +235,6 @@ async function uploadMedia(
     );
   }
 
-  // Server responds back with the same UUID v4 (in media_id or mediaId)
   const returnedMediaId = String(data.mediaId || data.media_id || mediaId);
 
   return {
@@ -364,7 +363,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   // Page 1: Login Form State (camelCase)
   const [adminId, setAdminId] = useState("");
   const [password, setPassword] = useState("");
-  const [adminUuid, setAdminUuid] = useState<string | undefined>(undefined);
+  const [adminUuid, setAdminUuid] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -438,7 +437,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   };
 
   // ==========================================================================
-  // STEP 1: ADMIN LOGIN HANDLER (KEPT AS IS)
+  // STEP 1: ADMIN LOGIN HANDLER
   // ==========================================================================
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -493,9 +492,12 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         throw new Error(data.message || "Login failed");
       }
 
+      // Save the UUID returned from AdminLoginResponse (mapped to Gateway X-User-ID)
+      const returnedUuid = String(data.uuid || "").trim();
+      setAdminUuid(returnedUuid);
+
       if (data.must_change_password === true) {
         setMustChangePassword(true);
-        setAdminUuid(data.uuid);
         setCurrentPassword(password);
         setPassword("");
         setErrorMessage(null);
@@ -504,7 +506,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
       }
 
       setMustChangePassword(false);
-      setAdminUuid(data.uuid);
 
       // Check if Admin Profile already exists on server
       try {
@@ -523,8 +524,8 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         if (profileCheck.ok && profileData && profileData.success === true) {
           playAudioFeedback("success");
           onLoginSuccess({
-            adminId: profileData.user_id || trimmedAdminId,
-            uuid: data.uuid,
+            adminId: trimmedAdminId,
+            uuid: returnedUuid || profileData.user_id,
             loginTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
             fullName: profileData.full_name,
             phoneNumber: profileData.phone_number,
@@ -545,7 +546,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
       playAudioFeedback("success");
       onLoginSuccess({
         adminId: trimmedAdminId,
-        uuid: data.uuid,
+        uuid: returnedUuid,
         loginTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       });
     } catch (err: unknown) {
@@ -558,7 +559,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   };
 
   // ==========================================================================
-  // STEP 2: DEDICATED PASSWORD CHANGE PAGE HANDLER (KEPT AS IS)
+  // STEP 2: DEDICATED PASSWORD CHANGE PAGE HANDLER
   // ==========================================================================
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -608,6 +609,10 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         throw new Error(data.message || "Password change failed");
       }
 
+      if (data.uuid) {
+        setAdminUuid(String(data.uuid).trim());
+      }
+
       // Refresh auth session cookie with the new password so must_change_password === false
       const trimmedAdminId = adminId.trim();
       const verifyLoginRes = await fetch(`${API_BASE_URL}/api/auth/admin/login`, {
@@ -632,7 +637,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
       }
 
       if (verifyLoginData?.uuid) {
-        setAdminUuid(verifyLoginData.uuid);
+        setAdminUuid(String(verifyLoginData.uuid).trim());
       }
 
       setMustChangePassword(false);
@@ -836,6 +841,13 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
     const trimmedPhone = phoneNumber.trim();
     const trimmedEmail = email.trim();
 
+    // Gateway X-User-ID requires the admin UUID from AdminLoginResponse as user_id
+    const resolvedGatewayUserId = adminUuid.trim() || trimmedAdminId;
+
+    if (!resolvedGatewayUserId) {
+      setErrorMessage("Missing Admin UUID from login session. Please log in again.");
+      return;
+    }
     if (trimmedFullName.length < 2 || trimmedFullName.length > 128) {
       setErrorMessage("Full Name is required (between 2 and 128 characters).");
       return;
@@ -859,14 +871,14 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         finalMediaId = await executeMediaUpload(profileImageFile);
       }
 
-      // 2. Construct payload for POST /api/profile/admin/profile
+      // 2. Construct payload for POST /api/profile/admin/profile using adminUuid as user_id
       const resolvedStateCode = stateCode || generateStateCode(stateName);
       const resolvedDistrictCode =
         districtCode || generateDistrictCode(resolvedStateCode, districtName);
       const resolvedBlockCode = blockCode || generateBlockCode(blockName);
 
       const profilePayload = {
-        user_id: trimmedAdminId,
+        user_id: resolvedGatewayUserId,
         full_name: trimmedFullName,
         phone_number: trimmedPhone,
         email: trimmedEmail || null,
@@ -907,7 +919,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
       setTimeout(() => {
         onLoginSuccess({
           adminId: trimmedAdminId,
-          uuid: adminUuid,
+          uuid: resolvedGatewayUserId,
           loginTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
           fullName: trimmedFullName,
           phoneNumber: trimmedPhone,
@@ -982,17 +994,17 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
           )}
 
           <form onSubmit={handleProfileSubmit} className="al-profile-form">
-            {/* Fixed User ID & Role */}
+            {/* Fixed User ID (Admin UUID mapped by Gateway) & Role */}
             <div className="al-grid-2">
               <div className="al-field">
-                <label className="al-label">User ID</label>
+                <label className="al-label">User ID (Admin UUID)</label>
                 <div className="al-input-group">
                   <span className="al-input-icon-left">
                     <KeyRound size={15} />
                   </span>
                   <input
                     type="text"
-                    value={adminId.trim()}
+                    value={adminUuid || adminId.trim()}
                     readOnly
                     disabled
                     className="al-input"
@@ -1321,8 +1333,9 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
           </form>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   // ==========================================================================
   // PAGE 1 (LOGIN) & PAGE 2 (PASSWORD CHANGE) RENDER
