@@ -2,8 +2,10 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import Link from "next/link"; // 👈 IMPORT NEXT.JS LINK
+import Link from "next/link";
 import { AdminSessionData } from "../AdminLogin/AdminLogin";
+
+const API_BASE_URL = "https://admin-api.neohexane.com";
 
 interface HeaderProps {
   adminSession: AdminSessionData;
@@ -15,60 +17,72 @@ interface HeaderProps {
   onSpeedChange?: (speed: number) => void;
 }
 
-// Inline SVG Icons
-const UserIcon = ({ size = 24, color = "currentColor" }) => (
+// Server response shape for GET /api/profile/admin/profile (excluding _code fields in UI)
+interface AdminProfileResponse {
+  success: boolean;
+  user_id: string;
+  full_name: string;
+  phone_number: string;
+  email?: string | null;
+  profile_image_media_id?: string | null;
+  role?: string | null;
+  is_active?: boolean;
+  state_name?: string | null;
+  district_name?: string | null;
+  block_name?: string | null;
+  pincode?: string | null;
+  street_locality?: string | null;
+  house_or_building_no?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+const hasValue = (val: unknown): boolean =>
+  val !== null && val !== undefined && String(val).trim() !== "";
+
+// Inline SVG Icons (Scaled up defaults)
+const UserIcon = ({ size = 26, color = "currentColor" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
+    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+    <circle cx="12" cy="7" r="4"></circle>
   </svg>
 );
-const Volume2Icon = ({ size = 24, color = "currentColor" }) => (
+
+const Volume2Icon = ({ size = 18, color = "currentColor" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
   </svg>
 );
-const VolumeXIcon = ({ size = 24, color = "currentColor" }) => (
+
+const VolumeXIcon = ({ size = 18, color = "currentColor" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+    <line x1="23" y1="9" x2="17" y2="15"></line>
+    <line x1="17" y1="9" x2="23" y2="15"></line>
   </svg>
 );
-const RotateCcwIcon = ({ size = 24, color = "currentColor" }) => (
+
+const RotateCcwIcon = ({ size = 18, color = "currentColor" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+    <polyline points="1 4 1 10 7 10"></polyline>
+    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
   </svg>
 );
-const ShieldCheckIcon = ({ size = 24, color = "currentColor" }) => (
+
+const ShieldCheckIcon = ({ size = 14, color = "currentColor" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+    <path d="m9 12 2 2 4-4"></path>
   </svg>
 );
-const KeyIcon = ({ size = 24, color = "currentColor", className = "" }) => (
+
+const LogOutIcon = ({ size = 16, color = "currentColor", className = "" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"></path><path d="m21 2-9.6 9.6"></path><circle cx="7.5" cy="15.5" r="5.5"></circle>
-  </svg>
-);
-const ActivityIcon = ({ size = 24, color = "currentColor", className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-  </svg>
-);
-const DatabaseIcon = ({ size = 24, color = "currentColor", className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
-  </svg>
-);
-const SlidersIcon = ({ size = 24, color = "currentColor", className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line>
-  </svg>
-);
-const LogOutIcon = ({ size = 24, color = "currentColor", className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>
-  </svg>
-);
-const CheckCircle2Icon = ({ size = 24, color = "currentColor" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path>
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+    <polyline points="16 17 21 12 16 7"></polyline>
+    <line x1="21" y1="12" x2="9" y2="12"></line>
   </svg>
 );
 
@@ -82,13 +96,99 @@ export const Header: React.FC<HeaderProps> = ({
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [sessionToast, setSessionToast] = useState<string | null>(null);
+
+  // Server-fetched Admin Profile & Streamed Avatar State
+  const [adminProfile, setAdminProfile] = useState<AdminProfileResponse | null>(null);
+  const [avatarObjectUrl, setAvatarObjectUrl] = useState<string | null>(null);
 
   const userDropdownRef = useRef<HTMLDivElement>(null);
   const menuDropdownRef = useRef<HTMLDivElement>(null);
   const userButtonRef = useRef<HTMLButtonElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
+  // 1. Fetch Admin Profile from GET /api/profile/admin/profile
+  useEffect(() => {
+    let isCancelled = false;
+
+    const fetchAdminProfile = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/profile/admin/profile`, {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+          credentials: "include",
+        });
+
+        if (!response.ok) return;
+        const data: AdminProfileResponse = await response.json();
+
+        if (!isCancelled && data && data.success) {
+          setAdminProfile(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch admin profile in header:", err);
+      }
+    };
+
+    fetchAdminProfile();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [adminSession.adminId]);
+
+  // 2. Stream Profile Picture from GET /api/media/stream/{mediaId}
+  const activeMediaId =
+    adminProfile?.profile_image_media_id || adminSession.profileImageMediaId || null;
+
+  useEffect(() => {
+    if (!activeMediaId) {
+      setAvatarObjectUrl(null);
+      return;
+    }
+
+    let isCancelled = false;
+    let createdUrl: string | null = null;
+
+    const loadProfileImage = async () => {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/media/stream/${encodeURIComponent(activeMediaId)}`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Media stream failed with status ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        if (isCancelled) return;
+
+        createdUrl = URL.createObjectURL(blob);
+        setAvatarObjectUrl(createdUrl);
+      } catch (err) {
+        console.error("Failed to stream admin profile image:", err);
+        if (!isCancelled) {
+          setAvatarObjectUrl(null);
+        }
+      }
+    };
+
+    loadProfileImage();
+
+    return () => {
+      isCancelled = true;
+      if (createdUrl) {
+        URL.revokeObjectURL(createdUrl);
+      }
+    };
+  }, [activeMediaId]);
+
+  // Close menus on outside click or Escape key
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
@@ -128,10 +228,35 @@ export const Header: React.FC<HeaderProps> = ({
     };
   }, [isUserMenuOpen, isMenuOpen]);
 
-  const triggerToast = (msg: string) => {
-    setSessionToast(msg);
-    setTimeout(() => setSessionToast(null), 3000);
-  };
+  // Resolved Admin Display Values (No _code fields included)
+  const displayUserId = adminProfile?.user_id || adminSession.adminId;
+  const displayFullName = adminProfile?.full_name || adminSession.fullName || displayUserId;
+  const displayRole = adminProfile?.role || adminSession.role || null;
+  const displayEmail = adminProfile?.email || adminSession.email || null;
+  const displayPhone = adminProfile?.phone_number || adminSession.phoneNumber || null;
+  const displayHouse = adminProfile?.house_or_building_no || null;
+  const displayStreet = adminProfile?.street_locality || null;
+  const displayBlock = adminProfile?.block_name || adminSession.blockName || null;
+  const displayDistrict = adminProfile?.district_name || adminSession.districtName || null;
+  const displayState = adminProfile?.state_name || adminSession.stateName || null;
+  const displayPincode = adminProfile?.pincode || adminSession.pincode || null;
+  const isActiveStatus = adminProfile?.is_active ?? true;
+
+  // Build dynamic info blocks (automatically hides any missing field)
+  const personalInfoRows = [
+    { label: "User ID", value: displayUserId },
+    { label: "Phone Number", value: displayPhone },
+    { label: "Login Time", value: adminSession.loginTime },
+  ].filter((row) => hasValue(row.value));
+
+  const addressInfoRows = [
+    { label: "House / Bldg", value: displayHouse },
+    { label: "Street / Locality", value: displayStreet },
+    { label: "Block", value: displayBlock },
+    { label: "District", value: displayDistrict },
+    { label: "State", value: displayState },
+    { label: "Pincode", value: displayPincode },
+  ].filter((row) => hasValue(row.value));
 
   const navItems = [
     { name: "Dashboard", href: "/" },
@@ -152,140 +277,610 @@ export const Header: React.FC<HeaderProps> = ({
     <>
       <style>{`
         .cg-header {
-          position: sticky; top: 0; z-index: 40; width: 100%; max-width: 100vw; box-sizing: border-box;
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 10px 12px; background-color: rgba(245, 245, 245, 0.95); backdrop-filter: blur(12px); 
-          border-bottom: 1px solid rgba(0,0,0,0.08); user-select: none;
+          position: sticky;
+          top: 0;
+          z-index: 40;
+          width: 100%;
+          max-width: 100vw;
+          box-sizing: border-box;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 14px 18px;
+          background-color: rgba(245, 245, 245, 0.96);
+          backdrop-filter: blur(14px);
+          border-bottom: 1px solid rgba(0, 0, 0, 0.09);
+          user-select: none;
         }
-        @media (min-width: 640px) { .cg-header { padding: 16px 24px; } }
-
-        .cg-brand-link { display: flex; align-items: center; gap: 10px; text-decoration: none; cursor: pointer; min-width: 0; }
-        .cg-brand-logo { width: 36px; height: 36px; object-fit: contain; flex-shrink: 0; }
-        @media (min-width: 640px) { .cg-brand-logo { width: 46px; height: 46px; } }
-        
-        .cg-brand-title { 
-          font-weight: bold; font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase; 
-          color: #171717; margin: 0; line-height: 1.15; font-family: sans-serif; white-space: nowrap; 
-          overflow: hidden; text-overflow: ellipsis; max-width: 160px;
+        @media (min-width: 640px) {
+          .cg-header {
+            padding: 20px 36px;
+          }
         }
-        @media (min-width: 380px) { .cg-brand-title { font-size: 12.5px; max-width: 200px; } }
-        @media (min-width: 640px) { .cg-brand-title { font-size: 16px; max-width: none; } }
-        
-        .cg-accent-strip { display: flex; align-items: center; margin-top: 4px; }
-        .cg-accent-bar { width: 38px; height: 3.5px; border-radius: 9999px; overflow: hidden; display: flex; }
-        @media (min-width: 640px) { .cg-accent-bar { width: 52px; height: 4.5px; } }
-        .cg-accent-blue { width: 33.33%; height: 100%; background-color: #0284c7; }
-        .cg-accent-green { width: 33.33%; height: 100%; background-color: #10b981; }
-        .cg-accent-lime { width: 33.33%; height: 100%; background-color: #84cc16; }
 
-        .cg-controls { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-        @media (min-width: 640px) { .cg-controls { gap: 10px; } }
+        /* Enlarged Branding & Logo */
+        .cg-brand-link {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          text-decoration: none;
+          cursor: pointer;
+          min-width: 0;
+        }
+        @media (min-width: 640px) {
+          .cg-brand-link {
+            gap: 18px;
+          }
+        }
+
+        .cg-brand-logo {
+          width: 52px;
+          height: 52px;
+          object-fit: contain;
+          flex-shrink: 0;
+        }
+        @media (min-width: 640px) {
+          .cg-brand-logo {
+            width: 68px;
+            height: 68px;
+          }
+        }
+
+        .cg-brand-title {
+          font-weight: 800;
+          font-size: 14.5px;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          color: #111827;
+          margin: 0;
+          line-height: 1.15;
+          font-family: sans-serif;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 210px;
+        }
+        @media (min-width: 400px) {
+          .cg-brand-title {
+            font-size: 16.5px;
+            max-width: 260px;
+          }
+        }
+        @media (min-width: 640px) {
+          .cg-brand-title {
+            font-size: 22px;
+            max-width: none;
+          }
+        }
+
+        .cg-accent-strip {
+          display: flex;
+          align-items: center;
+          margin-top: 6px;
+        }
+        .cg-accent-bar {
+          width: 56px;
+          height: 5px;
+          border-radius: 9999px;
+          overflow: hidden;
+          display: flex;
+        }
+        @media (min-width: 640px) {
+          .cg-accent-bar {
+            width: 82px;
+            height: 6px;
+          }
+        }
+        .cg-accent-blue {
+          width: 33.33%;
+          height: 100%;
+          background-color: #0284c7;
+        }
+        .cg-accent-green {
+          width: 33.33%;
+          height: 100%;
+          background-color: #10b981;
+        }
+        .cg-accent-lime {
+          width: 33.33%;
+          height: 100%;
+          background-color: #84cc16;
+        }
+
+        /* Enlarged Controls & Buttons */
+        .cg-controls {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-shrink: 0;
+        }
+        @media (min-width: 640px) {
+          .cg-controls {
+            gap: 14px;
+          }
+        }
 
         .cg-btn-util {
-          display: flex; align-items: center; gap: 4px; padding: 5px 8px; border-radius: 9999px; font-family: monospace; font-size: 10px;
-          background-color: #ffffff; border: 1px solid #d4d4d8; color: #3f3f46; cursor: pointer; transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 14px;
+          border-radius: 9999px;
+          font-family: monospace;
+          font-size: 12px;
+          font-weight: 600;
+          background-color: #ffffff;
+          border: 1px solid #d4d4d8;
+          color: #27272a;
+          cursor: pointer;
+          transition: all 0.2s ease;
         }
-        @media (min-width: 640px) { .cg-btn-util { padding: 6px 12px; font-size: 11px; gap: 6px; } }
-        .cg-btn-util:hover { border-color: #171717; color: #171717; }
-        .cg-btn-util-hide-mobile { display: none; }
-        @media (min-width: 768px) { .cg-btn-util-hide-mobile { display: flex; } }
+        @media (min-width: 640px) {
+          .cg-btn-util {
+            padding: 10px 18px;
+            font-size: 13.5px;
+            gap: 8px;
+          }
+        }
+        .cg-btn-util:hover {
+          border-color: #171717;
+          color: #171717;
+          background-color: #fafafa;
+        }
+        .cg-btn-util-hide-mobile {
+          display: none;
+        }
+        @media (min-width: 768px) {
+          .cg-btn-util-hide-mobile {
+            display: flex;
+          }
+        }
 
+        /* Enlarged User Profile Button */
         .cg-user-btn {
-          position: relative; padding: 6px; border-radius: 8px; border: 1px solid #d4d4d8; display: flex; align-items: center; justify-content: center;
-          background-color: #ffffff; color: #27272a; cursor: pointer; transition: all 0.2s ease;
+          position: relative;
+          width: 44px;
+          height: 44px;
+          padding: 0;
+          border-radius: 12px;
+          border: 1.5px solid #d4d4d8;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background-color: #ffffff;
+          color: #27272a;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          overflow: visible;
         }
-        @media (min-width: 640px) { .cg-user-btn { padding: 8px; } }
-        .cg-user-btn:hover { background-color: #fafafa; border-color: #27272a; }
-        .cg-user-btn.active { background-color: #171717; color: #ffffff; border-color: #171717; }
-        
-        .cg-online-dot-wrap { position: absolute; top: -2px; right: -2px; display: flex; width: 8px; height: 8px; }
-        .cg-online-ping { position: absolute; display: inline-flex; width: 100%; height: 100%; border-radius: 50%; background-color: #34d399; opacity: 0.75; animation: cg-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; }
-        .cg-online-dot { position: relative; display: inline-flex; border-radius: 50%; width: 8px; height: 8px; background-color: #10b981; border: 1px solid #ffffff; }
-        @keyframes cg-ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+        @media (min-width: 640px) {
+          .cg-user-btn {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+          }
+        }
+        .cg-user-btn:hover {
+          background-color: #fafafa;
+          border-color: #18181b;
+        }
+        .cg-user-btn.active {
+          background-color: #18181b;
+          color: #ffffff;
+          border-color: #18181b;
+        }
 
+        .cg-user-btn-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          border-radius: 10.5px;
+        }
+        @media (min-width: 640px) {
+          .cg-user-btn-img {
+            border-radius: 12.5px;
+          }
+        }
+
+        .cg-online-dot-wrap {
+          position: absolute;
+          top: -3px;
+          right: -3px;
+          display: flex;
+          width: 11px;
+          height: 11px;
+          z-index: 2;
+        }
+        .cg-online-ping {
+          position: absolute;
+          display: inline-flex;
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          background-color: #34d399;
+          opacity: 0.75;
+          animation: cg-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        .cg-online-dot {
+          position: relative;
+          display: inline-flex;
+          border-radius: 50%;
+          width: 11px;
+          height: 11px;
+          background-color: #10b981;
+          border: 2px solid #ffffff;
+        }
+        @keyframes cg-ping {
+          75%, 100% {
+            transform: scale(2);
+            opacity: 0;
+          }
+        }
+
+        /* Floating Modals */
         .cg-modal {
-          position: absolute; right: 0; margin-top: 10px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); 
-          box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); color: #ffffff; z-index: 50; max-width: calc(100vw - 20px);
+          position: absolute;
+          right: 0;
+          margin-top: 12px;
+          border-radius: 20px;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+          color: #ffffff;
+          z-index: 50;
+          max-width: calc(100vw - 24px);
         }
-        
-        .cg-user-modal { width: 270px; padding: 14px; background-color: rgba(24,24,27,0.98); backdrop-filter: blur(16px); }
-        @media (min-width: 640px) { .cg-user-modal { width: 330px; padding: 20px; } }
-        
-        .cg-um-header { display: flex; align-items: flex-start; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .cg-um-avatar { position: relative; width: 38px; height: 38px; border-radius: 10px; background: #27272a; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .cg-um-avatar-dot { position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; background-color: #10b981; border-radius: 50%; border: 2px solid #18181b; }
-        .cg-um-info { min-width: 0; flex: 1; }
-        .cg-um-name-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
-        .cg-um-name { font-size: 13px; font-family: sans-serif; font-weight: 600; color: #ffffff; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cg-um-badge { font-size: 9.5px; font-family: monospace; padding: 1px 5px; background-color: rgba(16,185,129,0.2); color: #34d399; border-radius: 9999px; flex-shrink: 0; }
-        .cg-um-email { font-size: 10px; font-family: monospace; color: #a1a1aa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 2px 0 0 0; }
-        .cg-um-clearance { font-size: 9.5px; font-family: monospace; color: #84cc16; margin: 3px 0 0 0; display: flex; align-items: center; gap: 4px; }
-        
-        .cg-um-telemetry { margin: 10px 0; padding: 10px; border-radius: 10px; background-color: rgba(255,255,255,0.04); font-family: monospace; font-size: 10px; }
-        .cg-um-tel-row { display: flex; justify-content: space-between; color: #a1a1aa; margin-bottom: 4px; gap: 8px; }
-        .cg-um-tel-row:last-child { margin-bottom: 0; }
-        .cg-um-tel-val { color: #e4e4e7; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cg-um-tel-val-ok { color: #34d399; font-weight: 600; }
 
-        .cg-um-actions { display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; font-family: sans-serif; }
-        .cg-um-btn { width: 100%; display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 6px; color: #d4d4d8; background: transparent; border: none; cursor: pointer; text-align: left; }
-        .cg-um-btn:hover { color: #ffffff; background-color: rgba(255,255,255,0.08); }
-        .cg-um-icon { color: #a1a1aa; }
-        
-        .cg-um-toast { margin-top: 8px; padding: 6px 8px; background-color: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 6px; font-size: 10.5px; color: #34d399; display: flex; align-items: center; gap: 6px; font-family: monospace; }
-        .cg-um-footer { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; }
-        .cg-um-logout { display: flex; align-items: center; gap: 4px; font-size: 11px; font-family: sans-serif; color: #f87171; background: transparent; border: none; cursor: pointer; padding: 0; }
-        .cg-um-logout:hover { color: #fca5a5; }
-        .cg-um-version { font-size: 9px; font-family: monospace; color: #71717a; }
+        .cg-user-modal {
+          width: 320px;
+          padding: 18px;
+          background-color: rgba(24, 24, 27, 0.98);
+          backdrop-filter: blur(18px);
+        }
+        @media (min-width: 640px) {
+          .cg-user-modal {
+            width: 380px;
+            padding: 24px;
+          }
+        }
 
+        .cg-um-header {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding-bottom: 16px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .cg-um-avatar {
+          position: relative;
+          width: 58px;
+          height: 58px;
+          border-radius: 14px;
+          background: #27272a;
+          border: 1.5px solid rgba(255, 255, 255, 0.15);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          overflow: visible;
+        }
+        .cg-um-avatar-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          border-radius: 12.5px;
+        }
+        .cg-um-avatar-dot {
+          position: absolute;
+          bottom: -3px;
+          right: -3px;
+          width: 13px;
+          height: 13px;
+          background-color: #10b981;
+          border-radius: 50%;
+          border: 2.5px solid #18181b;
+        }
+        .cg-um-info {
+          min-width: 0;
+          flex: 1;
+        }
+        .cg-um-name-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+        }
+        .cg-um-name {
+          font-size: 16px;
+          font-family: sans-serif;
+          font-weight: 700;
+          color: #ffffff;
+          margin: 0;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .cg-um-badge {
+          font-size: 10.5px;
+          font-family: monospace;
+          font-weight: 700;
+          padding: 2px 8px;
+          background-color: rgba(16, 185, 129, 0.2);
+          color: #34d399;
+          border-radius: 9999px;
+          flex-shrink: 0;
+        }
+        .cg-um-email {
+          font-size: 12px;
+          font-family: monospace;
+          color: #a1a1aa;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          margin: 4px 0 0 0;
+        }
+        .cg-um-clearance {
+          font-size: 11.5px;
+          font-family: monospace;
+          color: #84cc16;
+          margin: 5px 0 0 0;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+        }
+
+        /* Info Blocks inside Modal */
+        .cg-um-block-label {
+          font-size: 10.5px;
+          font-family: monospace;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: #71717a;
+          margin: 14px 0 6px 0;
+        }
+        .cg-um-telemetry {
+          padding: 12px 14px;
+          border-radius: 12px;
+          background-color: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          font-family: monospace;
+          font-size: 12px;
+        }
+        .cg-um-tel-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          color: #a1a1aa;
+          margin-bottom: 7px;
+          gap: 12px;
+        }
+        .cg-um-tel-row:last-child {
+          margin-bottom: 0;
+        }
+        .cg-um-tel-val {
+          color: #f4f4f5;
+          font-weight: 600;
+          text-align: right;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .cg-um-footer {
+          margin-top: 16px;
+          padding-top: 14px;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .cg-um-logout {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
+          font-weight: 600;
+          font-family: sans-serif;
+          color: #f87171;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          padding: 0;
+        }
+        .cg-um-logout:hover {
+          color: #fca5a5;
+        }
+        .cg-um-version {
+          font-size: 10.5px;
+          font-family: monospace;
+          color: #71717a;
+        }
+
+        /* Enlarged Hamburger Button */
         .cg-burger-btn {
-          padding: 8px 10px; background-color: #18181b; color: #ffffff; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s ease;
+          width: 44px;
+          height: 44px;
+          padding: 0;
+          background-color: #18181b;
+          color: #ffffff;
+          border-radius: 12px;
+          border: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background 0.2s ease;
         }
-        @media (min-width: 640px) { .cg-burger-btn { padding: 9px 12px; } }
-        .cg-burger-btn:hover { background-color: #000000; }
-        
-        .cg-burger-icon { width: 16px; height: 10px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; }
-        @media (min-width: 640px) { .cg-burger-icon { width: 18px; height: 11px; } }
-        .cg-bar { height: 2px; background-color: #ffffff; border-radius: 9999px; transition: all 0.3s ease; }
-        
-        .cg-bar-top { width: 100%; }
-        .cg-bar-bot { width: 60%; }
-        .cg-burger-btn:hover .cg-bar-bot { width: 100%; }
-        
-        .cg-burger-icon.open .cg-bar-top { width: 100%; transform: translateY(4px) rotate(45deg); }
-        .cg-burger-icon.open .cg-bar-bot { width: 100%; transform: translateY(-4px) rotate(-45deg); }
+        @media (min-width: 640px) {
+          .cg-burger-btn {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+          }
+        }
+        .cg-burger-btn:hover {
+          background-color: #000000;
+        }
 
-        .cg-nav-modal { width: 270px; padding: 18px; background-color: rgba(28,28,31,0.98); backdrop-filter: blur(24px); }
-        @media (min-width: 640px) { .cg-nav-modal { width: 310px; padding: 24px; } }
-        
-        .cg-nav-header { padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 4px; }
-        .cg-nav-title { font-size: 11px; font-family: monospace; text-transform: uppercase; letter-spacing: 0.1em; color: #a1a1aa; margin: 0; }
-        
-        .cg-nav-links { display: flex; flex-direction: column; }
+        .cg-burger-icon {
+          width: 22px;
+          height: 13px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          align-items: flex-end;
+        }
+        @media (min-width: 640px) {
+          .cg-burger-icon {
+            width: 25px;
+            height: 15px;
+          }
+        }
+        .cg-bar {
+          height: 2.5px;
+          background-color: #ffffff;
+          border-radius: 9999px;
+          transition: all 0.3s ease;
+        }
+
+        .cg-bar-top {
+          width: 100%;
+        }
+        .cg-bar-bot {
+          width: 62%;
+        }
+        .cg-burger-btn:hover .cg-bar-bot {
+          width: 100%;
+        }
+
+        .cg-burger-icon.open .cg-bar-top {
+          width: 100%;
+          transform: translateY(5.5px) rotate(45deg);
+        }
+        .cg-burger-icon.open .cg-bar-bot {
+          width: 100%;
+          transform: translateY(-5.5px) rotate(-45deg);
+        }
+
+        /* Enlarged Navigation Drawer */
+        .cg-nav-modal {
+          width: 300px;
+          padding: 20px;
+          background-color: rgba(28, 28, 31, 0.98);
+          backdrop-filter: blur(24px);
+        }
+        @media (min-width: 640px) {
+          .cg-nav-modal {
+            width: 350px;
+            padding: 26px;
+          }
+        }
+
+        .cg-nav-header {
+          padding-bottom: 10px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          margin-bottom: 6px;
+        }
+        .cg-nav-title {
+          font-size: 12px;
+          font-family: monospace;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          color: #a1a1aa;
+          margin: 0;
+        }
+
+        .cg-nav-links {
+          display: flex;
+          flex-direction: column;
+        }
         .cg-nav-item {
-          display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.05); text-decoration: none; cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 11px 0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          text-decoration: none;
+          cursor: pointer;
         }
-        .cg-nav-item-text { font-size: 18px; font-weight: 300; font-family: sans-serif; letter-spacing: -0.025em; margin: 0; transition: transform 0.2s; }
-        @media (min-width: 640px) { .cg-nav-item-text { font-size: 22px; } }
-        .cg-nav-item-arrow { font-size: 16px; }
-        @media (min-width: 640px) { .cg-nav-item-arrow { font-size: 20px; } }
-        
-        .cg-nav-item.normal { color: #a1a1aa; }
-        .cg-nav-item.normal:hover { color: #ffffff; padding-left: 4px; }
-        .cg-nav-item.normal .cg-nav-item-arrow { color: #71717a; }
-        .cg-nav-item.active { color: #ffffff; font-weight: 500; padding-left: 4px; }
+        .cg-nav-item-text {
+          font-size: 20px;
+          font-weight: 300;
+          font-family: sans-serif;
+          letter-spacing: -0.025em;
+          margin: 0;
+          transition: transform 0.2s;
+        }
+        @media (min-width: 640px) {
+          .cg-nav-item-text {
+            font-size: 24px;
+          }
+        }
+        .cg-nav-item-arrow {
+          font-size: 18px;
+        }
+        @media (min-width: 640px) {
+          .cg-nav-item-arrow {
+            font-size: 22px;
+          }
+        }
 
-        .cg-nav-media { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); }
-        .cg-nav-media-title { font-size: 10.5px; font-family: monospace; color: #a1a1aa; margin: 0 0 6px 0; }
-        .cg-nav-media-list { display: flex; flex-direction: column; gap: 5px; }
-        .cg-nav-media-link { display: flex; align-items: center; gap: 6px; font-size: 11px; font-family: monospace; color: #d4d4d8; text-decoration: none; }
-        .cg-nav-media-link:hover { color: #ffffff; }
+        .cg-nav-item.normal {
+          color: #a1a1aa;
+        }
+        .cg-nav-item.normal:hover {
+          color: #ffffff;
+          padding-left: 4px;
+        }
+        .cg-nav-item.normal .cg-nav-item-arrow {
+          color: #71717a;
+        }
+        .cg-nav-item.active {
+          color: #ffffff;
+          font-weight: 600;
+          padding-left: 4px;
+        }
+
+        .cg-nav-media {
+          margin-top: 12px;
+          padding-top: 12px;
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .cg-nav-media-title {
+          font-size: 11.5px;
+          font-family: monospace;
+          color: #a1a1aa;
+          margin: 0 0 8px 0;
+        }
+        .cg-nav-media-list {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .cg-nav-media-link {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 12.5px;
+          font-family: monospace;
+          color: #d4d4d8;
+          text-decoration: none;
+        }
+        .cg-nav-media-link:hover {
+          color: #ffffff;
+        }
       `}</style>
-      
+
       <header className="cg-header">
-        {/* 1. LEFT: Branding & Logo */}
-        <div style={{ display: "flex", alignItems: "center", minWidth: 0, flex: 1, marginRight: "8px" }}>
-          {/* Changed to Next.js Link */}
+        {/* 1. LEFT: Enlarged Branding & Logo */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            minWidth: 0,
+            flex: 1,
+            marginRight: "12px",
+          }}
+        >
           <Link href="/" className="cg-brand-link">
             <div style={{ position: "relative", flexShrink: 0 }}>
               <img
@@ -308,7 +903,7 @@ export const Header: React.FC<HeaderProps> = ({
           </Link>
         </div>
 
-        {/* 2. RIGHT: Controls Group */}
+        {/* 2. RIGHT: Enlarged Controls Group */}
         <div className="cg-controls">
           {onToggleAudio && (
             <button
@@ -317,9 +912,9 @@ export const Header: React.FC<HeaderProps> = ({
               title={isAudioMuted ? "Unmute sounds" : "Mute sounds"}
             >
               {isAudioMuted ? (
-                <VolumeXIcon size={13} color="#a1a1aa" />
+                <VolumeXIcon size={18} color="#a1a1aa" />
               ) : (
-                <Volume2Icon size={13} color="#059669" />
+                <Volume2Icon size={18} color="#059669" />
               )}
               <span>{isAudioMuted ? "Muted" : "Audio On"}</span>
             </button>
@@ -331,12 +926,12 @@ export const Header: React.FC<HeaderProps> = ({
               className="cg-btn-util"
               title="Replay Kinetic Preloader"
             >
-              <RotateCcwIcon size={13} color="#3f3f46" />
+              <RotateCcwIcon size={18} color="#3f3f46" />
               <span className="hidden sm:inline">Replay Loader</span>
             </button>
           )}
 
-          {/* User Profile Button & Floating Admin Info Modal */}
+          {/* User Profile Button & Floating Admin Profile Modal */}
           <div style={{ position: "relative" }}>
             <button
               ref={userButtonRef}
@@ -346,9 +941,17 @@ export const Header: React.FC<HeaderProps> = ({
               }}
               aria-expanded={isUserMenuOpen}
               className={`cg-user-btn ${isUserMenuOpen ? "active" : ""}`}
-              title={`Logged in as ${adminSession.adminId}`}
+              title={`Logged in as ${displayFullName}`}
             >
-              <UserIcon size={16} />
+              {avatarObjectUrl ? (
+                <img
+                  src={avatarObjectUrl}
+                  alt={displayFullName}
+                  className="cg-user-btn-img"
+                />
+              ) : (
+                <UserIcon size={24} />
+              )}
               <span className="cg-online-dot-wrap">
                 <span className="cg-online-ping" />
                 <span className="cg-online-dot" />
@@ -357,85 +960,69 @@ export const Header: React.FC<HeaderProps> = ({
 
             {isUserMenuOpen && (
               <div ref={userDropdownRef} className="cg-modal cg-user-modal">
+                {/* Modal Header: Streamed Avatar + Name + Conditional Email & Role */}
                 <div className="cg-um-header">
                   <div className="cg-um-avatar">
-                    <UserIcon size={18} color="#34d399" />
+                    {avatarObjectUrl ? (
+                      <img
+                        src={avatarObjectUrl}
+                        alt={displayFullName}
+                        className="cg-um-avatar-img"
+                      />
+                    ) : (
+                      <UserIcon size={28} color="#34d399" />
+                    )}
                     <span className="cg-um-avatar-dot" />
                   </div>
+
                   <div className="cg-um-info">
                     <div className="cg-um-name-row">
-                      <h3 className="cg-um-name">{adminSession.adminId}</h3>
-                      <span className="cg-um-badge">VERIFIED</span>
+                      <h3 className="cg-um-name">{displayFullName}</h3>
+                      <span className="cg-um-badge">
+                        {isActiveStatus ? "ACTIVE" : "INACTIVE"}
+                      </span>
                     </div>
-                    <p className="cg-um-email">
-                      {adminSession.uuid
-                        ? `UUID: ${adminSession.uuid.slice(0, 18)}...`
-                        : `${adminSession.adminId.toLowerCase()}@neohexane.com`}
-                    </p>
-                    <p className="cg-um-clearance">
-                      <ShieldCheckIcon size={11} /> Authenticated Admin
-                    </p>
+
+                    {hasValue(displayEmail) && (
+                      <p className="cg-um-email">{displayEmail}</p>
+                    )}
+
+                    {hasValue(displayRole) && (
+                      <p className="cg-um-clearance">
+                        <ShieldCheckIcon size={14} /> {displayRole}
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                <div className="cg-um-telemetry">
-                  <div className="cg-um-tel-row">
-                    <span>Admin ID:</span>
-                    <span className="cg-um-tel-val">{adminSession.adminId}</span>
-                  </div>
-                  <div className="cg-um-tel-row">
-                    <span>API Gateway:</span>
-                    <span className="cg-um-tel-val-ok">
-                      admin-api.neohexane.com
-                    </span>
-                  </div>
-                  <div className="cg-um-tel-row">
-                    <span>Login Time:</span>
-                    <span className="cg-um-tel-val">
-                      {adminSession.loginTime} • Active
-                    </span>
-                  </div>
-                </div>
+                {/* Block 1: Contact & Session Info (Hidden if empty) */}
+                {personalInfoRows.length > 0 && (
+                  <>
+                    <div className="cg-um-block-label">Admin Details</div>
+                    <div className="cg-um-telemetry">
+                      {personalInfoRows.map((row) => (
+                        <div key={row.label} className="cg-um-tel-row">
+                          <span>{row.label}:</span>
+                          <span className="cg-um-tel-val">{row.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
 
-                <div className="cg-um-actions">
-                  <button
-                    onClick={() =>
-                      triggerToast(`Active ID: ${adminSession.adminId}`)
-                    }
-                    className="cg-um-btn"
-                  >
-                    <KeyIcon size={13} className="cg-um-icon" />{" "}
-                    <span>API Credentials</span>
-                  </button>
-                  <button
-                    onClick={() => triggerToast("Telemetry Matrix refreshed")}
-                    className="cg-um-btn"
-                  >
-                    <ActivityIcon size={13} className="cg-um-icon" />{" "}
-                    <span>Telemetry Stream</span>
-                  </button>
-                  <button
-                    onClick={() =>
-                      triggerToast("Connected: admin-api.neohexane.com")
-                    }
-                    className="cg-um-btn"
-                  >
-                    <DatabaseIcon size={13} className="cg-um-icon" />{" "}
-                    <span>Workspace: Prod</span>
-                  </button>
-                  <button
-                    onClick={() => triggerToast("Preferences saved")}
-                    className="cg-um-btn"
-                  >
-                    <SlidersIcon size={13} className="cg-um-icon" />{" "}
-                    <span>Preferences</span>
-                  </button>
-                </div>
-
-                {sessionToast && (
-                  <div className="cg-um-toast">
-                    <CheckCircle2Icon size={13} /> <span>{sessionToast}</span>
-                  </div>
+                {/* Block 2: Jurisdiction & Address Info (Hidden if empty, no _code fields) */}
+                {addressInfoRows.length > 0 && (
+                  <>
+                    <div className="cg-um-block-label">Jurisdiction & Address</div>
+                    <div className="cg-um-telemetry">
+                      {addressInfoRows.map((row) => (
+                        <div key={row.label} className="cg-um-tel-row">
+                          <span>{row.label}:</span>
+                          <span className="cg-um-tel-val">{row.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
                 )}
 
                 <div className="cg-um-footer">
@@ -446,7 +1033,7 @@ export const Header: React.FC<HeaderProps> = ({
                     }}
                     className="cg-um-logout"
                   >
-                    <LogOutIcon size={13} /> <span>Terminate Session</span>
+                    <LogOutIcon size={16} /> <span>Terminate Session</span>
                   </button>
                   <span className="cg-um-version">v2.4.0-CORE</span>
                 </div>
@@ -454,7 +1041,7 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </div>
 
-          {/* Hamburger Button & Drawer */}
+          {/* Enlarged Hamburger Button & Drawer */}
           <div style={{ position: "relative" }}>
             <button
               ref={menuButtonRef}
@@ -480,9 +1067,8 @@ export const Header: React.FC<HeaderProps> = ({
                 <nav className="cg-nav-links">
                   {navItems.map((item) => {
                     const isCurrent = pathname === item.href;
-                    
+
                     return (
-                      // 👈 CHANGED <a> TO <Link> HERE
                       <Link
                         key={item.name}
                         href={item.href}
@@ -503,7 +1089,6 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="cg-nav-media">
                   <h4 className="cg-nav-media-title">Powered By:</h4>
                   <div className="cg-nav-media-list">
-                    {/* External links stay as standard <a> tags */}
                     {poweredByLinks.map((link) => (
                       <a
                         key={link.label}
