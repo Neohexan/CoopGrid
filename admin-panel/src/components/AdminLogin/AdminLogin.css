@@ -16,7 +16,7 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 1140px;
+  max-width: 1100px;
   background-color: #ffffff;
   border-radius: 24px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
@@ -27,8 +27,7 @@
 @media (min-width: 1024px) {
   .al-container {
     flex-direction: row;
-    min-height: 620px;
-    max-height: 92vh;
+    min-height: 600px;
   }
 }
 
@@ -40,12 +39,12 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  min-height: 320px;
+  min-height: 360px;
 }
 
 @media (min-width: 1024px) {
   .al-carousel-section {
-    width: 52%;
+    width: 58%;
     min-height: 100%;
   }
 }
@@ -154,21 +153,20 @@
   background-color: rgba(255, 255, 255, 0.8);
 }
 
-/* Form Section */
+/* Form Section (Login & Password Change) */
 .al-form-section {
-  padding: 1.5rem 1.75rem 2rem 1.75rem;
+  padding: 1.5rem 2rem 2rem 2rem;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
   background-color: #ffffff;
-  overflow-y: auto;
   box-sizing: border-box;
 }
 
 @media (min-width: 1024px) {
   .al-form-section {
-    width: 48%;
-    padding: 2.25rem 2.75rem;
+    width: 42%;
+    padding: 3rem;
   }
 }
 
@@ -178,7 +176,7 @@
 
 .al-form-wrapper {
   width: 100%;
-  max-width: 440px;
+  max-width: 400px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -196,12 +194,17 @@
 }
 
 .al-logo-box {
-  width: 90px;
-  height: 90px;
+  width: 95px;
+  height: 95px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.al-logo-box.al-logo-sm {
+  width: 72px;
+  height: 72px;
 }
 
 .al-logo-box img {
@@ -245,7 +248,7 @@
 
 /* Alerts */
 .al-alert {
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   border-radius: 8px;
   font-size: 0.85rem;
   display: flex;
@@ -270,29 +273,41 @@
 .al-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.125rem;
 }
 
 .al-grid-2 {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.875rem;
+  gap: 1rem;
 }
 
-@media (min-width: 540px) {
+@media (min-width: 640px) {
   .al-grid-2 {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+.al-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .al-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
 .al-field {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.375rem;
 }
 
 .al-label {
-  font-size: 0.82rem;
+  font-size: 0.825rem;
   font-weight: 600;
   color: #334155;
   margin: 0;
@@ -338,8 +353,8 @@
 .al-input,
 .al-select {
   width: 100%;
-  padding: 0.7rem 0.875rem 0.7rem 2.45rem;
-  font-size: 0.85rem;
+  padding: 0.75rem 0.875rem 0.75rem 2.5rem;
+  font-size: 0.875rem;
   border-radius: 8px;
   border: 1px solid #cbd5e1;
   background-color: #ffffff;
@@ -369,15 +384,158 @@
   cursor: not-allowed;
 }
 
-/* Section Divider */
-.al-section-divider {
+/* First Time Password Headers */
+.al-ft-header {
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 0.65rem;
+}
+
+.al-ft-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #047857;
+  background-color: #ecfdf5;
+  padding: 0.15rem 0.55rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.al-ft-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0.5rem 0 0 0;
+}
+
+.al-ft-desc {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0.25rem 0 0 0;
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   STANDALONE PAGE 3: PROFILE COMPLETION PAGE
+   ========================================================================== */
+.al-profile-page {
+  min-height: 100vh;
+  width: 100%;
+  background-color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.al-profile-card {
+  width: 100%;
+  max-width: 880px;
+  background-color: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .al-profile-card {
+    padding: 2.5rem 3rem;
+  }
+}
+
+.al-profile-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.al-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.al-step-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
   font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.al-step-pill.done {
+  background-color: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.al-step-pill.current {
+  background-color: #0f172a;
+  color: #ffffff;
+}
+
+.al-step-arrow {
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.al-profile-header-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.al-profile-main-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.al-profile-subtitle {
+  font-size: 0.875rem;
+  color: #475569;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.al-profile-subtitle code {
+  background-color: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: #047857;
+  font-weight: 600;
+}
+
+.al-profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.al-section-divider {
+  font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #047857;
   border-bottom: 1px solid #e2e8f0;
-  padding-bottom: 0.35rem;
+  padding-bottom: 0.4rem;
   margin-top: 0.25rem;
 }
 
@@ -385,17 +543,17 @@
 .al-avatar-upload {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.75rem;
+  gap: 1.25rem;
+  padding: 1rem;
   border: 1px dashed #cbd5e1;
   border-radius: 12px;
   background-color: #f8fafc;
 }
 
 .al-avatar-preview {
-  width: 60px;
-  height: 60px;
-  border-radius: 12px;
+  width: 68px;
+  height: 68px;
+  border-radius: 14px;
   background-color: #e2e8f0;
   border: 1px solid #cbd5e1;
   overflow: hidden;
@@ -415,7 +573,7 @@
 .al-avatar-meta {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.35rem;
   flex: 1;
   min-width: 0;
 }
@@ -423,12 +581,12 @@
 .al-file-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.45rem 0.75rem;
+  gap: 0.45rem;
+  padding: 0.5rem 0.9rem;
   background-color: #ffffff;
   border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 0.78rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
   font-weight: 600;
   color: #1e293b;
   cursor: pointer;
@@ -442,7 +600,7 @@
 }
 
 .al-upload-status {
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   color: #64748b;
   white-space: nowrap;
   overflow: hidden;
@@ -454,14 +612,18 @@
   font-weight: 600;
 }
 
+.al-profile-submit-row {
+  padding-top: 0.5rem;
+}
+
 /* Buttons */
 .al-btn {
   width: 100%;
-  padding: 0.875rem 1rem;
+  padding: 0.875rem 1.25rem;
   border-radius: 8px;
   border: none;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   color: #ffffff;
   cursor: pointer;
   display: flex;
@@ -469,7 +631,6 @@
   justify-content: center;
   gap: 0.5rem;
   transition: background-color 0.2s;
-  margin-top: 0.25rem;
 }
 
 .al-btn:disabled {
@@ -491,30 +652,6 @@
 
 .al-btn-green:hover:not(:disabled) {
   background-color: #047857;
-}
-
-/* First Time & Onboarding Headers */
-.al-ft-header {
-  border-bottom: 1px solid #f1f5f9;
-  padding-bottom: 0.5rem;
-}
-
-.al-ft-badge {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #047857;
-  background-color: #ecfdf5;
-  padding: 0.15rem 0.55rem;
-  border-radius: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.al-ft-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0.4rem 0 0 0;
 }
 
 @keyframes al-spin {
