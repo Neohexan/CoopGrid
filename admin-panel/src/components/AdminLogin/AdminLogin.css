@@ -16,7 +16,7 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 1100px;
+  max-width: 1140px;
   background-color: #ffffff;
   border-radius: 24px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
@@ -25,7 +25,11 @@
 }
 
 @media (min-width: 1024px) {
-  .al-container { flex-direction: row; min-height: 600px; }
+  .al-container {
+    flex-direction: row;
+    min-height: 620px;
+    max-height: 92vh;
+  }
 }
 
 /* Carousel Section */
@@ -36,11 +40,14 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  min-height: 380px;
+  min-height: 320px;
 }
 
 @media (min-width: 1024px) {
-  .al-carousel-section { width: 58%; min-height: 100%; }
+  .al-carousel-section {
+    width: 50%;
+    min-height: 100%;
+  }
 }
 
 .al-slide {
@@ -52,8 +59,16 @@
   transition: opacity 1s ease-in-out;
 }
 
-.al-slide.active { opacity: 1; z-index: 10; }
-.al-slide.hidden { opacity: 0; z-index: 0; pointer-events: none; }
+.al-slide.active {
+  opacity: 1;
+  z-index: 10;
+}
+
+.al-slide.hidden {
+  opacity: 0;
+  z-index: 0;
+  pointer-events: none;
+}
 
 .al-bg-blur {
   position: absolute;
@@ -71,9 +86,9 @@
   z-index: 10;
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Forces the image to completely fill the box */
-  object-position: center; /* Keeps the most important part of the image centered */
-  padding: 0; /* Removes the inner margin */
+  object-fit: cover;
+  object-position: center;
+  padding: 0;
 }
 
 .al-nav-btn {
@@ -94,9 +109,17 @@
   transition: background-color 0.2s;
 }
 
-.al-nav-btn:hover { background-color: rgba(0, 0, 0, 0.75); }
-.al-nav-prev { left: 1rem; }
-.al-nav-next { right: 1rem; }
+.al-nav-btn:hover {
+  background-color: rgba(0, 0, 0, 0.75);
+}
+
+.al-nav-prev {
+  left: 1rem;
+}
+
+.al-nav-next {
+  right: 1rem;
+}
 
 .al-dots {
   position: absolute;
@@ -118,51 +141,74 @@
   transition: all 0.3s;
 }
 
-.al-dot.active { width: 24px; background-color: #ffffff; }
-.al-dot.inactive { width: 8px; }
-.al-dot.inactive:hover { background-color: rgba(255, 255, 255, 0.8); }
-
-/* Form Section */
-.al-form-section {
-  padding: 1.25rem 2rem 2rem 2rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+.al-dot.active {
+  width: 24px;
   background-color: #ffffff;
 }
 
-@media (min-width: 1024px) {
-  .al-form-section { width: 42%; padding: 3rem; }
+.al-dot.inactive {
+  width: 8px;
 }
 
-.al-form-wrapper { width: 100%; max-width: 400px; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem; }
+.al-dot.inactive:hover {
+  background-color: rgba(255, 255, 255, 0.8);
+}
 
-.al-brand { 
-  display: flex; 
-  align-items: center; 
-  gap: 0rem; /* Slightly reduced gap for better visual balance without the box */
+/* Form Section */
+.al-form-section {
+  padding: 1.5rem 1.75rem 2rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  background-color: #ffffff;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+@media (min-width: 1024px) {
+  .al-form-section {
+    width: 50%;
+    padding: 2.25rem 2.75rem;
+  }
+}
+
+.al-form-section.al-center-mode {
+  justify-content: center;
+}
+
+.al-form-wrapper {
+  width: 100%;
+  max-width: 460px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.al-brand {
+  display: flex;
+  align-items: center;
+  gap: 0rem;
 }
 
 .al-brand > div:last-child {
-  margin-left: -10px; /* Adjust this negative value until it looks perfect */
+  margin-left: -10px;
 }
 
 .al-logo-box {
-  width: 95px;  /* Sized perfectly to match the height of 2 text lines + tricolour bar */
-  height: 95px;
+  width: 85px;
+  height: 85px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Removed background-color, border, border-radius, and padding entirely */
 }
 
-.al-logo-box img { 
-  width: 100%; 
-  height: 100%; 
-  object-fit: contain; 
+.al-logo-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
-
 
 .al-brand-title {
   font-size: 1.125rem;
@@ -173,30 +219,107 @@
   margin: 0;
 }
 
-.al-tricolour { display: flex; height: 4px; width: 64px; border-radius: 9999px; overflow: hidden; margin-top: 0.5rem; }
-.al-tri-1 { flex: 1; background-color: #0284c7; }
-.al-tri-2 { flex: 1; background-color: #10b981; }
-.al-tri-3 { flex: 1; background-color: #84cc16; }
+.al-tricolour {
+  display: flex;
+  height: 4px;
+  width: 64px;
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.al-tri-1 {
+  flex: 1;
+  background-color: #0284c7;
+}
+
+.al-tri-2 {
+  flex: 1;
+  background-color: #10b981;
+}
+
+.al-tri-3 {
+  flex: 1;
+  background-color: #84cc16;
+}
 
 /* Alerts */
 .al-alert {
   padding: 0.75rem;
   border-radius: 8px;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  line-height: 1.4;
 }
-.al-alert-error { background-color: #fef2f2; border: 1px solid #fecaca; color: #dc2626; }
-.al-alert-success { background-color: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; }
 
-/* Form Fields */
-.al-form { display: flex; flex-direction: column; gap: 1.125rem; }
-.al-field { display: flex; flex-direction: column; gap: 0.375rem; }
-.al-label { font-size: 0.875rem; font-weight: 600; color: #334155; margin: 0; }
+.al-alert-error {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+}
 
-.al-input-group { position: relative; display: flex; align-items: center; }
-.al-input-icon-left { position: absolute; left: 0.875rem; color: #94a3b8; display: flex; }
+.al-alert-success {
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #047857;
+}
+
+/* Form Fields & Grid */
+.al-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.al-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.875rem;
+}
+
+@media (min-width: 540px) {
+  .al-grid-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.al-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.al-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #334155;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.al-label-req {
+  color: #dc2626;
+  margin-left: 2px;
+}
+
+.al-input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.al-input-icon-left {
+  position: absolute;
+  left: 0.875rem;
+  color: #94a3b8;
+  display: flex;
+  pointer-events: none;
+}
+
 .al-input-icon-right {
   position: absolute;
   right: 0.5rem;
@@ -207,12 +330,16 @@
   cursor: pointer;
   display: flex;
 }
-.al-input-icon-right:hover { color: #334155; }
 
-.al-input {
+.al-input-icon-right:hover {
+  color: #334155;
+}
+
+.al-input,
+.al-select {
   width: 100%;
-  padding: 0.75rem 2.5rem;
-  font-size: 0.875rem;
+  padding: 0.675rem 0.875rem 0.675rem 2.4rem;
+  font-size: 0.85rem;
   border-radius: 8px;
   border: 1px solid #cbd5e1;
   background-color: #ffffff;
@@ -220,8 +347,112 @@
   box-sizing: border-box;
   transition: all 0.2s;
 }
-.al-input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-.al-input:disabled { opacity: 0.6; background-color: #f1f5f9; cursor: not-allowed; }
+
+.al-input.no-left-icon,
+.al-select.no-left-icon {
+  padding-left: 0.875rem;
+}
+
+.al-input:focus,
+.al-select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.al-input:disabled,
+.al-input[readonly],
+.al-select:disabled {
+  opacity: 0.75;
+  background-color: #f1f5f9;
+  color: #475569;
+  cursor: not-allowed;
+}
+
+/* Section Divider */
+.al-section-divider {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #047857;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+/* Profile Photo Upload Box */
+.al-avatar-upload {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  background-color: #f8fafc;
+}
+
+.al-avatar-preview {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  background-color: #e2e8f0;
+  border: 1px solid #cbd5e1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #64748b;
+}
+
+.al-avatar-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.al-avatar-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.al-file-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.75rem;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #1e293b;
+  cursor: pointer;
+  width: fit-content;
+  transition: all 0.15s;
+}
+
+.al-file-btn:hover {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.al-upload-status {
+  font-size: 0.72rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.al-upload-status.uploaded {
+  color: #059669;
+  font-weight: 600;
+}
 
 /* Buttons */
 .al-btn {
@@ -238,14 +469,63 @@
   justify-content: center;
   gap: 0.5rem;
   transition: background-color 0.2s;
+  margin-top: 0.25rem;
 }
-.al-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-.al-btn-blue { background-color: #2563eb; }
-.al-btn-blue:hover:not(:disabled) { background-color: #1d4ed8; }
-.al-btn-green { background-color: #059669; }
-.al-btn-green:hover:not(:disabled) { background-color: #047857; }
+
+.al-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.al-btn-blue {
+  background-color: #2563eb;
+}
+
+.al-btn-blue:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+.al-btn-green {
+  background-color: #059669;
+}
+
+.al-btn-green:hover:not(:disabled) {
+  background-color: #047857;
+}
 
 /* First Time Headers */
-.al-ft-header { border-bottom: 1px solid #f1f5f9; padding-bottom: 0.5rem; }
-.al-ft-badge { font-size: 0.75rem; font-weight: 600; color: #047857; background-color: #ecfdf5; padding: 0.125rem 0.5rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
-.al-ft-title { font-size: 1rem; font-weight: 700; color: #1e293b; margin: 0.5rem 0 0 0; }
+.al-ft-header {
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 0.5rem;
+}
+
+.al-ft-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #047857;
+  background-color: #ecfdf5;
+  padding: 0.15rem 0.55rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.al-ft-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0.4rem 0 0 0;
+}
+
+@keyframes al-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: al-spin 1s linear infinite;
+}
