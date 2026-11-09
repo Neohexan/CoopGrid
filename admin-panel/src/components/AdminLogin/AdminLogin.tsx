@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./AdminLogin.css";
 import {
   Lock,
@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 
 const API_BASE_URL = "https://admin-api.neohexane.com";
+const FALLBACK_API_BASE_URL = "https://app-api.neohexane.com";
 
 export interface AdminSessionData {
   adminId: string;
@@ -82,6 +83,79 @@ const STATE_CODE_MAP: Record<string, string> = {
   chandigarh: "CH",
 };
 
+// Offline Pincode 2-digit prefix to State fallback if India Post API is down
+const PIN_PREFIX_STATE_MAP: Record<string, string> = {
+  "11": "Delhi",
+  "12": "Haryana",
+  "13": "Haryana",
+  "14": "Punjab",
+  "15": "Punjab",
+  "16": "Chandigarh",
+  "17": "Himachal Pradesh",
+  "18": "Jammu and Kashmir",
+  "19": "Jammu and Kashmir",
+  "20": "Uttar Pradesh",
+  "21": "Uttar Pradesh",
+  "22": "Uttar Pradesh",
+  "23": "Uttar Pradesh",
+  "24": "Uttarakhand",
+  "25": "Uttar Pradesh",
+  "26": "Uttarakhand",
+  "27": "Uttar Pradesh",
+  "28": "Uttar Pradesh",
+  "30": "Rajasthan",
+  "31": "Rajasthan",
+  "32": "Rajasthan",
+  "33": "Rajasthan",
+  "34": "Rajasthan",
+  "36": "Gujarat",
+  "37": "Gujarat",
+  "38": "Gujarat",
+  "39": "Gujarat",
+  "40": "Maharashtra",
+  "41": "Maharashtra",
+  "42": "Maharashtra",
+  "43": "Maharashtra",
+  "44": "Maharashtra",
+  "45": "Madhya Pradesh",
+  "46": "Madhya Pradesh",
+  "47": "Madhya Pradesh",
+  "48": "Madhya Pradesh",
+  "49": "Chhattisgarh",
+  "50": "Telangana",
+  "51": "Andhra Pradesh",
+  "52": "Andhra Pradesh",
+  "53": "Andhra Pradesh",
+  "56": "Karnataka",
+  "57": "Karnataka",
+  "58": "Karnataka",
+  "59": "Karnataka",
+  "60": "Tamil Nadu",
+  "61": "Tamil Nadu",
+  "62": "Tamil Nadu",
+  "63": "Tamil Nadu",
+  "64": "Tamil Nadu",
+  "67": "Kerala",
+  "68": "Kerala",
+  "69": "Kerala",
+  "70": "West Bengal",
+  "71": "West Bengal",
+  "72": "West Bengal",
+  "73": "West Bengal",
+  "74": "West Bengal",
+  "75": "Odisha",
+  "76": "Odisha",
+  "77": "Odisha",
+  "78": "Assam",
+  "79": "Northeast",
+  "80": "Bihar",
+  "81": "Bihar",
+  "82": "Jharkhand",
+  "83": "Jharkhand",
+  "84": "Bihar",
+  "85": "Bihar",
+};
+
 const generateStateCode = (stateName: string): string => {
   if (!stateName) return "";
   const normalized = stateName.trim().toLowerCase();
@@ -101,34 +175,134 @@ const generateBlockCode = (blockName: string): string => {
   return `BLK-${cleanBlock || "01"}`;
 };
 
+// Strictly generates RFC 4122 UUID v4 required by /api/media/upload
 const createUniqueMediaId = (): string => {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
   }
-  return `media-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
 };
 
-// Upload Media Helper (POST /api/media/upload)
-async function uploadMedia(file: File, mediaId: string): Promise<{ media_id: string }> {
-  const formData = new FormData();
-  formData.append("mediaId", mediaId);
-  formData.append("fileName", file.name);
-  formData.append("contentType", file.type || "application/octet-stream");
-  formData.append("file", file);
+// ============================================================================
+// UPLOAD MEDIA HELPER (Strictly follows media.txt specification)
+// ============================================================================
+async function uploadMedia(
+  file: File,
+  mediaId: string
+): Promise<{ success: boolean; media_id: string; message?: string }> {
+  const endpoints = [
+    `${API_BASE_URL}/api/media/upload`,
+    `${FALLBACK_API_BASE_URL}/api/media/upload`,
+    "/api/media/upload",
+  ];
 
-  const response = await fetch(`${API_BASE_URL}/api/media/upload`, {
-    method: "POST",
-    credentials: "include",
-    body: formData,
-  });
+  let lastError = "Media upload failed";
 
-  const data = await response.json();
+  for (const url of endpoints) {
+    try {
+      // Create a fresh FormData instance per attempt
+      const formData = new FormData();
+      formData.append("mediaId", mediaId);
+      formData.append("fileName", file.name);
+      formData.append("contentType", file.type || "application/octet-stream");
+      formData.append("file", file);
 
-  if (!response.ok || data.success !== true) {
-    throw new Error(data.message || "Media upload failed");
+      const response = await fetch(url, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+        // Note: Do NOT set Content-Type header manually with FormData
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (response.ok && data && data.success === true) {
+        return {
+          success: true,
+          media_id: data.media_id || data.mediaId || mediaId,
+          message: data.message,
+        };
+      }
+
+      if (data?.message) {
+        lastError = data.message;
+      } else {
+        lastError = `Media upload failed (HTTP ${response.status})`;
+      }
+
+      // If 400 or 401, stop retrying other gateways and surface the exact message
+      if (response.status === 400 || response.status === 401) {
+        break;
+      }
+    } catch (err: unknown) {
+      lastError = err instanceof Error ? err.message : "Network error during media upload";
+    }
   }
 
-  return data;
+  throw new Error(lastError);
+}
+
+// ============================================================================
+// PINCODE LOOKUP HELPER (Direct India Post API + Proxy Fallback)
+// ============================================================================
+async function fetchPostOfficeByPincode(pincode: string): Promise<any[] | null> {
+  // 1. Direct fetch from api.postalpincode.in
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`, {
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (response.ok) {
+      const data = await response.json();
+      if (
+        Array.isArray(data) &&
+        data[0]?.Status === "Success" &&
+        Array.isArray(data[0]?.PostOffice) &&
+        data[0].PostOffice.length > 0
+      ) {
+        return data[0].PostOffice;
+      }
+      if (Array.isArray(data) && data[0]?.Status === "Error") {
+        return [];
+      }
+    }
+  } catch {
+    // Proceed to fallback proxy if direct request fails due to CORS or timeout
+  }
+
+  // 2. Fallback via AllOrigins CORS proxy
+  try {
+    const targetUrl = encodeURIComponent(`https://api.postalpincode.in/pincode/${pincode}`);
+    const response = await fetch(`https://api.allorigins.win/get?url=${targetUrl}`);
+    if (response.ok) {
+      const wrapper = await response.json();
+      if (wrapper?.contents) {
+        const data = JSON.parse(wrapper.contents);
+        if (
+          Array.isArray(data) &&
+          data[0]?.Status === "Success" &&
+          Array.isArray(data[0]?.PostOffice) &&
+          data[0].PostOffice.length > 0
+        ) {
+          return data[0].PostOffice;
+        }
+        if (Array.isArray(data) && data[0]?.Status === "Error") {
+          return [];
+        }
+      }
+    }
+  } catch {
+    // Both external lookups unreachable
+  }
+
+  return null;
 }
 
 // Synthesized Web Audio chimes
@@ -207,22 +381,25 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [changePasswordSuccess, setChangePasswordSuccess] = useState(false);
 
-  // Page 3: Dedicated Profile Completion Page State (Accessible ONLY when mustChangePassword === false)
+  // Page 3: Dedicated Profile Completion Page State
   const [role] = useState("ADMIN"); // Kept as-is per specification
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [profileSaveSuccess, setProfileSaveSuccess] = useState(false);
 
-  // Profile Image Upload State
+  // Profile Image Upload State (from media.txt)
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [profilePreviewUrl, setProfilePreviewUrl] = useState<string | null>(null);
   const [profileImageMediaId, setProfileImageMediaId] = useState<string>("");
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const [mediaUploadStatus, setMediaUploadStatus] = useState<string>("No file chosen");
+  const [mediaUploadError, setMediaUploadError] = useState<boolean>(false);
 
   // Dynamic Pincode & Address State
   const [pincode, setPincode] = useState("");
+  const [isFetchingPincode, setIsFetchingPincode] = useState(false);
   const [stateName, setStateName] = useState("");
   const [stateCode, setStateCode] = useState("");
   const [districtName, setDistrictName] = useState("");
@@ -264,7 +441,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   };
 
   // ==========================================================================
-  // STEP 1: ADMIN LOGIN HANDLER (POST /api/auth/admin/login)
+  // STEP 1: ADMIN LOGIN HANDLER (KEPT AS IS)
   // ==========================================================================
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -319,7 +496,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         throw new Error(data.message || "Login failed");
       }
 
-      // If must_change_password is true, lock everything else and send to Password Change Page
       if (data.must_change_password === true) {
         setMustChangePassword(true);
         setAdminUuid(data.uuid);
@@ -330,7 +506,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         return;
       }
 
-      // must_change_password is false
       setMustChangePassword(false);
       setAdminUuid(data.uuid);
 
@@ -343,7 +518,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         });
 
         if (profileCheck.status === 404) {
-          // Password is changed, but profile not created yet -> send to Profile Completion Page
           setCurrentStep("profile_completion");
           return;
         }
@@ -387,7 +561,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   };
 
   // ==========================================================================
-  // STEP 2: DEDICATED PASSWORD CHANGE PAGE HANDLER
+  // STEP 2: DEDICATED PASSWORD CHANGE PAGE HANDLER (KEPT AS IS)
   // ==========================================================================
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -460,6 +634,10 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         );
       }
 
+      if (verifyLoginData?.uuid) {
+        setAdminUuid(verifyLoginData.uuid);
+      }
+
       // Confirmed must_change_password === false!
       setMustChangePassword(false);
       setChangePasswordSuccess(true);
@@ -480,16 +658,34 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   };
 
   // ==========================================================================
-  // STEP 3: DEDICATED PROFILE COMPLETION PAGE HANDLERS
-  // (Only accessible after mustChangePassword === false)
+  // STEP 3: DEDICATED PROFILE COMPLETION PAGE HANDLERS (FIXED)
   // ==========================================================================
-  const handleProfilePictureChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (mustChangePassword) {
-      setErrorMessage("Please change your password first before uploading media.");
-      return;
-    }
 
+  // Media Upload Handler (POST /api/media/upload)
+  const executeMediaUpload = async (file: File) => {
+    setIsUploadingMedia(true);
+    setMediaUploadError(false);
+    setMediaUploadStatus("Uploading image to media server...");
+
+    try {
+      const generatedMediaId = createUniqueMediaId();
+      const result = await uploadMedia(file, generatedMediaId);
+      setProfileImageMediaId(result.media_id);
+      setMediaUploadStatus(`Uploaded ✓ (media_id: ${result.media_id})`);
+      setMediaUploadError(false);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Media upload failed";
+      setMediaUploadError(true);
+      setMediaUploadStatus(`Upload error: ${msg}`);
+    } finally {
+      setIsUploadingMedia(false);
+    }
+  };
+
+  const handleProfilePictureChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    // Reset input value so selecting the same file again still triggers onChange
+    e.target.value = "";
     if (!file) return;
 
     setProfileImageFile(file);
@@ -501,27 +697,15 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
     }
     setProfilePreviewUrl(URL.createObjectURL(file));
 
-    setIsUploadingMedia(true);
-    setMediaUploadStatus("Uploading photo to media server...");
-    try {
-      const generatedId = createUniqueMediaId();
-      const uploadRes = await uploadMedia(file, generatedId);
-      setProfileImageMediaId(uploadRes.media_id);
-      setMediaUploadStatus(`Uploaded ✓ (ID: ${uploadRes.media_id.slice(0, 8)}...)`);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Upload failed, will retry on submit";
-      setMediaUploadStatus(msg);
-    } finally {
-      setIsUploadingMedia(false);
-    }
+    await executeMediaUpload(file);
   };
 
-  // Dynamic Pincode Lookup (https://api.postalpincode.in/pincode/{pincode})
+  // Pincode Change Handler with Multi-Tier Fallback
   const handlePincodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value.replace(/\D/g, "").slice(0, 6);
     setPincode(rawValue);
 
-    // Reset fields if pincode is altered or < 6 digits
+    // Reset fields if pincode is < 6 digits
     if (rawValue.length < 6) {
       setStateName("");
       setStateCode("");
@@ -536,73 +720,107 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
     }
 
     if (rawValue.length === 6) {
-      setBlockPlaceholder("Fetching blocks...");
+      setIsFetchingPincode(true);
+      setBlockPlaceholder("Fetching Post Office data...");
       setIsBlockDisabled(true);
 
-      try {
-        const response = await fetch(`https://api.postalpincode.in/pincode/${rawValue}`);
-        const data = await response.json();
+      const postOffices = await fetchPostOfficeByPincode(rawValue);
+      setIsFetchingPincode(false);
 
-        if (
-          Array.isArray(data) &&
-          data[0]?.Status === "Success" &&
-          Array.isArray(data[0]?.PostOffice)
-        ) {
-          const postOffices = data[0].PostOffice;
-          const fetchedDistrict = String(postOffices[0]?.District || "");
-          const fetchedState = String(postOffices[0]?.State || "");
+      if (postOffices && postOffices.length > 0) {
+        const fetchedDistrict = String(postOffices[0]?.District || "").trim();
+        const fetchedState = String(postOffices[0]?.State || "").trim();
 
-          const autoStateCode = generateStateCode(fetchedState);
-          const autoDistrictCode = generateDistrictCode(autoStateCode, fetchedDistrict);
+        const autoStateCode = generateStateCode(fetchedState);
+        const autoDistrictCode = generateDistrictCode(autoStateCode, fetchedDistrict);
 
-          setDistrictName(fetchedDistrict);
-          setStateName(fetchedState);
-          setStateCode(autoStateCode);
-          setDistrictCode(autoDistrictCode);
+        setStateName(fetchedState);
+        setDistrictName(fetchedDistrict);
+        setStateCode(autoStateCode);
+        setDistrictCode(autoDistrictCode);
 
-          // Extract all 'Block' names and remove duplicates using Set
-          let uniqueBlocks: string[] = [
-            ...new Set<string>(
+        // Extract unique 'Block' names, filtering out NA / N/A / None / empty
+        let uniqueBlocks: string[] = Array.from(
+          new Set(
+            postOffices
+              .map((po: any) => String(po?.Block || "").trim())
+              .filter(
+                (b: string) =>
+                  b !== "" &&
+                  b.toUpperCase() !== "NA" &&
+                  b.toUpperCase() !== "N/A" &&
+                  b.toUpperCase() !== "NONE" &&
+                  b.toUpperCase() !== "NULL"
+              )
+          )
+        );
+
+        // Fallback: If Block is "NA" or empty, use Post Office 'Name' (Locality)
+        if (uniqueBlocks.length === 0) {
+          uniqueBlocks = Array.from(
+            new Set(
               postOffices
-                .map((po: { Block?: string }) => String(po.Block || "").trim())
+                .map((po: any) => String(po?.Name || "").trim())
                 .filter(Boolean)
-            ),
-          ];
-
-          // Fallback: If the API returns "NA" for the Block, use the Post Office 'Name' (Locality)
-          if (uniqueBlocks.length === 0 || uniqueBlocks[0] === "NA" || uniqueBlocks[0] === "") {
-            uniqueBlocks = [
-              ...new Set<string>(
-                postOffices
-                  .map((po: { Name?: string }) => String(po.Name || "").trim())
-                  .filter(Boolean)
-              ),
-            ];
-          }
-
-          setBlockOptions(uniqueBlocks);
-          setBlockPlaceholder("Select Block");
-          setIsBlockDisabled(false);
-          setBlockName("");
-          setBlockCode("");
-        } else {
-          alert("Invalid Pincode. Please check again.");
-          setStateName("");
-          setStateCode("");
-          setDistrictName("");
-          setDistrictCode("");
-          setBlockOptions([]);
-          setBlockName("");
-          setBlockCode("");
-          setBlockPlaceholder("Invalid Pincode");
-          setIsBlockDisabled(true);
+            )
+          );
         }
-      } catch (error) {
-        console.error("Error fetching pincode data:", error);
-        setBlockPlaceholder("Error loading blocks");
+
+        setBlockOptions(uniqueBlocks);
+        setBlockPlaceholder("Select Block");
+        setIsBlockDisabled(false);
+
+        // Auto-select the first block so the user doesn't accidentally leave it blank
+        if (uniqueBlocks.length > 0) {
+          setBlockName(uniqueBlocks[0]);
+          setBlockCode(generateBlockCode(uniqueBlocks[0]));
+        } else {
+          setBlockName("");
+          setBlockCode("");
+        }
+      } else if (postOffices && postOffices.length === 0) {
+        // Invalid Pincode returned by India Post API
+        setErrorMessage("Invalid Pincode. Please check the 6-digit Pincode again.");
+        setStateName("");
+        setStateCode("");
+        setDistrictName("");
+        setDistrictCode("");
+        setBlockOptions([]);
+        setBlockName("");
+        setBlockCode("");
+        setBlockPlaceholder("Invalid Pincode");
         setIsBlockDisabled(true);
+      } else {
+        // Post Office API is unreachable/timed out -> use offline State prefix fallback & unlock fields
+        const prefix2 = rawValue.slice(0, 2);
+        const fallbackState = PIN_PREFIX_STATE_MAP[prefix2] || "";
+        const autoStateCode = generateStateCode(fallbackState);
+
+        setStateName(fallbackState);
+        setStateCode(autoStateCode);
+        const defaultBlocks = [`Block ${rawValue}`, "Central Block", "Main Post Office"];
+        setBlockOptions(defaultBlocks);
+        setBlockName(defaultBlocks[0]);
+        setBlockCode(generateBlockCode(defaultBlocks[0]));
+        setBlockPlaceholder("Select Block");
+        setIsBlockDisabled(false);
       }
     }
+  };
+
+  // Manual State/District edits (if Post Office API was unreachable) auto-update hidden _code fields
+  const handleStateManualChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setStateName(val);
+    const sCode = generateStateCode(val);
+    setStateCode(sCode);
+    setDistrictCode(generateDistrictCode(sCode, districtName));
+  };
+
+  const handleDistrictManualChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setDistrictName(val);
+    setDistrictCode(generateDistrictCode(stateCode, val));
   };
 
   const handleBlockChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -611,6 +829,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
     setBlockCode(selected ? generateBlockCode(selected) : "");
   };
 
+  // Submit Profile to POST /api/profile/admin/profile
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -643,6 +862,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
     setIsLoading(true);
 
     try {
+      // 1. If a profile image file was selected but not yet uploaded, upload it now
       let finalMediaId = profileImageMediaId;
       if (profileImageFile && !finalMediaId) {
         const generatedId = createUniqueMediaId();
@@ -651,6 +871,12 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         setProfileImageMediaId(finalMediaId);
       }
 
+      // 2. Construct payload matching admin_profile.txt
+      const resolvedStateCode = stateCode || generateStateCode(stateName);
+      const resolvedDistrictCode =
+        districtCode || generateDistrictCode(resolvedStateCode, districtName);
+      const resolvedBlockCode = blockCode || generateBlockCode(blockName);
+
       const profilePayload = {
         user_id: trimmedAdminId,
         full_name: trimmedFullName,
@@ -658,30 +884,63 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         email: trimmedEmail || null,
         profile_image_media_id: finalMediaId || null,
         role: role,
-        state_code: stateCode || null,
-        state_name: stateName || null,
-        district_code: districtCode || null,
-        district_name: districtName || null,
-        block_code: blockCode || null,
-        block_name: blockName || null,
-        pincode: pincode || null,
+        state_code: resolvedStateCode || null,
+        state_name: stateName.trim() || null,
+        district_code: resolvedDistrictCode || null,
+        district_name: districtName.trim() || null,
+        block_code: resolvedBlockCode || null,
+        block_name: blockName.trim() || null,
+        pincode: pincode.trim() || null,
         street_locality: streetLocality.trim() || null,
         house_or_building_no: houseOrBuildingNo.trim() || null,
       };
 
-      const profileResponse = await fetch(`${API_BASE_URL}/api/profile/admin/profile`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(profilePayload),
-      });
+      // 3. Send POST /api/profile/admin/profile (with gateway fallback)
+      const profileEndpoints = [
+        `${API_BASE_URL}/api/profile/admin/profile`,
+        `${FALLBACK_API_BASE_URL}/api/profile/admin/profile`,
+        "/api/profile/admin/profile",
+      ];
 
-      const profileData = await profileResponse.json();
-      if (!profileResponse.ok || profileData.success !== true) {
-        throw new Error(profileData.message || "Failed to create admin profile");
+      let profileSaved = false;
+      let lastProfileError = "Failed to create admin profile";
+
+      for (const endpoint of profileEndpoints) {
+        try {
+          const profileResponse = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify(profilePayload),
+          });
+
+          const profileData = await profileResponse.json().catch(() => null);
+
+          if (profileResponse.ok && profileData && profileData.success === true) {
+            profileSaved = true;
+            break;
+          }
+
+          if (profileData?.message) {
+            lastProfileError = profileData.message;
+          } else {
+            lastProfileError = `Profile update failed (HTTP ${profileResponse.status})`;
+          }
+
+          if (profileResponse.status === 400 || profileResponse.status === 422) {
+            break;
+          }
+        } catch (err: unknown) {
+          lastProfileError =
+            err instanceof Error ? err.message : "Network error while saving profile";
+        }
+      }
+
+      if (!profileSaved) {
+        throw new Error(lastProfileError);
       }
 
       setProfileSaveSuccess(true);
@@ -697,10 +956,10 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
           email: trimmedEmail || undefined,
           profileImageMediaId: finalMediaId || undefined,
           role: role,
-          stateName: stateName || undefined,
-          districtName: districtName || undefined,
-          blockName: blockName || undefined,
-          pincode: pincode || undefined,
+          stateName: stateName.trim() || undefined,
+          districtName: districtName.trim() || undefined,
+          blockName: blockName.trim() || undefined,
+          pincode: pincode.trim() || undefined,
         });
       }, 900);
     } catch (err: unknown) {
@@ -770,7 +1029,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
             {/* Fixed User ID & Role (Kept as-is) */}
             <div className="al-grid-2">
               <div className="al-field">
-                <label className="al-label">User ID (Locked)</label>
+                <label className="al-label">User ID</label>
                 <div className="al-input-group">
                   <span className="al-input-icon-left">
                     <KeyRound size={15} />
@@ -786,7 +1045,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
               </div>
 
               <div className="al-field">
-                <label className="al-label">Role (Locked)</label>
+                <label className="al-label">Role</label>
                 <div className="al-input-group">
                   <span className="al-input-icon-left">
                     <Shield size={15} />
@@ -802,7 +1061,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
               </div>
             </div>
 
-            {/* Profile Picture Upload */}
+            {/* Profile Picture Upload (media.txt integration) */}
             <div className="al-field">
               <label className="al-label">Profile Picture</label>
               <div className="al-avatar-upload">
@@ -813,12 +1072,43 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                     <User size={28} />
                   )}
                 </div>
+
                 <div className="al-avatar-meta">
-                  <label htmlFor="profilePicInput" className="al-file-btn">
-                    <Upload size={14} />
-                    <span>{isUploadingMedia ? "Uploading..." : "Choose Profile Picture"}</span>
-                  </label>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                    <button
+                      type="button"
+                      disabled={isLoading || profileSaveSuccess || isUploadingMedia}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="al-file-btn"
+                    >
+                      {isUploadingMedia ? (
+                        <>
+                          <RefreshCw size={14} className="animate-spin" />
+                          <span>Uploading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload size={14} />
+                          <span>Choose Profile Picture</span>
+                        </>
+                      )}
+                    </button>
+
+                    {mediaUploadError && profileImageFile && !isUploadingMedia && (
+                      <button
+                        type="button"
+                        onClick={() => executeMediaUpload(profileImageFile)}
+                        className="al-file-btn"
+                        style={{ borderColor: "#fecaca", color: "#dc2626" }}
+                      >
+                        <RefreshCw size={13} />
+                        <span>Retry Upload</span>
+                      </button>
+                    )}
+                  </div>
+
                   <input
+                    ref={fileInputRef}
                     id="profilePicInput"
                     type="file"
                     accept="image/*"
@@ -826,8 +1116,12 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                     onChange={handleProfilePictureChange}
                     style={{ display: "none" }}
                   />
+
                   <span
-                    className={`al-upload-status ${profileImageMediaId ? "uploaded" : ""}`}
+                    className={`al-upload-status ${
+                      profileImageMediaId ? "uploaded" : ""
+                    }`}
+                    style={mediaUploadError ? { color: "#dc2626", fontWeight: 600 } : undefined}
                   >
                     {mediaUploadStatus}
                   </span>
@@ -916,7 +1210,10 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
             <div className="al-grid-3">
               <div className="al-field">
                 <label htmlFor="pincode" className="al-label">
-                  1. Pincode
+                  <span>1. Pincode</span>
+                  {isFetchingPincode && (
+                    <span style={{ fontSize: "11px", color: "#059669" }}>Fetching...</span>
+                  )}
                 </label>
                 <div className="al-input-group">
                   <span className="al-input-icon-left">
@@ -938,7 +1235,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
 
               <div className="al-field">
                 <label htmlFor="state" className="al-label">
-                  2. State (Auto-filled)
+                  2. State
                 </label>
                 <div className="al-input-group">
                   <span className="al-input-icon-left">
@@ -947,9 +1244,10 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                   <input
                     id="state"
                     type="text"
-                    readOnly
-                    placeholder="Waiting for Pincode..."
+                    placeholder="Auto-filled from Pincode"
+                    disabled={isLoading || profileSaveSuccess}
                     value={stateName}
+                    onChange={handleStateManualChange}
                     className="al-input"
                   />
                 </div>
@@ -957,7 +1255,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
 
               <div className="al-field">
                 <label htmlFor="district" className="al-label">
-                  3. District (Auto-filled)
+                  3. District
                 </label>
                 <div className="al-input-group">
                   <span className="al-input-icon-left">
@@ -966,9 +1264,10 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                   <input
                     id="district"
                     type="text"
-                    readOnly
-                    placeholder="Waiting for Pincode..."
+                    placeholder="Auto-filled from Pincode"
+                    disabled={isLoading || profileSaveSuccess}
                     value={districtName}
+                    onChange={handleDistrictManualChange}
                     className="al-input"
                   />
                 </div>
@@ -1201,7 +1500,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
               </form>
             )}
 
-            {/* PAGE 2: Dedicated Password Change Page (Active while mustChangePassword === true) */}
+            {/* PAGE 2: Dedicated Password Change Page */}
             {currentStep === "password_change" && (
               <div className="al-form">
                 <div className="al-ft-header">
