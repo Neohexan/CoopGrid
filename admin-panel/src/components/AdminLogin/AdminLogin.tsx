@@ -184,7 +184,7 @@ const CAROUSEL_IMAGES = [
   { url: "/assets/image6.jpeg", alt: "Logistics and masonry cooperative worker" },
 ];
 
-type AuthView = "login" | "first_time_password";
+type AuthView = "login" | "first_time_password" | "profile_setup";
 
 export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   const [currentView, setCurrentView] = useState<AuthView>("login");
@@ -197,7 +197,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // First-Time Password Change State
+  // Step 2: First-Time Password Change State
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
@@ -206,11 +206,12 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [changePasswordSuccess, setChangePasswordSuccess] = useState(false);
 
-  // First-Time Admin Profile State (from admin_profile.txt)
+  // Step 3: Admin Profile Setup State (from admin_profile.txt)
   const [role] = useState("ADMIN"); // Kept as-is per specification
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
+  const [profileSaveSuccess, setProfileSaveSuccess] = useState(false);
 
   // Profile Image Upload State (from media.txt)
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
@@ -262,7 +263,151 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
     setCurrentIndex((prev) => (prev + 1) % CAROUSEL_IMAGES.length);
   };
 
-  // Profile Picture Selection & Upload Handler
+  // 1. Admin Login API Handler
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+
+    const trimmedAdminId = adminId.trim();
+
+    if (!trimmedAdminId) {
+      setErrorMessage("Please enter your Admin ID.");
+      return;
+    }
+
+    if (!password) {
+      setErrorMessage("Please enter your Password.");
+      return;
+    }
+
+    playAudioFeedback("click");
+    setIsLoading(true);
+
+    // ==========================================
+    // HARDCODED TEST BYPASS
+    // ==========================================
+    if (trimmedAdminId === "Coop" && password === "admin") {
+      setTimeout(() => {
+        setIsLoading(false);
+        playAudioFeedback("success");
+        onLoginSuccess({
+          adminId: "Coop",
+          role: "ADMIN",
+          loginTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        });
+      }, 600);
+      return;
+    }
+    // ==========================================
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/admin/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ admin_id: trimmedAdminId, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || data.success !== true) {
+        throw new Error(data.message || "Login failed");
+      }
+
+      if (data.must_change_password === true) {
+        setAdminUuid(data.uuid);
+        setCurrentPassword(password);
+        setPassword("");
+        setCurrentView("first_time_password");
+        setErrorMessage(null);
+        return;
+      }
+
+      playAudioFeedback("success");
+      onLoginSuccess({
+        adminId: trimmedAdminId,
+        uuid: data.uuid,
+        loginTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      });
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Unable to connect to authentication server.";
+      setErrorMessage(msg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 2. First-Time Password Change Handler -> Redirects to Profile Setup Page
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+
+    if (!currentPassword || !newPassword) {
+      setErrorMessage("Please fill out all password fields.");
+      return;
+    }
+    if (newPassword.length < 8) {
+      setErrorMessage("New password must be at least 8 characters long.");
+      return;
+    }
+    if (newPassword === currentPassword) {
+      setErrorMessage("New password cannot be the same as the current password.");
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setErrorMessage("New password and confirm new password do not match.");
+      return;
+    }
+
+    playAudioFeedback("click");
+    setIsLoading(true);
+
+    try {
+      const endpoint = `${API_BASE_URL}/api/auth/private/admin/change-password${
+        adminUuid ? `?uuid=${encodeURIComponent(adminUuid)}` : ""
+      }`;
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          old_password: currentPassword,
+          new_password: newPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || data.success !== true) {
+        throw new Error(data.message || "Password change failed");
+      }
+
+      setChangePasswordSuccess(true);
+      playAudioFeedback("success");
+
+      // Move to the separate Profile Update page after password change
+      setTimeout(() => {
+        setChangePasswordSuccess(false);
+        setErrorMessage(null);
+        setCurrentView("profile_setup");
+      }, 800);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Password change failed";
+      setErrorMessage(msg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Profile Picture Selection & Upload Handler (on Profile Update Page)
   const handleProfilePictureChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -276,7 +421,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
     }
     setProfilePreviewUrl(URL.createObjectURL(file));
 
-    // Attempt immediate upload via /api/media/upload
     setIsUploadingMedia(true);
     setMediaUploadStatus("Uploading photo...");
     try {
@@ -284,9 +428,9 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
       const uploadRes = await uploadMedia(file, generatedId);
       setProfileImageMediaId(uploadRes.media_id);
       setMediaUploadStatus("Photo uploaded ✓");
-    } catch {
-      // If session requires password change before media upload, defer upload to submit handler
-      setMediaUploadStatus(`Selected: ${file.name} (will upload on submit)`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Photo upload failed, will retry on save";
+      setMediaUploadStatus(msg);
     } finally {
       setIsUploadingMedia(false);
     }
@@ -384,86 +528,8 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
     setBlockCode(selected ? generateBlockCode(selected) : "");
   };
 
-  // 1. Admin Login API Handler
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage(null);
-
-    const trimmedAdminId = adminId.trim();
-
-    if (!trimmedAdminId) {
-      setErrorMessage("Please enter your Admin ID.");
-      return;
-    }
-
-    if (!password) {
-      setErrorMessage("Please enter your Password.");
-      return;
-    }
-
-    playAudioFeedback("click");
-    setIsLoading(true);
-
-    // ==========================================
-    // HARDCODED TEST BYPASS
-    // ==========================================
-    if (trimmedAdminId === "Coop" && password === "admin") {
-      setTimeout(() => {
-        setIsLoading(false);
-        playAudioFeedback("success");
-        onLoginSuccess({
-          adminId: "Coop",
-          role: "ADMIN",
-          loginTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        });
-      }, 600);
-      return;
-    }
-    // ==========================================
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/admin/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ admin_id: trimmedAdminId, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || data.success !== true) {
-        throw new Error(data.message || "Login failed");
-      }
-
-      if (data.must_change_password === true) {
-        setAdminUuid(data.uuid);
-        setCurrentPassword(password);
-        setPassword("");
-        setCurrentView("first_time_password");
-        setErrorMessage(null);
-        return;
-      }
-
-      playAudioFeedback("success");
-      onLoginSuccess({
-        adminId: trimmedAdminId,
-        uuid: data.uuid,
-        loginTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      });
-    } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : "Unable to connect to authentication server.";
-      setErrorMessage(msg);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // 2. First-Time Password Change + Media Upload + Admin Profile Creation Handler
-  const handlePasswordAndProfileSubmit = async (e: React.FormEvent) => {
+  // 3. Admin Profile Creation Handler (POST /api/profile/admin/profile)
+  const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
@@ -472,25 +538,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
     const trimmedPhone = phoneNumber.trim();
     const trimmedEmail = email.trim();
 
-    // Password Validations
-    if (!currentPassword || !newPassword) {
-      setErrorMessage("Please fill out your current and new password.");
-      return;
-    }
-    if (newPassword.length < 8) {
-      setErrorMessage("New password must be at least 8 characters long.");
-      return;
-    }
-    if (newPassword === currentPassword) {
-      setErrorMessage("New password cannot be the same as the current password.");
-      return;
-    }
-    if (newPassword !== confirmNewPassword) {
-      setErrorMessage("New password and confirm new password do not match.");
-      return;
-    }
-
-    // Admin Profile Validations (per admin_profile.txt)
     if (trimmedFullName.length < 2 || trimmedFullName.length > 128) {
       setErrorMessage("Full Name is required (between 2 and 128 characters).");
       return;
@@ -508,30 +555,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
     setIsLoading(true);
 
     try {
-      // STEP 1: Change Admin Password
-      const passwordEndpoint = `${API_BASE_URL}/api/auth/private/admin/change-password${
-        adminUuid ? `?uuid=${encodeURIComponent(adminUuid)}` : ""
-      }`;
-
-      const pwResponse = await fetch(passwordEndpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          old_password: currentPassword,
-          new_password: newPassword,
-        }),
-      });
-
-      const pwData = await pwResponse.json();
-      if (!pwResponse.ok || pwData.success !== true) {
-        throw new Error(pwData.message || "Password change failed");
-      }
-
-      // STEP 2: Upload Profile Picture if selected and not yet uploaded
+      // Ensure profile image is uploaded if a file was chosen
       let finalMediaId = profileImageMediaId;
       if (profileImageFile && !finalMediaId) {
         const generatedId = createUniqueMediaId();
@@ -540,7 +564,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         setProfileImageMediaId(finalMediaId);
       }
 
-      // STEP 3: Create Admin Profile (POST /api/profile/admin/profile)
       const profilePayload = {
         user_id: trimmedAdminId,
         full_name: trimmedFullName,
@@ -574,7 +597,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         throw new Error(profileData.message || "Failed to create admin profile");
       }
 
-      setChangePasswordSuccess(true);
+      setProfileSaveSuccess(true);
       playAudioFeedback("success");
 
       setTimeout(() => {
@@ -594,7 +617,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         });
       }, 900);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Onboarding setup failed";
+      const msg = err instanceof Error ? err.message : "Failed to save admin profile";
       setErrorMessage(msg);
     } finally {
       setIsLoading(false);
@@ -641,7 +664,9 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
 
         {/* Right Column: Form */}
         <div
-          className={`al-form-section ${currentView === "login" ? "al-center-mode" : ""}`}
+          className={`al-form-section ${
+            currentView !== "profile_setup" ? "al-center-mode" : ""
+          }`}
         >
           <div className="al-form-wrapper">
             <div className="al-brand">
@@ -668,11 +693,18 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
             {changePasswordSuccess && (
               <div className="al-alert al-alert-success">
                 <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
-                <span>Password & Admin Profile saved! Redirecting...</span>
+                <span>Password updated! Redirecting to profile setup...</span>
               </div>
             )}
 
-            {/* View 1: Standard Login */}
+            {profileSaveSuccess && (
+              <div className="al-alert al-alert-success">
+                <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
+                <span>Admin profile created! Entering dashboard...</span>
+              </div>
+            )}
+
+            {/* VIEW 1: Standard Login */}
             {currentView === "login" && (
               <form onSubmit={handleLogin} className="al-form">
                 <div className="al-field">
@@ -736,15 +768,123 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
               </form>
             )}
 
-            {/* View 2: First-Time Password Change & Profile Setup */}
+            {/* VIEW 2: Separate First-Time Password Change Page */}
             {currentView === "first_time_password" && (
               <div className="al-form">
                 <div className="al-ft-header">
-                  <span className="al-ft-badge">First-Time Onboarding</span>
-                  <h2 className="al-ft-title">Update Password & Complete Profile</h2>
+                  <span className="al-ft-badge">Step 1 of 2 • Security Update</span>
+                  <h2 className="al-ft-title">Set New Admin Password</h2>
                 </div>
 
-                <form onSubmit={handlePasswordAndProfileSubmit} className="al-form">
+                <form onSubmit={handlePasswordChange} className="al-form">
+                  <div className="al-field">
+                    <label htmlFor="currentPassword" className="al-label">
+                      Current Password
+                    </label>
+                    <div className="al-input-group">
+                      <span className="al-input-icon-left">
+                        <Lock size={16} />
+                      </span>
+                      <input
+                        id="currentPassword"
+                        type={showCurrentPassword ? "text" : "password"}
+                        disabled={isLoading || changePasswordSuccess}
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        className="al-input"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        className="al-input-icon-right"
+                      >
+                        {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="al-field">
+                    <label htmlFor="newPassword" className="al-label">
+                      New Password
+                    </label>
+                    <div className="al-input-group">
+                      <span className="al-input-icon-left">
+                        <KeyRound size={16} />
+                      </span>
+                      <input
+                        id="newPassword"
+                        type={showNewPassword ? "text" : "password"}
+                        placeholder="Minimum 8 characters"
+                        disabled={isLoading || changePasswordSuccess}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="al-input"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="al-input-icon-right"
+                      >
+                        {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="al-field">
+                    <label htmlFor="confirmNewPassword" className="al-label">
+                      Confirm New Password
+                    </label>
+                    <div className="al-input-group">
+                      <span className="al-input-icon-left">
+                        <KeyRound size={16} />
+                      </span>
+                      <input
+                        id="confirmNewPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="Re-enter new password"
+                        disabled={isLoading || changePasswordSuccess}
+                        value={confirmNewPassword}
+                        onChange={(e) => setConfirmNewPassword(e.target.value)}
+                        className="al-input"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="al-input-icon-right"
+                      >
+                        {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isLoading || changePasswordSuccess}
+                    className="al-btn al-btn-green"
+                  >
+                    {isLoading ? (
+                      <>
+                        <RefreshCw size={16} className="animate-spin" /> Updating Password...
+                      </>
+                    ) : (
+                      <>
+                        Update Password & Continue <ArrowRight size={16} />
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* VIEW 3: Separate Admin Profile Update Page */}
+            {currentView === "profile_setup" && (
+              <div className="al-form">
+                <div className="al-ft-header">
+                  <span className="al-ft-badge">Step 2 of 2 • Profile Setup</span>
+                  <h2 className="al-ft-title">Complete Admin Profile</h2>
+                </div>
+
+                <form onSubmit={handleProfileSubmit} className="al-form">
                   {/* Fixed User ID & Role (Kept as-is) */}
                   <div className="al-grid-2">
                     <div className="al-field">
@@ -802,7 +942,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                           id="profilePicInput"
                           type="file"
                           accept="image/*"
-                          disabled={isLoading || changePasswordSuccess || isUploadingMedia}
+                          disabled={isLoading || profileSaveSuccess || isUploadingMedia}
                           onChange={handleProfilePictureChange}
                           style={{ display: "none" }}
                         />
@@ -837,7 +977,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                         minLength={2}
                         maxLength={128}
                         placeholder="Enter Full Name"
-                        disabled={isLoading || changePasswordSuccess}
+                        disabled={isLoading || profileSaveSuccess}
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         className="al-input"
@@ -863,7 +1003,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                           minLength={10}
                           maxLength={20}
                           placeholder="9876543210"
-                          disabled={isLoading || changePasswordSuccess}
+                          disabled={isLoading || profileSaveSuccess}
                           value={phoneNumber}
                           onChange={(e) => setPhoneNumber(e.target.value)}
                           className="al-input"
@@ -883,7 +1023,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                           id="email"
                           type="email"
                           placeholder="admin@example.com"
-                          disabled={isLoading || changePasswordSuccess}
+                          disabled={isLoading || profileSaveSuccess}
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           className="al-input"
@@ -910,7 +1050,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                           inputMode="numeric"
                           maxLength={6}
                           placeholder="6-digit Pincode"
-                          disabled={isLoading || changePasswordSuccess}
+                          disabled={isLoading || profileSaveSuccess}
                           value={pincode}
                           onChange={handlePincodeChange}
                           className="al-input"
@@ -925,7 +1065,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                       <div className="al-input-group">
                         <select
                           id="blockDropdown"
-                          disabled={isBlockDisabled || isLoading || changePasswordSuccess}
+                          disabled={isBlockDisabled || isLoading || profileSaveSuccess}
                           value={blockName}
                           onChange={handleBlockChange}
                           className="al-select no-left-icon"
@@ -994,7 +1134,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                           id="houseOrBuildingNo"
                           type="text"
                           placeholder="e.g. 12A"
-                          disabled={isLoading || changePasswordSuccess}
+                          disabled={isLoading || profileSaveSuccess}
                           value={houseOrBuildingNo}
                           onChange={(e) => setHouseOrBuildingNo(e.target.value)}
                           className="al-input"
@@ -1014,7 +1154,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                           id="streetLocality"
                           type="text"
                           placeholder="e.g. MG Road"
-                          disabled={isLoading || changePasswordSuccess}
+                          disabled={isLoading || profileSaveSuccess}
                           value={streetLocality}
                           onChange={(e) => setStreetLocality(e.target.value)}
                           className="al-input"
@@ -1023,109 +1163,18 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                     </div>
                   </div>
 
-                  {/* Security / Password Update */}
-                  <div className="al-section-divider">Security Credentials</div>
-
-                  <div className="al-field">
-                    <label htmlFor="currentPassword" className="al-label">
-                      <span>
-                        Current Password <span className="al-label-req">*</span>
-                      </span>
-                    </label>
-                    <div className="al-input-group">
-                      <span className="al-input-icon-left">
-                        <Lock size={15} />
-                      </span>
-                      <input
-                        id="currentPassword"
-                        type={showCurrentPassword ? "text" : "password"}
-                        disabled={isLoading || changePasswordSuccess}
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                        className="al-input"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                        className="al-input-icon-right"
-                      >
-                        {showCurrentPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="al-grid-2">
-                    <div className="al-field">
-                      <label htmlFor="newPassword" className="al-label">
-                        <span>
-                          New Password <span className="al-label-req">*</span>
-                        </span>
-                      </label>
-                      <div className="al-input-group">
-                        <span className="al-input-icon-left">
-                          <KeyRound size={15} />
-                        </span>
-                        <input
-                          id="newPassword"
-                          type={showNewPassword ? "text" : "password"}
-                          placeholder="Min 8 chars"
-                          disabled={isLoading || changePasswordSuccess}
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          className="al-input"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowNewPassword(!showNewPassword)}
-                          className="al-input-icon-right"
-                        >
-                          {showNewPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="al-field">
-                      <label htmlFor="confirmNewPassword" className="al-label">
-                        <span>
-                          Confirm Password <span className="al-label-req">*</span>
-                        </span>
-                      </label>
-                      <div className="al-input-group">
-                        <span className="al-input-icon-left">
-                          <KeyRound size={15} />
-                        </span>
-                        <input
-                          id="confirmNewPassword"
-                          type={showConfirmPassword ? "text" : "password"}
-                          placeholder="Re-enter password"
-                          disabled={isLoading || changePasswordSuccess}
-                          value={confirmNewPassword}
-                          onChange={(e) => setConfirmNewPassword(e.target.value)}
-                          className="al-input"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="al-input-icon-right"
-                        >
-                          {showConfirmPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
                   <button
                     type="submit"
-                    disabled={isLoading || changePasswordSuccess || isUploadingMedia}
+                    disabled={isLoading || profileSaveSuccess || isUploadingMedia}
                     className="al-btn al-btn-green"
                   >
                     {isLoading ? (
                       <>
-                        <RefreshCw size={16} className="animate-spin" /> Saving Profile & Password...
+                        <RefreshCw size={16} className="animate-spin" /> Saving Profile...
                       </>
                     ) : (
                       <>
-                        Save Profile & Enter <ArrowRight size={16} />
+                        Save Profile & Enter Dashboard <ArrowRight size={16} />
                       </>
                     )}
                   </button>

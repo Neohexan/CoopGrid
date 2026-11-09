@@ -45,7 +45,7 @@
 
 @media (min-width: 1024px) {
   .al-carousel-section {
-    width: 50%;
+    width: 52%;
     min-height: 100%;
   }
 }
@@ -167,7 +167,7 @@
 
 @media (min-width: 1024px) {
   .al-form-section {
-    width: 50%;
+    width: 48%;
     padding: 2.25rem 2.75rem;
   }
 }
@@ -178,7 +178,7 @@
 
 .al-form-wrapper {
   width: 100%;
-  max-width: 460px;
+  max-width: 440px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -196,8 +196,8 @@
 }
 
 .al-logo-box {
-  width: 85px;
-  height: 85px;
+  width: 90px;
+  height: 90px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -292,7 +292,7 @@
 }
 
 .al-label {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 600;
   color: #334155;
   margin: 0;
@@ -338,7 +338,7 @@
 .al-input,
 .al-select {
   width: 100%;
-  padding: 0.675rem 0.875rem 0.675rem 2.4rem;
+  padding: 0.7rem 0.875rem 0.7rem 2.45rem;
   font-size: 0.85rem;
   border-radius: 8px;
   border: 1px solid #cbd5e1;
@@ -493,7 +493,7 @@
   background-color: #047857;
 }
 
-/* First Time Headers */
+/* First Time & Onboarding Headers */
 .al-ft-header {
   border-bottom: 1px solid #f1f5f9;
   padding-bottom: 0.5rem;
