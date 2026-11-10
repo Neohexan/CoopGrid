@@ -22,8 +22,9 @@ All request and response bodies use JSON unless stated otherwise.
 | `POST` | `/employer/send-otp` | Generate an employer OTP session | `200 OK` |
 | `POST` | `/employer/verify-otp` | Verify an OTP and issue JWT tokens | `200 OK` |
 
-Worker and Admin authentication routes are not currently registered. Their
-role-based routing can be added using the same DTO and service patterns.
+Worker authentication routes are not currently documented here. For the
+registered Admin authentication routes, see
+[Admin Authentication API](./admin-api.md).
 
 ## 3. Common HTTP Behavior
 

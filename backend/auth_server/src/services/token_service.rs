@@ -119,10 +119,9 @@ impl TokenService {
             .path("/")
             .http_only(true)
             .secure(true) // Production me true (HTTPS)
-            .same_site(SameSite::Strict)
+            .same_site(SameSite::None)
             .max_age(time::Duration::days(7))
             .build(); // Is version mein .build() method hi chalta hai
-
         Ok(cookie)
     }
 }
