@@ -1,4 +1,5 @@
 use axum::{
+    extract::DefaultBodyLimit,
     routing::{get, post},
     Router,
 };
@@ -20,6 +21,7 @@ pub fn build_router(repo: MediaRepository, cors: CorsLayer) -> Router {
         .route("/health", get(health_check))
         .route("/upload", post(upload_media))
         .route("/stream/:media_id", get(stream_media))
+        .layer(DefaultBodyLimit::max(50 * 1024 * 1024))
         .layer(cors)
         .with_state(repo)
 }

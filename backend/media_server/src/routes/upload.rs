@@ -50,32 +50,51 @@ pub async fn upload_media(
     let mut file_bytes: Option<Vec<u8>> = None;
 
     // -------------------------------------------------------------------------
-    // 2. Parse Multipart Fields Sent by Kotlin App
+    // 2. Parse Multipart Fields Sent by Client (App or Website)
     // -------------------------------------------------------------------------
     while let Some(field) = multipart.next_field().await.map_err(|e| {
-        tracing::error!("Multipart parsing error: {}", e);
-        VaultError::BadRequest("Invalid multipart form-data".to_string())
+        tracing::error!("❌ Multipart parsing fatal error: {}", e);
+        VaultError::BadRequest(format!("Invalid multipart form-data: {}", e))
     })? {
         let name = field.name().unwrap_or("").to_string();
+        let file_name_header = field.file_name().map(|s| s.to_string());
+
+        // 🔍 Detailed incoming field log (Ye bata dega ki kya field aa raha hai)
+        tracing::info!(
+            field_name = %name,
+            file_name_header = ?file_name_header,
+            "📦 Processing incoming multipart field"
+        );
 
         match name.as_str() {
             "mediaId" => {
                 media_id = field.text().await.unwrap_or_default();
+                tracing::info!("   └─ Parsed mediaId: {}", media_id);
             }
             "fileName" => {
                 file_name = field.text().await.unwrap_or_default();
+                tracing::info!("   └─ Parsed fileName: {}", file_name);
             }
             "contentType" => {
                 content_type = field.text().await.unwrap_or_default();
+                tracing::info!("   └─ Parsed contentType: {}", content_type);
             }
             "file" => {
-                // File bytes read karte hain
                 let bytes = field.bytes().await.map_err(|e| {
+                    tracing::error!("❌ Failed to read bytes for 'file' field: {}", e);
                     VaultError::BadRequest(format!("Failed to read file bytes: {}", e))
                 })?;
+                let len = bytes.len();
                 file_bytes = Some(bytes.to_vec());
+                tracing::info!("   └─ Parsed file binary payload. Size: {} bytes", len);
             }
-            _ => {}
+            unknown => {
+                // ⚠️ Agar website developer ne koi galat ya unexpected field naam bheja, toh yahan pakda jayega!
+                tracing::warn!(
+                    "⚠️ Received UNKNOWN/UNEXPECTED multipart field name: '{}'",
+                    unknown
+                );
+            }
         }
     }
 

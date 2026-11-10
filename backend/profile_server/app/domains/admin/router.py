@@ -20,7 +20,7 @@ router = APIRouter(prefix="", tags=["Admin - Profile Management"])
 
 @router.post(
     "/admin/profile",
-    response_model=AdminProfileResponse,
+    response_model=AdminCreateSuccessResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Register / Create Admin Profile",
 )
