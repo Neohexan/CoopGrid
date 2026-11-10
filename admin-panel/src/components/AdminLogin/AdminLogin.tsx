@@ -1333,9 +1333,8 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
           </form>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   // ==========================================================================
   // PAGE 1 (LOGIN) & PAGE 2 (PASSWORD CHANGE) RENDER
